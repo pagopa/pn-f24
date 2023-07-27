@@ -1,0 +1,249 @@
+openapi: 3.0.1
+info:
+  termsOfService: https://notifichedigitali.pagopa.it/pubbliche-amministrazioni/index.html
+  title: OpenAPI definition
+  version: 3.0.0
+  description: api for generating PDF files for F24 forms
+  x-summary: sample api for F24
+  contact:
+    email: pn-supporto-enti@pagopa.it
+  license:
+    name: Licenza di PN
+    url: "https://notifichedigitali.pagopa.it/pubbliche-amministrazioni/index.html"
+servers:
+  - url: https://localhost:8080
+    description: Generated server url
+tags:
+  - name: f-24-controller
+  - name: status
+paths:
+  /f24/validate/{iun}:
+    get:
+      tags:
+        - f-24-controller
+      description: Valida tutti i metadati per uno IUN
+      operationId: validate
+      parameters:
+        - $ref: '#/components/parameters/pathIun'
+      responses:
+        "204":
+          description: validazione positiva
+        "400":
+          description: Bad request
+          content:
+           application/problem+json:
+             schema:
+               $ref: '#/components/schemas/Problem'
+        "500":
+         description: Internal error
+         content:
+           application/problem+json:
+             schema:
+               $ref: '#/components/schemas/Problem'
+  /f24/pdf/{iun}/{recipientIndex}/{attachmentIndex}:
+    get:
+      tags:
+        - f-24-controller
+      description: Genera (o recupera dalla cache) un documento PDF relativo all'F24 richiesto e ritorna il presigned-url per poterlo scaricare.
+      operationId: generatePDF
+      parameters:
+        - $ref: '#/components/parameters/pathIun'
+        - $ref: '#/components/parameters/pathRecipientIndex'
+        - $ref: '#/components/parameters/pathAttachmentIndex'
+      responses:
+        "200":
+          description: PDF for Standard form successfully generated.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/F24Response"
+        "400":
+          description: Bad request
+          content:
+           application/problem+json:
+             schema:
+               $ref: '#/components/schemas/Problem'
+        "500":
+         description: Internal error
+         content:
+           application/problem+json:
+             schema:
+               $ref: '#/components/schemas/Problem'
+  /f24/pdf/{requestId}:
+    post:
+     tags:
+       - f-24-controller
+     description: Metodo asincrono di generazione di tutti i documenti F24 relativi ad un destinatario. I documenti >-
+       vengono inseriti in safe storage. Al termine, inserisce un messaggio in coda contenente la lista dei documenti creati.
+     operationId: generateAllPDF
+     parameters:
+       - $ref: '#/components/parameters/pathRequestId'
+     requestBody:
+       required: true
+       content:
+         application/json:
+             schema:
+               $ref: "#/components/schemas/GenerateF24Request"
+     responses:
+       "204":
+         description: Request accepted successfully.
+       "400":
+         description: Bad request
+         content:
+          application/problem+json:
+            schema:
+              $ref: '#/components/schemas/Problem'
+       "500":
+        description: Internal error
+        content:
+          application/problem+json:
+            schema:
+              $ref: '#/components/schemas/Problem'
+     callbacks:
+       f24Updates:
+         nome_coda_risposta:
+           post:
+             summary: Eventi avanzamento spediti ad SQS
+             requestBody:
+               content:
+                 application/json:
+                   schema:
+                     maxItems: 1000
+                     minItems: 1
+                     type: array
+                     items:
+                       $ref: '#/components/schemas/F24Update'
+               required: true
+             responses:
+               default:
+                 description: "Error processing the update, the update must be re-sended"
+               "200":
+                 description: Update correctly received
+               "400":
+                 description: Malformed update status
+  /status:
+    get:
+      tags:
+        - status
+      operationId: status
+      description: Get resulting status.
+      responses:
+        "200":
+          description: Servers finished without errors.
+        "400":
+          description: Bad request
+          content:
+           application/problem+json:
+             schema:
+               $ref: '#/components/schemas/Problem'
+        "500":
+         description: Internal error
+         content:
+           application/problem+json:
+             schema:
+               $ref: '#/components/schemas/Problem'
+
+
+components:
+  schemas:
+    F24Response:
+      type: object
+      properties:
+        url:
+          type: string
+          description: >-
+            URL per il download del contenuto del documento.
+            example: 'https://preloadpn.aws.amazon.......'
+    GenerateF24Request:
+      type: object
+      required:
+        - iun
+        - recipientIndex
+        - requestId
+      properties:
+        requestId:
+          type: string
+          description: Identificativo della richiesta. E' lo stesso usato nel path
+            del metodo
+          example: ABCD-HILM-YKWX-202202-1_rec0_try1
+        iun:
+          type: string
+          minLength: 25
+          maxLength: 25
+          pattern: ^[A-Z]{4}-[A-Z]{4}-[A-Z]{4}-[0-9]{6}-[A-Z]{1}-[0-9]{1}$
+        recipientIndex:
+          type: integer
+        forceDocumentGeneration:
+          type: boolean
+          description: se true, indica che i documenti generati devono essere salvati su safestorage con retention di legge nello stato ATTACHED. >-
+            se false, invece, verranno salvati i documenti o verrà calcolato il numero di pagine in base al fatto che gli F24 richiedano modifiche o meno.
+        notificationCost:
+          type: integer
+          format: int32
+          nullable: true
+          description: notification cost in eurocent to include, obbligatorio se forceDocumentGeneration vale true
+    F24Update:
+      type: object
+      properties:
+        requestId:
+          type: string
+          description: Identificativo della richiesta. E' usato per correlare la risposta alla richiesta
+          example: ABCD-HILM-YKWX-202202-1_rec0_try1
+        totalPages:
+          type: integer
+          format: int32
+          nullable: true
+          description: nel caso in cui safestorageAttachedStatus sia false, viene ritornato il numero di pagine al posto dei paymentUrls.
+        paymentUrls:
+          type: array
+          description: Array di URL di safestorage. preserva l'ordine con cui sono letti i metadati
+          items:
+           type: string
+           description: URL di safe storage
+      description: oggetto usato per ricevere un evento nella coda.
+    Problem:
+      $ref: './remote-refs.yaml#/components/schemas/Problem'
+
+  parameters:
+
+    ############################################################################################
+    ###                             PARAMETRI GENERAZIONE F24                                ###
+    ############################################################################################
+    pathIun:
+      description: >-
+        Identificativo Univoco Notifica
+      name: iun
+      in: path
+      required: true
+      schema:
+        type: string
+        minLength: 25
+        maxLength: 25
+        pattern: ^[A-Z]{4}-[A-Z]{4}-[A-Z]{4}-[0-9]{6}-[A-Z]{1}-[0-9]{1}$
+
+    pathRecipientIndex:
+      description: >-
+        Identificativo recipientIndex
+      name: recipientIndex
+      in: path
+      required: true
+      schema:
+        type: integer
+
+    pathAttachmentIndex:
+      description: >-
+        Identificativo attachmentIndex
+      name: attachmentIndex
+      in: path
+      required: true
+      schema:
+        type: integer
+
+    pathRequestId:
+      description: >-
+        Identificativo requestId
+      name: requestId
+      in: path
+      required: true
+      schema:
+        type: string
