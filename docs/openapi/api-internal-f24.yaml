@@ -173,15 +173,11 @@ components:
           pattern: ^[A-Z]{4}-[A-Z]{4}-[A-Z]{4}-[0-9]{6}-[A-Z]{1}-[0-9]{1}$
         recipientIndex:
           type: integer
-        forceDocumentGeneration:
-          type: boolean
-          description: se true, indica che i documenti generati devono essere salvati su safestorage con retention di legge nello stato ATTACHED. >-
-            se false, invece, verranno salvati i documenti o verrà calcolato il numero di pagine in base al fatto che gli F24 richiedano modifiche o meno.
         notificationCost:
           type: integer
           format: int32
           nullable: true
-          description: notification cost in eurocent to include, obbligatorio se forceDocumentGeneration vale true
+          description: notification cost in eurocent to include, obbligatorio se i documenti prevedono l'aggiornamento con il costo della notifica.
     F24Update:
       type: object
       properties:
@@ -189,11 +185,6 @@ components:
           type: string
           description: Identificativo della richiesta. E' usato per correlare la risposta alla richiesta
           example: ABCD-HILM-YKWX-202202-1_rec0_try1
-        totalPages:
-          type: integer
-          format: int32
-          nullable: true
-          description: nel caso in cui safestorageAttachedStatus sia false, viene ritornato il numero di pagine al posto dei paymentUrls.
         paymentUrls:
           type: array
           description: Array di URL di safestorage. preserva l'ordine con cui sono letti i metadati
