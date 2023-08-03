@@ -17,17 +17,23 @@ tags:
   - name: f-24-controller
   - name: status
 paths:
-  /f24/validate/{iun}:
-    get:
+  /f24/savemeta/{setId}:
+    put:
       tags:
         - f-24-controller
-      description: Valida tutti i metadati per uno IUN
-      operationId: validate
+      description: Salva tutti i metadati per uno SetId per scopi futuri
+      operationId: savemeta
       parameters:
-        - $ref: '#/components/parameters/pathIun'
+        - $ref: '#/components/parameters/pathSetId'
+      requestBody:
+        required: true
+        content:
+         application/json:
+             schema:
+               $ref: "#/components/schemas/SaveF24Request"
       responses:
         "204":
-          description: validazione positiva
+          description: elaborazione completata positivamente
         "400":
           description: Bad request
           content:
@@ -40,16 +46,52 @@ paths:
            application/problem+json:
              schema:
                $ref: '#/components/schemas/Problem'
-  /f24/pdf/{iun}/{recipientIndex}/{attachmentIndex}:
+  /f24/validate/{setId}:
     get:
       tags:
         - f-24-controller
-      description: Genera (o recupera dalla cache) un documento PDF relativo all'F24 richiesto e ritorna il presigned-url per poterlo scaricare.
+      description: Valida tutti i metadati per uno SetId
+      operationId: validate
+      parameters:
+        - $ref: '#/components/parameters/pathSetId'
+      responses:
+        "204":
+          description: validazione positiva
+        "400":
+          description: Bad request
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        "404":
+          description: Not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        "500":
+         description: Internal error
+         content:
+           application/problem+json:
+             schema:
+               $ref: '#/components/schemas/Problem'
+  /f24/pdf/{setId}:
+    post:
+      tags:
+        - f-24-controller
+      description: Genera (o recupera dalla cache) un documento PDF relativo all'F24 richiesto e ritorna il presigned-url per poterlo scaricare, se disponibile. >-
+        Sebbene la generazione e il salvataggio del PDF sia asincrono, il metodo aspetta un tempo configurabile per provare a tornare il presignedUrl con un'unica invocazione. >-
+        Se comunque a valle dell'attesa, il documento non è disponibile, popola il valore di retryAfter.
       operationId: generatePDF
       parameters:
-        - $ref: '#/components/parameters/pathIun'
-        - $ref: '#/components/parameters/pathRecipientIndex'
-        - $ref: '#/components/parameters/pathAttachmentIndex'
+        - $ref: '#/components/parameters/pathSetId'
+        - $ref: '#/components/parameters/pathPathTokens'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GenerateF24Request"
       responses:
         "200":
           description: PDF for Standard form successfully generated.
@@ -63,19 +105,24 @@ paths:
            application/problem+json:
              schema:
                $ref: '#/components/schemas/Problem'
+        "404":
+          description: Not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
         "500":
          description: Internal error
          content:
            application/problem+json:
              schema:
                $ref: '#/components/schemas/Problem'
-  /f24/pdf/{requestId}:
+  /f24/prepare/{requestId}:
     post:
      tags:
        - f-24-controller
-     description: Metodo asincrono di generazione di tutti i documenti F24 relativi ad un destinatario. I documenti >-
-       vengono inseriti in safe storage. Al termine, inserisce un messaggio in coda contenente la lista dei documenti creati.
-     operationId: generateAllPDF
+     description:  Genera (o recupera dalla cache) una serie di documenti PDF F24,
+     operationId: preparePDF
      parameters:
        - $ref: '#/components/parameters/pathRequestId'
      requestBody:
@@ -83,16 +130,26 @@ paths:
        content:
          application/json:
              schema:
-               $ref: "#/components/schemas/GenerateF24Request"
+               $ref: "#/components/schemas/PrepareF24Request"
      responses:
-       "204":
-         description: Request accepted successfully.
+       "200":
+         description: PDF for Standard form successfully generated.
+         content:
+           application/json:
+             schema:
+               $ref: "#/components/schemas/F24Response"
        "400":
          description: Bad request
          content:
           application/problem+json:
             schema:
               $ref: '#/components/schemas/Problem'
+       "404":
+         description: Not found
+         content:
+           application/problem+json:
+             schema:
+               $ref: '#/components/schemas/Problem'
        "500":
         description: Internal error
         content:
@@ -154,11 +211,45 @@ components:
           description: >-
             URL per il download del contenuto del documento.
             example: 'https://preloadpn.aws.amazon.......'
+        retryAfter:
+          type: number
+          description: >-
+            Stima del numero di secondi da aspettare prima che il contenuto del
+            documento sia scaricabile.
+    SaveF24Request:
+      type: object
+      required:
+        - setId
+      properties:
+        setId:
+          type: string
+          description: Identificativo SetId della richiesta. E' lo stesso usato nel path
+            del metodo
+          example: ABCD-HILM-YKWX-202202-1
+        f24Items:
+          $ref: './schemas-f24.yaml#/components/schemas/F24ItemArray'
     GenerateF24Request:
       type: object
       required:
-        - iun
-        - recipientIndex
+        - setId
+      properties:
+        setId:
+          type: string
+          minLength: 1
+        pathTokens:
+          type: array
+            items:
+              type: string
+            description: Identificativo id path
+        notificationCost:
+          type: integer
+          format: int32
+          nullable: true
+          description: notification cost in eurocent to include, obbligatorio se i documenti prevedono l'aggiornamento con il costo della notifica.
+    PrepareF24Request:
+      type: object
+      required:
+        - setId
         - requestId
       properties:
         requestId:
@@ -166,13 +257,14 @@ components:
           description: Identificativo della richiesta. E' lo stesso usato nel path
             del metodo
           example: ABCD-HILM-YKWX-202202-1_rec0_try1
-        iun:
+        setId:
           type: string
-          minLength: 25
-          maxLength: 25
-          pattern: ^[A-Z]{4}-[A-Z]{4}-[A-Z]{4}-[0-9]{6}-[A-Z]{1}-[0-9]{1}$
-        recipientIndex:
-          type: integer
+          minLength: 1
+        pathTokens:
+          type: array
+            items:
+              type: string
+            description: Identificativo id path
         notificationCost:
           type: integer
           format: int32
@@ -200,35 +292,26 @@ components:
     ############################################################################################
     ###                             PARAMETRI GENERAZIONE F24                                ###
     ############################################################################################
-    pathIun:
+    pathSetId:
       description: >-
-        Identificativo Univoco Notifica
-      name: iun
+        Identificativo Univoco Set di Metadati
+      name: setId
       in: path
       required: true
       schema:
         type: string
-        minLength: 25
-        maxLength: 25
-        pattern: ^[A-Z]{4}-[A-Z]{4}-[A-Z]{4}-[0-9]{6}-[A-Z]{1}-[0-9]{1}$
+        minLength: 1
 
-    pathRecipientIndex:
+    pathPathTokens:
+      in: query
+      name: pathTokens
+      type: array
+      collectionFormat: multi
+      items:
+        type: string
       description: >-
-        Identificativo recipientIndex
-      name: recipientIndex
-      in: path
-      required: true
-      schema:
-        type: integer
+        Identificativo id path
 
-    pathAttachmentIndex:
-      description: >-
-        Identificativo attachmentIndex
-      name: attachmentIndex
-      in: path
-      required: true
-      schema:
-        type: integer
 
     pathRequestId:
       description: >-
