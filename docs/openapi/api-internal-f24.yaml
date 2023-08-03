@@ -76,7 +76,7 @@ paths:
              schema:
                $ref: '#/components/schemas/Problem'
   /f24/pdf/{setId}:
-    post:
+    get:
       tags:
         - f-24-controller
       description: Genera (o recupera dalla cache) un documento PDF relativo all'F24 richiesto e ritorna il presigned-url per poterlo scaricare, se disponibile. >-
@@ -85,13 +85,8 @@ paths:
       operationId: generatePDF
       parameters:
         - $ref: '#/components/parameters/pathSetId'
-        - $ref: '#/components/parameters/pathPathTokens'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/GenerateF24Request"
+        - $ref: '#/components/parameters/queryCost'
+        - $ref: '#/components/parameters/queryPathTokens'
       responses:
         "200":
           description: PDF for Standard form successfully generated.
@@ -228,24 +223,6 @@ components:
           example: ABCD-HILM-YKWX-202202-1
         f24Items:
           $ref: './schemas-f24.yaml#/components/schemas/F24ItemArray'
-    GenerateF24Request:
-      type: object
-      required:
-        - setId
-      properties:
-        setId:
-          type: string
-          minLength: 1
-        pathTokens:
-          type: array
-            items:
-              type: string
-            description: Identificativo id path
-        notificationCost:
-          type: integer
-          format: int32
-          nullable: true
-          description: notification cost in eurocent to include, obbligatorio se i documenti prevedono l'aggiornamento con il costo della notifica.
     PrepareF24Request:
       type: object
       required:
@@ -262,9 +239,9 @@ components:
           minLength: 1
         pathTokens:
           type: array
-            items:
-              type: string
-            description: Identificativo id path
+          items:
+            type: string
+          description: Identificativo id path
         notificationCost:
           type: integer
           format: int32
@@ -302,16 +279,24 @@ components:
         type: string
         minLength: 1
 
-    pathPathTokens:
+    queryPathTokens:
       in: query
       name: pathTokens
-      type: array
-      collectionFormat: multi
-      items:
-        type: string
-      description: >-
-        Identificativo id path
+      description: Identificativo id query
+      schema:
+        type: array
+        items:
+          type: string
 
+
+    queryCost:
+      description: >-
+        Costo della notifica in eurocent
+      name: cost
+      in: query
+      required: false
+      schema:
+        type: integer
 
     pathRequestId:
       description: >-
