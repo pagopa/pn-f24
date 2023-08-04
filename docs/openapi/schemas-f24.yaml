@@ -2,6 +2,7 @@ components:
   schemas:
     F24Metadata:
       type: object
+      description: è richiesto uno e uno solo tra le propeties f24Standard, f24Simplified, f24Excise, f24Elid
       properties:
         f24Standard:
           nullable: true
