@@ -14,15 +14,17 @@ servers:
   - url: https://localhost:8080
     description: Generated server url
 tags:
-  - name: f-24-controller
-  - name: status
+  - name: F24Controller
+  - name: HealthCheck
 paths:
-  /f24/savemeta/{setId}:
+  /f24-private/metadata/{setId}:
+    parameters:
+      - $ref: '#/components/parameters/headerCxId'
     put:
       tags:
-        - f-24-controller
+        - F24Controller
       description: Salva tutti i metadati per uno SetId per scopi futuri
-      operationId: savemeta
+      operationId: saveMetadata
       parameters:
         - $ref: '#/components/parameters/pathSetId'
       requestBody:
@@ -32,10 +34,20 @@ paths:
              schema:
                $ref: "#/components/schemas/SaveF24Request"
       responses:
-        "204":
-          description: elaborazione completata positivamente
+        "202":
+          description: Richiesta accettata, in corso di elaborazione
+          content:
+           application/problem+json:
+             schema:
+               $ref: '#/components/schemas/RequestAccepted'
         "400":
           description: Bad request
+          content:
+           application/problem+json:
+             schema:
+               $ref: '#/components/schemas/Problem'
+        "409":
+          description: put with an already used _setId_ and different content
           content:
            application/problem+json:
              schema:
@@ -47,19 +59,91 @@ paths:
              schema:
                $ref: '#/components/schemas/Problem'
 
+  /f24-private/metadata/{setId}/actions/validation:
+    parameters:
+      - $ref: '#/components/parameters/headerCxId'
+    post:
+      tags:
+        - F24Controller
+      description: >-
+        Attiva l'azione di validazione dei metadati, la risposta sarà asincrona
+      operationId: validateMetadata
+      parameters:
+        - $ref: '#/components/parameters/pathSetId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ValidateF24Request"
+      responses:
+        "202":
+          description: Richiesta accettata, in corso di elaborazione
+          content:
+           application/problem+json:
+             schema:
+               $ref: '#/components/schemas/RequestAccepted'
+        "400":
+          description: Bad request
+          content:
+           application/problem+json:
+             schema:
+               $ref: '#/components/schemas/Problem'
+        "404":
+          description: _setId_ not found
+          content:
+           application/problem+json:
+             schema:
+               $ref: '#/components/schemas/Problem'
+        "500":
+         description: Internal error
+         content:
+           application/problem+json:
+             schema:
+               $ref: '#/components/schemas/Problem'
+      
+      callbacks:
+        sendEventToEventBridge:
+          arnEventBus:
+            post:
+              summary: Eventi avanzamento spediti ad EventBridge
+              requestBody:
+                content:
+                  application/json:
+                    schema:
+                      maxItems: 1000
+                      minItems: 1
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/AsyncF24Event'
+                required: true
+              responses:
+                default:
+                  description: "Error processing the update, the update must be re-sended"
+                "200":
+                  description: Update correctly received
+                "400":
+                  description: Malformed update status
 
-  /f24/pdf/{setId}:
+
+  /f24-private/pdf/{setId}:
+    parameters:
+      - $ref: '#/components/parameters/headerCxId'
     get:
       tags:
-        - f-24-controller
-      description: Genera (o recupera dalla cache) un documento PDF relativo all'F24 richiesto e ritorna il presigned-url per poterlo scaricare, se disponibile. >-
-        Sebbene la generazione e il salvataggio del PDF sia asincrono, il metodo aspetta un tempo configurabile per provare a tornare il presignedUrl con un'unica invocazione. >-
-        Se comunque a valle dell'attesa, il documento non è disponibile, popola il valore di retryAfter.
+        - F24Controller
+      description: >-
+        Genera (o recupera dalla cache) un documento PDF relativo all'F24 richiesto e ritorna il 
+        presigned-url per poterlo scaricare, se disponibile. 
+        Sebbene la generazione e il salvataggio del PDF sia asincrono, il metodo aspetta un tempo
+        configurabile per provare a tornare il presignedUrl con un'unica invocazione.
+        Se comunque a valle dell'attesa, il documento non è disponibile, popola il valore di 
+        _retryAfter_.
       operationId: generatePDF
       parameters:
         - $ref: '#/components/parameters/pathSetId'
-        - $ref: '#/components/parameters/queryCost'
         - $ref: '#/components/parameters/queryPathTokens'
+        - $ref: '#/components/parameters/queryCost'
       responses:
         "200":
           description: PDF for Standard form successfully generated.
@@ -85,67 +169,75 @@ paths:
            application/problem+json:
              schema:
                $ref: '#/components/schemas/Problem'
-  /f24/prepare/{requestId}:
+  
+  /f24-private/prepare/{requestId}:
+    parameters:
+      - $ref: '#/components/parameters/headerCxId'
     post:
-     tags:
-       - f-24-controller
-     description:  Genera (o recupera dalla cache) una serie di documenti PDF F24,
-     operationId: preparePDF
-     parameters:
-       - $ref: '#/components/parameters/pathRequestId'
-     requestBody:
-       required: true
-       content:
-         application/json:
-             schema:
-               $ref: "#/components/schemas/PrepareF24Request"
-     responses:
-       "204":
-         description: Successful
-       "400":
-         description: Bad request
-         content:
-          application/problem+json:
-            schema:
-              $ref: '#/components/schemas/Problem'
-       "404":
-         description: Not found
-         content:
-           application/problem+json:
-             schema:
-               $ref: '#/components/schemas/Problem'
-       "500":
-        description: Internal error
+      tags:
+       - F24Controller
+      description:  Genera (o recupera dalla cache) una serie di documenti PDF F24,
+      operationId: preparePDF
+      parameters:
+        - $ref: '#/components/parameters/pathRequestId'
+      requestBody:
+        required: true
         content:
-          application/problem+json:
+          application/json:
             schema:
-              $ref: '#/components/schemas/Problem'
-     callbacks:
-       f24Updates:
-         nome_coda_risposta:
-           post:
-             summary: Eventi avanzamento spediti ad SQS
-             requestBody:
-               content:
-                 application/json:
-                   schema:
-                     maxItems: 1000
-                     minItems: 1
-                     type: array
-                     items:
-                       $ref: '#/components/schemas/F24Update'
-               required: true
-             responses:
-               default:
-                 description: "Error processing the update, the update must be re-sended"
-               "200":
-                 description: Update correctly received
-               "400":
-                 description: Malformed update status
+              $ref: "#/components/schemas/PrepareF24Request"
+      responses:
+        "202":
+          description: Richiesta accettata, in corso di elaborazione
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/RequestAccepted'
+        "400":
+          description: Bad request
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        "404":
+          description: Not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        "500":
+          description: Internal error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+    
+      callbacks:
+        sendEventToEventBridge:
+          arnEventBus:
+            post:
+              summary: Eventi avanzamento spediti ad EventBridge
+              requestBody:
+                content:
+                  application/json:
+                    schema:
+                      maxItems: 1000
+                      minItems: 1
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/AsyncF24Event'
+                required: true
+              responses:
+                default:
+                  description: "Error processing the update, the update must be re-sended"
+                "200":
+                  description: Update correctly received
+                "400":
+                  description: Malformed update status
   /status:
     get:
       tags:
-        - status
+        - HealthCheck
       operationId: status
       description: Get resulting status.
       responses:
@@ -158,30 +250,24 @@ paths:
              schema:
                $ref: '#/components/schemas/Problem'
         "500":
-         description: Internal error
-         content:
-           application/problem+json:
-             schema:
-               $ref: '#/components/schemas/Problem'
+          description: Internal error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
 
 
 components:
+  
   schemas:
-    F24Response:
-      type: object
-      properties:
-        url:
-          type: string
-          description: >-
-            URL per il download del contenuto del documento.
-            example: 'https://preloadpn.aws.amazon.......'
-        retryAfter:
-          type: number
-          description: >-
-            Stima del numero di secondi da aspettare prima che il contenuto del
-            documento sia scaricabile.
+
+    ############################################################################################
+    ###              RICHIESTE e RISPOSTE SALVATAGGIO / VALIDAZIONE METADATI F24             ###
+    ############################################################################################
+    
     SaveF24Request:
       type: object
+      additionalProperties: false
       required:
         - setId
       properties:
@@ -189,11 +275,120 @@ components:
           type: string
           description: Identificativo SetId della richiesta. E' lo stesso usato nel path
             del metodo
-          example: ABCD-HILM-YKWX-202202-1
+          example: IUN_ABCD-HILM-YKWX-202202-1
         f24Items:
           $ref: './schemas-f24.yaml#/components/schemas/F24ItemArray'
+    
+    ValidateF24Request:
+      type: object
+      additionalProperties: false
+      required:
+        - setId
+      properties:
+        setId:
+          type: string
+          description: Identificativo SetId della richiesta. E' lo stesso usato nel path
+            del metodo
+          example: IUN_ABCD-HILM-YKWX-202202-1
+        
+    
+    RequestAccepted:
+      type: object
+      additionalProperties: false
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          description: >-
+            Always "OK"
+        description:
+          type: string
+          nullable: true
+          description: >-
+            Human readable status description used for debugging, not for application users.
+            For example "Success!"
+    
+    MetadataValidationEndEvent:
+      type: object
+      description: Il risultato di una validazione F24
+      additionalProperties: false
+      required:
+        - setId
+        - status
+      properties:
+        setId:
+          type: string
+          description: Identificativo SetId della richiesta. E' lo stesso usato nel path
+            del metodo
+          example: IUN_ABCD-HILM-YKWX-202202-1
+        status:
+          type: string
+          description: >-
+            - OK se tutto va bene
+            - KO in caso di problemi
+        errors:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/ValidationIssue'
+
+    ValidationIssue:
+      type: object
+      description: Un errore di validazione dei metadati F24
+      additionalProperties: false
+      required:
+        - code
+      properties:
+        code:
+          description: Internal code of the error, in human-readable format
+          example: PN_PARAMETER_TOO_LONG | PN_PARAMETER_TOO_SHORT | PN_DUPLICATE_ENTRY | etc...
+          type: string
+        element:
+          description: Parameter or request body field name for validation error
+          example: 'id1.id2.f24semplified.field1'
+          type: string
+        detail:
+          description: A human readable explanation specific to this occurrence of the problem.
+          example: Parameter not valid
+          maxLength: 1024
+          type: string
+      
+          
+
+
+    ############################################################################################
+    ###                    RISPOSTA GENERAZIONE PSEUDO SINCRONA DI UN PDF                    ###
+    ############################################################################################
+      
+    F24Response:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      maxProperties: 1
+      properties:
+        url:
+          type: string
+          nullable: true
+          description: >-
+            URL per il download del contenuto del documento.
+            example: 'https://preloadpn.aws.amazon.......'
+        retryAfter:
+          type: number
+          format: int32
+          nullable: true
+          description: >-
+            Stima del numero di secondi da aspettare prima che il contenuto del
+            documento sia scaricabile.
+    
+    
+    ############################################################################################
+    ###         RICHIESTA e RISPOSTA GENERAZIONE ASINCRONA DI UN SOTTO-INSIEME DI PDF        ###
+    ############################################################################################
+    
     PrepareF24Request:
       type: object
+      additionalProperties: false
       required:
         - setId
         - requestId
@@ -215,26 +410,111 @@ components:
           type: integer
           format: int32
           nullable: true
-          description: notification cost in eurocent to include, obbligatorio se i documenti prevedono l'aggiornamento con il costo della notifica.
-    F24Update:
+          description: >-
+            notification cost in eurocent to include, obbligatorio se i documenti prevedono 
+            l'aggiornamento con il costo della notifica.
+    
+    PDFSetReadyEvent:
       type: object
+      description: >-
+        Body del messaggio inviato ad event bridge per indicare che un insieme di PDF è 
+        stato generato
+      additionalProperties: false
+      required:
+        - requestId
+        - status
+        - generatedPdfsUrls
       properties:
         requestId:
           type: string
-          description: Identificativo della richiesta. E' usato per correlare la risposta alla richiesta
+          description: >- 
+            Identificativo della richiesta. E' usato per correlare la risposta alla richiesta
           example: ABCD-HILM-YKWX-202202-1_rec0_try1
-        paymentUrls:
+        status:
+          type: string
+          description: >-
+            - OK se tutto va bene
+            - KO in caso di problemi
+        generatedPdfsUrls:
           type: array
-          description: Array di URL di safestorage. preserva l'ordine con cui sono letti i metadati
+          description: >-
+            Array di elementi di cui ognuno riporta il risultato della generazione di un 
+            file PDF a partire dai metadati di un F24
+          minItems: 1
+          maxItems: 9999
           items:
-           type: string
-           description: URL di safe storage
-      description: oggetto usato per ricevere un evento nella coda.
+           $ref: '#/components/schemas/PDFSetReadyEventItem'
+    
+    PDFSetReadyEventItem:
+      type: object
+      description: >-
+        Uri relativo a SafeStorage o indicazione dell'errore avvenuto
+      additionalProperties: false
+      minProperties: 2
+      maxProperties: 2
+      required:
+        - pathTokens
+      properties:
+        pathTokens:
+          description: identificativo del 
+          type: array
+          items:
+            type: string
+        uri:
+          type: string
+          description: riferimento al file caricato su safestorage 
+        errorCode:
+          type: string
+          description: >-
+            codice di errore _man mano che si trovano casi aggiungerli alla lista seguente_
+            - __F4__ : sono rimasto basito (non è serio)
+            - __BO__ : mi è andata una bruschetta nell'occhio (non è serio)
+
+      
+    ############################################################################################
+    ###                      BODY DELL'EVENTO DA INVIARE A EVENT BRIDGE                      ###
+    ############################################################################################
+    AsyncF24Event:
+      type: object
+      description: >-
+        Body del messaggio inviato ad event bridge. 
+        Andrà valorizzata solo una delle due property:
+        - Se __pdfSetReady__ è valorizzato allora l'evento sarà la risposta a una richiesta di
+          generazione di un insieme di PDF ( _preparePDF_ ).
+        - Se __metadataValidationDone__ è valorizzato allora l'evento sarà la risposta a una richiesta di validazione
+          ( _validateMetadata_ ).
+      minProperties: 2
+      maxProperties: 2
+      required:
+        - cxId
+      properties:
+        cxId:
+          type: string
+          minLength: 1
+          pattern: /[A-Za-z0-9]+/
+        pdfSetReady:
+          $ref: '#/components/schemas/PDFSetReadyEvent'
+        metadataValidationEnd:
+          $ref: '#/components/schemas/MetadataValidationEndEvent'
+
+    
     Problem:
       $ref: './remote-refs.yaml#/components/schemas/Problem'
 
   parameters:
-
+    
+    ############################################################################################
+    ###                                 PARAMETRI TECNICI                                    ###
+    ############################################################################################
+    headerCxId:
+      name: x-pagopa-f24-cx-id
+      in: header
+      required: true
+      schema:
+        type: string
+        pattern: /[A-Za-z0-9]+/
+  
+  
     ############################################################################################
     ###                             PARAMETRI GENERAZIONE F24                                ###
     ############################################################################################
@@ -251,7 +531,8 @@ components:
     queryPathTokens:
       in: query
       name: pathTokens
-      description: Identificativo id query
+      description: Identificativi che determinano un solo F24 all'interno dell'insieme
+      required: true
       schema:
         type: array
         items:
@@ -260,12 +541,13 @@ components:
 
     queryCost:
       description: >-
-        Costo della notifica in eurocent
+        Costo delle spese di notificazione in eurocent
       name: cost
       in: query
       required: false
       schema:
         type: integer
+        format: int32
 
     pathRequestId:
       description: >-
