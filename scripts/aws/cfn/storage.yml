@@ -1,0 +1,140 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Some storage with input and output
+
+Parameters:
+  ProjectName:
+    Type: String
+    Description: Nome dell'ambiente destinazione
+
+  # Unused but required by CD pipeline
+  MicroserviceNumber:
+    Type: Number
+    Description: An unique number that identify the microservice inside the ECS cluster.
+
+  # Unused but required by CD pipeline
+  TemplateBucketBaseUrl:
+    Type: String
+    Description: URL da cui caricare i frammenti di template di infrastruttura
+
+  Version:
+    Type: String
+    Description: 'keep track of used projects commitIds'
+
+  CdcKinesisSourceStreamArn:
+    Type: String
+    Description: 'Where to send CDC'
+
+  LogsKinesisSourceStreamArn:
+    Type: String
+    Description: 'Where to send Logs'
+
+  AlarmSNSTopicName:
+    Type: String
+    Description: 'Topic alarm'
+
+  LogRetention:
+    Type: Number
+    Default: 14
+
+Resources:
+
+  # Dynamo Table
+  F24Table:
+    Type: AWS::DynamoDB::Table
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain        
+    Properties:
+      TableName: !Sub '${ProjectName}-f24'
+      AttributeDefinitions:
+        - AttributeName: "pk"
+          AttributeType: "S"
+        - AttributeName: "sk"
+          AttributeType: "S"
+        - AttributeName: "fileKey"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "pk"
+          KeyType: "HASH"
+        - AttributeName: "pk"
+          KeyType: "RANGE"
+      GlobalSecondaryIndexes:
+        - IndexName: "GSI-fileKey"
+          KeySchema:
+            - AttributeName: "fileKey"
+              KeyType: "HASH"
+          Projection:
+            ProjectionType: "ALL"
+      BillingMode: "PAY_PER_REQUEST"
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      KinesisStreamSpecification:
+        StreamArn: !Ref CdcKinesisSourceStreamArn
+      StreamSpecification:
+        StreamViewType: NEW_IMAGE
+
+  # Coda per inviare eventi di asseverazione, consumata da lambda per salvataggio su bucket s3
+  # NB: usati i valori di default per: DelaySeconds, DeadLetterQueueName, MessageRetentionPeriod, MaxReceiveCount, DeadLetterMessageRetentionPeriod,
+  # QueueOldestAgeLimit
+  PnDeliveryAsseverationQueue:
+    Type: AWS::CloudFormation::Stack
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain    
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/sqs-queue.yaml"
+      Parameters:
+        QueueName: !Sub '${ProjectName}-notificationCostServiceCalls'
+        HasDLQ:  "true"
+        AlarmSNSTopicName: !Ref AlarmSNSTopicName
+        VisibilityTimeout: 900 # the maximum lambda timeout
+        QueueHasAlarm: "false"
+
+  PnF24LogGroup:
+    Type: AWS::CloudFormation::Stack
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain    
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/log-group.yaml"
+      Parameters:
+        LogGroupName: !Sub '${ProjectName}-f24'
+        LogsKinesisSourceStreamArn: !Ref LogsKinesisSourceStreamArn
+        LogGroupRetention: !Ref LogRetention
+
+
+Outputs:
+
+  # Dynamo table
+  F24DynamoTableName:
+    Description: Name of dynamodb table containing notifications
+    Value: !Ref F24Table
+  F24DynamoTableArn:
+    Description: ARN of dynamodb table containing notifications
+    Value: !Sub '${F24DynamoTableName.Arn}'
+
+
+  # TODO Definire code SQS
+  # Delivery Asseveration Queue
+  PnDeliveryAsseverationQueueName:
+    Value: !GetAtt PnDeliveryAsseverationQueue.Outputs.QueueName
+    Description: notificationCostServiceCalls queue name
+  PnDeliveryAsseverationQueueARN:
+    Value: !GetAtt PnDeliveryAsseverationQueue.Outputs.QueueARN
+    Description: notificationCostServiceCalls queue arn
+  PnDeliveryAsseverationDLQName:
+    Value: !GetAtt PnDeliveryAsseverationQueue.Outputs.DeadLetterQueueName
+    Description: notificationCostServiceCalls-DLQ queue name
+  PnDeliveryAsseverationDLQURL:
+    Value: !GetAtt PnDeliveryAsseverationQueue.Outputs.DeadLetterQueueURL
+    Description: notificationCostServiceCalls-DLQ queue url
+  PnDeliveryAsseverationDLQARN:
+    Value: !GetAtt PnDeliveryAsseverationQueue.Outputs.DeadLetterQueueARN
+    Description: notificationCostServiceCalls-DLQ queue ARN
+  PnDeliveryAsseverationDLQAlarmARN:
+    Value: !GetAtt PnDeliveryAsseverationQueue.Outputs.SqsDLQAlarmArn
+    Description: notificationCostServiceCalls-DLQ alarm ARN
+  PnDeliveryAsseverationAgeAlarmARN:
+    Value: !GetAtt PnDeliveryAsseverationQueue.Outputs.SqsAgeAlarmArn  
+    Description: notificationCostServiceCalls-DLQ age alarm ARN
+  
+  # Log group exports
+  EcsLogGroup:
+    Value: !GetAtt   PnF24LogGroup.Outputs.LogGroupName
