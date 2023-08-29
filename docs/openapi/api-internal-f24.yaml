@@ -285,9 +285,6 @@ components:
         - fileKey
       type: object
       properties:
-        applyCost:
-          type: boolean
-          description: flag di applyCost come specificato nel NotificationPaymentInfo in fase di creazione della notifica.
         fileKey:
           type: string
           description: filekey contenente i metadati per l'elemento
