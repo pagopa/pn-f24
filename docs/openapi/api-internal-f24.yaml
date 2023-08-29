@@ -277,7 +277,31 @@ components:
             del metodo
           example: IUN_ABCD-HILM-YKWX-202202-1
         f24Items:
-          $ref: './schemas-f24.yaml#/components/schemas/F24ItemArray'
+          $ref: '#/components/schemas/SaveF24ItemArray'
+
+    SaveF24Item:
+      required:
+        - pathTokens
+        - fileKey
+      type: object
+      properties:
+        applyCost:
+          type: boolean
+          description: flag di applyCost come specificato nel NotificationPaymentInfo in fase di creazione della notifica.
+        fileKey:
+          type: string
+          description: filekey contenente i metadati per l'elemento
+        pathTokens:
+          type: array
+          description: Lista di id da usare per costruire l'alberatura che identifica il singolo metadato
+          items:
+            type: string
+            description: id
+
+    SaveF24ItemArray:
+      type: array
+      items:
+        $ref: "#/components/schemas/SaveF24Item"
     
     ValidateF24Request:
       type: object
