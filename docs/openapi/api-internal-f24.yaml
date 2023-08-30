@@ -291,6 +291,10 @@ components:
         fileKey:
           type: string
           description: filekey contenente i metadati per l'elemento
+        sha256:
+          type: string
+          description: >-
+            SHA256 del contenuto del file.
         pathTokens:
           type: array
           description: Lista di id da usare per costruire l'alberatura che identifica il singolo metadato
