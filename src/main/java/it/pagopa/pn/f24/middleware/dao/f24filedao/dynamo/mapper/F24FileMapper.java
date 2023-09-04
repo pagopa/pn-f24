@@ -1,7 +1,7 @@
-package it.pagopa.pn.f24.middleware.dao.f24metadatadao.dynamo.mapper;
+package it.pagopa.pn.f24.middleware.dao.f24filedao.dynamo.mapper;
 
 import it.pagopa.pn.f24.dto.F24File;
-import it.pagopa.pn.f24.middleware.dao.f24metadatadao.dynamo.entity.F24FileEntity;
+import it.pagopa.pn.f24.middleware.dao.f24filedao.dynamo.entity.F24FileEntity;
 
 public class F24FileMapper {
 

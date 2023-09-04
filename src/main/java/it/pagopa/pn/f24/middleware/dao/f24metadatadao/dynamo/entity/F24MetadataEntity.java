@@ -5,6 +5,7 @@ import lombok.*;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.*;
 
 import java.time.Instant;
+import java.util.Map;
 
 @Builder
 @Data
@@ -13,60 +14,31 @@ import java.time.Instant;
 @ToString
 @DynamoDbBean
 public class F24MetadataEntity {
-    public static final String FIELD_SET_ID = "setId";
-
-    public static final String FIELD_CX_ID = "cxId";
-
-    public static final String FIELD_PATH_TOKENS = "pathTokens";
-
-    public static final Boolean COL_APPLY_COST = false;
-
+    public static final String FIELD_PK = "pk";
     public static final String FIELD_STATUS = "status";
+    public static final String FIELD_FILE_KEYS = "fileKeys";
 
-    public static final String FIELD_FILEKEY = "fileKey";
-
-    public static final String FIELD_SHA256 = "sha256";
-
+    public static final String FIELD_SHA_256 = "sha256";
     public static final String FIELD_HAVE_TO_SEND_VALIDATION_EVENT = "haveToSendValidationEvent";
-
     public static final String FIELD_VALIDATION_EVENT_SENT = "validationEventSent";
-
     public static final String FIELD_CREATED = "created";
-
     public static final String FIELD_UPDATED = "updated";
 
-    public static final String FILE_KEY_GSI = "fileKey-index";
+    public static final String FIELD_VALIDATION_RESULT = "validationResult";
 
     @Getter(onMethod=@__({
             @DynamoDbPartitionKey,
-            @DynamoDbAttribute(FIELD_SET_ID)
+            @DynamoDbAttribute(FIELD_PK)
     }))
-    private String setId;
-    @Getter(onMethod=@__({
-            @DynamoDbSortKey,
-            @DynamoDbAttribute(FIELD_CX_ID)
-    }))
-    private String PathTokens;
-    @Getter(onMethod=@__({
-            @DynamoDbSortKey,
-            @DynamoDbAttribute(FIELD_PATH_TOKENS)
-    }))
-    private String cxId;
-    @Getter(onMethod=@__({
-            @DynamoDbAttribute(FIELD_SET_ID)
-    }))
-    private Boolean applyCost;
+    private String pk;
     @Getter(onMethod=@__({
             @DynamoDbAttribute(FIELD_STATUS),
             @DynamoDbConvertedBy(F24MetadataStatusEntityConverter.class)
     }))
     private F24MetadataStatusEntity status;
-    @Getter(onMethod=@__({
-            @DynamoDbAttribute(FIELD_FILEKEY),
-            @DynamoDbSecondaryPartitionKey(indexNames = FILE_KEY_GSI)
-    }))
-    private String fileKey;
-    @Getter(onMethod=@__({@DynamoDbAttribute(FIELD_SHA256)}))
+    @Getter(onMethod=@__({@DynamoDbAttribute(FIELD_FILE_KEYS)}))
+    private Map<String, F24MetadataItemEntity> fileKeys;
+    @Getter(onMethod=@__({@DynamoDbAttribute(FIELD_SHA_256)}))
     private String sha256;
     @Getter(onMethod=@__({@DynamoDbAttribute(FIELD_HAVE_TO_SEND_VALIDATION_EVENT)}))
     private Boolean haveToSendValidationEvent;

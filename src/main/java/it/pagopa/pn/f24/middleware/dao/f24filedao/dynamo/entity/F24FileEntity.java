@@ -1,4 +1,4 @@
-package it.pagopa.pn.f24.middleware.dao.f24metadatadao.dynamo.entity;
+package it.pagopa.pn.f24.middleware.dao.f24filedao.dynamo.entity;
 
 import lombok.*;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.*;
@@ -12,16 +12,15 @@ import java.time.LocalDateTime;
 @ToString
 @DynamoDbBean
 public class F24FileEntity {
-    public static final String PK = "pk";
+    public static final String COL_PK = "pk";
 
     public static final String COL_SK = "sk";
 
     public static final String COL_FILE_KEY = "fileKey";
 
-
     public static final String COL_STATUS = "status";
 
-    public static final String SK = "created";
+    public static final String COL_CREATED = "created";
 
     public static final String COL_REQUEST_ID = "requestId";
 
@@ -30,7 +29,7 @@ public class F24FileEntity {
     public static final String COL_UPDATED = "updated";
 
 
-    public static final String GSI_S = "sk-index";
+    public static final String SK_PK_GSI = "sk-pk-gsi";
 
     public static final String GSI_R = "requestId-index";
 
@@ -39,19 +38,19 @@ public class F24FileEntity {
 
     @Getter(onMethod = @__({
             @DynamoDbPartitionKey,
-            @DynamoDbAttribute(PK)
+            @DynamoDbAttribute(COL_PK)
     }))
     private String pk;
 
     @Getter(onMethod = @__({
-            @DynamoDbAttribute(SK),
+            @DynamoDbAttribute(COL_CREATED),
             @DynamoDbSortKey
     }))
     private String created;
 
     @Getter(onMethod = @__({
             @DynamoDbAttribute(COL_SK),
-            @DynamoDbSecondaryPartitionKey(indexNames = GSI_S)
+            @DynamoDbSecondaryPartitionKey(indexNames = SK_PK_GSI)
     }))
     private String sk;
 

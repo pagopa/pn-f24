@@ -3,15 +3,13 @@ package it.pagopa.pn.f24.dto;
 import lombok.Data;
 
 import java.time.Instant;
+import java.util.Map;
 
 @Data
 public class F24Metadata {
-    private String setId;
-    private String pathTokens;
-    private String cxId;
-    private Boolean applyCost;
+    private String pk;
     private F24MetadataStatus status;
-    private String fileKey;
+    private Map<String, F24MetadataItem> fileKeys;
     private String sha256;
     private Boolean haveToSendValidationEvent;
     private Boolean validationEventSent;

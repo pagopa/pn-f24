@@ -8,10 +8,6 @@ public interface F24MetadataDao {
 
     Mono<F24Metadata> getItem(String setId, String cxId, boolean isConsistentRead);
 
-    Mono<F24Metadata> getItemByFileKey(String fileKey);
-
-    Mono<F24Metadata> getItemByPathToken(String setId, String sk);
-
     Mono<Void> putItem(F24Metadata f24Metadata);
 
     Mono<F24Metadata> updateItem(F24Metadata f24Metadata);
