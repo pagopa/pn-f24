@@ -7,7 +7,9 @@ import java.time.Instant;
 @Data
 public class F24Metadata {
     private String setId;
+    private String pathTokens;
     private String cxId;
+    private Boolean applyCost;
     private F24MetadataStatus status;
     private String fileKey;
     private String sha256;

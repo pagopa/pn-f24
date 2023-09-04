@@ -5,7 +5,7 @@ import it.pagopa.pn.f24.dto.F24Metadata;
 import it.pagopa.pn.f24.dto.F24MetadataStatus;
 import it.pagopa.pn.f24.dto.safestorage.FileCreationResponseInt;
 import it.pagopa.pn.f24.dto.safestorage.FileCreationWithContentRequest;
-import it.pagopa.pn.f24.generated.openapi.server.v1.dto.F24Item;
+import it.pagopa.pn.f24.dto.metadata.F24Item;
 import it.pagopa.pn.f24.middleware.dao.f24metadatadao.F24MetadataDao;
 import it.pagopa.pn.f24.middleware.queue.producer.InternalMetadataEvent;
 import it.pagopa.pn.f24.service.SafeStorageService;

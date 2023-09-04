@@ -63,6 +63,29 @@ public class F24MetadataRepositoryImpl implements F24MetadataDao {
                 .map(f24MetadataEntityPage -> F24MetadataMapper.entityToDto(f24MetadataEntityPage.items().get(0)));
     }
 
+    @Override
+    public Mono<F24Metadata> getItemByPathToken(String setId, String sk) {
+
+        Map<String, String> expressionNames = new HashMap<>();
+        expressionNames.put("#sk", "sk");
+
+        Map<String, AttributeValue> expressionValues = new HashMap<>();
+        expressionValues.put(":sk", AttributeValue.builder().s(sk).build());
+
+        QueryConditional queryConditional = QueryConditional.keyEqualTo(Key.builder()
+                .partitionValue(setId)
+                .build());
+
+        QueryEnhancedRequest queryEnhancedRequest = QueryEnhancedRequest.builder()
+                .queryConditional(queryConditional)
+                .filterExpression(expressionBuilder("(#sk = :sk)", expressionValues, expressionNames))
+                .scanIndexForward(false)
+                .build();
+        //  TODO .get(0) ?!
+        return Mono.from(table.query(queryEnhancedRequest))
+                .map(f24MetadataEntityPage -> F24MetadataMapper.entityToDto(f24MetadataEntityPage.items().get(0)));
+    }
+
     public Mono<Void> putItem(F24Metadata f24Metadata) {
         return Mono.fromFuture(table.putItem(F24MetadataMapper.dtoToEntity(f24Metadata)));
     }

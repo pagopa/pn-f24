@@ -17,6 +17,10 @@ public class F24MetadataEntity {
 
     public static final String FIELD_CX_ID = "cxId";
 
+    public static final String FIELD_PATH_TOKENS = "pathTokens";
+
+    public static final Boolean COL_APPLY_COST = false;
+
     public static final String FIELD_STATUS = "status";
 
     public static final String FIELD_FILEKEY = "fileKey";
@@ -42,8 +46,16 @@ public class F24MetadataEntity {
             @DynamoDbSortKey,
             @DynamoDbAttribute(FIELD_CX_ID)
     }))
+    private String PathTokens;
+    @Getter(onMethod=@__({
+            @DynamoDbSortKey,
+            @DynamoDbAttribute(FIELD_PATH_TOKENS)
+    }))
     private String cxId;
-
+    @Getter(onMethod=@__({
+            @DynamoDbAttribute(FIELD_SET_ID)
+    }))
+    private Boolean applyCost;
     @Getter(onMethod=@__({
             @DynamoDbAttribute(FIELD_STATUS),
             @DynamoDbConvertedBy(F24MetadataStatusEntityConverter.class)
