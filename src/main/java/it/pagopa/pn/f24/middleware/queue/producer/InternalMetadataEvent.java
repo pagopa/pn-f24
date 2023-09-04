@@ -2,7 +2,7 @@ package it.pagopa.pn.f24.middleware.queue.producer;
 
 import it.pagopa.pn.api.dto.events.GenericEvent;
 import it.pagopa.pn.api.dto.events.GenericEventHeader;
-import it.pagopa.pn.f24.generated.openapi.server.v1.dto.F24Item;
+import it.pagopa.pn.f24.dto.metadata.F24Item;
 import lombok.*;
 
 import java.util.List;
@@ -17,7 +17,7 @@ public class InternalMetadataEvent implements GenericEvent<GenericEventHeader, I
     private GenericEventHeader header;
 
     private Payload payload;
-
+//todo check if serve ancora
     @NoArgsConstructor
     @AllArgsConstructor
     @Getter

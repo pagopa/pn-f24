@@ -37,14 +37,47 @@ Parameters:
     Default: 14
 
 Resources:
+  # Dynamo Table for F24File
+  F24MetadataTable:
+    Type: AWS::DynamoDB::Table
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+    Properties:
+      TableName: !Sub '${ProjectName}-f24Metadata'
+      AttributeDefinitions:
+        - AttributeName: "pk"
+          AttributeType: "S"
+        - AttributeName: "metadata"
+          AttributeType: "S"
+        - AttributeName: "status"
+          AttributeType: "S"
+        - AttributeName: "haveToSendValidationEvent"
+          AttributeType: "S"
+        - AttributeName: "validationEventSended"
+          AttributeType: "S"
+        - AttributeName: "created"
+          AttributeType: "S"
+        - AttributeName: "updated"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "pk"
+          KeyType: "HASH"
+      BillingMode: "PAY_PER_REQUEST"
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      KinesisStreamSpecification:
+        StreamArn: !Ref CdcKinesisSourceStreamArn
+      StreamSpecification:
+        StreamViewType: NEW_IMAGE
 
-  # Dynamo Table
-  F24Table:
+
+  # Dynamo Table for F24File
+  F24FileTable:
     Type: AWS::DynamoDB::Table
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain        
     Properties:
-      TableName: !Sub '${ProjectName}-f24'
+      TableName: !Sub '${ProjectName}-f24File'
       AttributeDefinitions:
         - AttributeName: "pk"
           AttributeType: "S"
@@ -52,15 +85,37 @@ Resources:
           AttributeType: "S"
         - AttributeName: "fileKey"
           AttributeType: "S"
+        - AttributeName: "created"
+          AttributeType: "S"
+        - AttributeName: "requestId"
+          AttributeType: "S"
+        - AttributeName: "status"
+          AttributeType: "S"
+        - AttributeName: "ttl"
+          AttributeType: "S"
+        - AttributeName: "updated"
+          AttributeType: "S"
       KeySchema:
         - AttributeName: "pk"
           KeyType: "HASH"
-        - AttributeName: "pk"
+        - AttributeName: "created"
           KeyType: "RANGE"
       GlobalSecondaryIndexes:
-        - IndexName: "GSI-fileKey"
+        - IndexName: "fileKey-index"
           KeySchema:
-            - AttributeName: "fileKey"
+            - AttributeName: fileKey
+              KeyType: "HASH"
+          Projection:
+            ProjectionType: "ALL"
+        - IndexName: "requestId-index"
+          KeySchema:
+            - AttributeName: requestId
+              KeyType: "HASH"
+          Projection:
+            ProjectionType: "ALL"
+        - IndexName: "sk-index"
+          KeySchema:
+            - AttributeName: sk
               KeyType: "HASH"
           Projection:
             ProjectionType: "ALL"

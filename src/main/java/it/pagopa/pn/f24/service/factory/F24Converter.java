@@ -1,6 +1,6 @@
 package it.pagopa.pn.f24.service.factory;
 
-import it.pagopa.pn.f24.generated.openapi.server.v1.dto.*;
+import it.pagopa.pn.f24.dto.metadata.*;
 import org.apache.commons.lang3.StringUtils;
 import org.f24.dto.form.F24Form;
 

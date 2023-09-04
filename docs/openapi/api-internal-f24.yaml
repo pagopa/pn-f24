@@ -30,34 +30,34 @@ paths:
       requestBody:
         required: true
         content:
-         application/json:
-             schema:
-               $ref: "#/components/schemas/SaveF24Request"
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SaveF24Request"
       responses:
         "202":
           description: Richiesta accettata, in corso di elaborazione
           content:
-           application/problem+json:
-             schema:
-               $ref: '#/components/schemas/RequestAccepted'
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/RequestAccepted'
         "400":
           description: Bad request
           content:
-           application/problem+json:
-             schema:
-               $ref: '#/components/schemas/Problem'
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
         "409":
           description: put with an already used _setId_ and different content
           content:
-           application/problem+json:
-             schema:
-               $ref: '#/components/schemas/Problem'
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
         "500":
-         description: Internal error
-         content:
-           application/problem+json:
-             schema:
-               $ref: '#/components/schemas/Problem'
+          description: Internal error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
 
   /f24-private/metadata/{setId}/actions/validation:
     parameters:
@@ -80,28 +80,28 @@ paths:
         "202":
           description: Richiesta accettata, in corso di elaborazione
           content:
-           application/problem+json:
-             schema:
-               $ref: '#/components/schemas/RequestAccepted'
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/RequestAccepted'
         "400":
           description: Bad request
           content:
-           application/problem+json:
-             schema:
-               $ref: '#/components/schemas/Problem'
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
         "404":
           description: _setId_ not found
           content:
-           application/problem+json:
-             schema:
-               $ref: '#/components/schemas/Problem'
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
         "500":
-         description: Internal error
-         content:
-           application/problem+json:
-             schema:
-               $ref: '#/components/schemas/Problem'
-      
+          description: Internal error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+
       callbacks:
         sendEventToEventBridge:
           arnEventBus:
@@ -154,9 +154,9 @@ paths:
         "400":
           description: Bad request
           content:
-           application/problem+json:
-             schema:
-               $ref: '#/components/schemas/Problem'
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
         "404":
           description: Not found
           content:
@@ -164,18 +164,18 @@ paths:
               schema:
                 $ref: '#/components/schemas/Problem'
         "500":
-         description: Internal error
-         content:
-           application/problem+json:
-             schema:
-               $ref: '#/components/schemas/Problem'
-  
+          description: Internal error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+
   /f24-private/prepare/{requestId}:
     parameters:
       - $ref: '#/components/parameters/headerCxId'
     post:
       tags:
-       - F24Controller
+        - F24Controller
       description:  Genera (o recupera dalla cache) una serie di documenti PDF F24,
       operationId: preparePDF
       parameters:
@@ -211,7 +211,7 @@ paths:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/Problem'
-    
+
       callbacks:
         sendEventToEventBridge:
           arnEventBus:
@@ -246,9 +246,9 @@ paths:
         "400":
           description: Bad request
           content:
-           application/problem+json:
-             schema:
-               $ref: '#/components/schemas/Problem'
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
         "500":
           description: Internal error
           content:
@@ -258,13 +258,13 @@ paths:
 
 
 components:
-  
+
   schemas:
 
     ############################################################################################
     ###              RICHIESTE e RISPOSTE SALVATAGGIO / VALIDAZIONE METADATI F24             ###
     ############################################################################################
-    
+
     SaveF24Request:
       type: object
       additionalProperties: false
@@ -277,8 +277,36 @@ components:
             del metodo
           example: IUN_ABCD-HILM-YKWX-202202-1
         f24Items:
-          $ref: './schemas-f24.yaml#/components/schemas/F24ItemArray'
-    
+          $ref: '#/components/schemas/SaveF24ItemArray'
+
+    SaveF24Item:
+      required:
+        - pathTokens
+        - fileKey
+      type: object
+      properties:
+        applyCost:
+          type: boolean
+          description: flag di applyCost come specificato nel NotificationPaymentInfo in fase di creazione della notifica.
+        fileKey:
+          type: string
+          description: filekey contenente i metadati per l'elemento
+        sha256:
+          type: string
+          description: >-
+            SHA256 del contenuto del file.
+        pathTokens:
+          type: array
+          description: Lista di id da usare per costruire l'alberatura che identifica il singolo metadato
+          items:
+            type: string
+            description: id
+
+    SaveF24ItemArray:
+      type: array
+      items:
+        $ref: "#/components/schemas/SaveF24Item"
+
     ValidateF24Request:
       type: object
       additionalProperties: false
@@ -290,8 +318,8 @@ components:
           description: Identificativo SetId della richiesta. E' lo stesso usato nel path
             del metodo
           example: IUN_ABCD-HILM-YKWX-202202-1
-        
-    
+
+
     RequestAccepted:
       type: object
       additionalProperties: false
@@ -308,7 +336,7 @@ components:
           description: >-
             Human readable status description used for debugging, not for application users.
             For example "Success!"
-    
+
     MetadataValidationEndEvent:
       type: object
       description: Il risultato di una validazione F24
@@ -353,14 +381,14 @@ components:
           example: Parameter not valid
           maxLength: 1024
           type: string
-      
-          
 
 
-    ############################################################################################
-    ###                    RISPOSTA GENERAZIONE PSEUDO SINCRONA DI UN PDF                    ###
-    ############################################################################################
-      
+
+
+      ############################################################################################
+      ###                    RISPOSTA GENERAZIONE PSEUDO SINCRONA DI UN PDF                    ###
+      ############################################################################################
+
     F24Response:
       type: object
       additionalProperties: false
@@ -381,11 +409,11 @@ components:
             Stima del numero di secondi da aspettare prima che il contenuto del
             documento sia scaricabile.
     
-    
+
     ############################################################################################
     ###         RICHIESTA e RISPOSTA GENERAZIONE ASINCRONA DI UN SOTTO-INSIEME DI PDF        ###
     ############################################################################################
-    
+
     PrepareF24Request:
       type: object
       additionalProperties: false
@@ -413,7 +441,7 @@ components:
           description: >-
             notification cost in eurocent to include, obbligatorio se i documenti prevedono 
             l'aggiornamento con il costo della notifica.
-    
+
     PDFSetReadyEvent:
       type: object
       description: >-
@@ -427,7 +455,7 @@ components:
       properties:
         requestId:
           type: string
-          description: >- 
+          description: >-
             Identificativo della richiesta. E' usato per correlare la risposta alla richiesta
           example: ABCD-HILM-YKWX-202202-1_rec0_try1
         status:
@@ -443,8 +471,8 @@ components:
           minItems: 1
           maxItems: 9999
           items:
-           $ref: '#/components/schemas/PDFSetReadyEventItem'
-    
+            $ref: '#/components/schemas/PDFSetReadyEventItem'
+
     PDFSetReadyEventItem:
       type: object
       description: >-
@@ -456,21 +484,21 @@ components:
         - pathTokens
       properties:
         pathTokens:
-          description: identificativo del 
+          description: identificativo del
           type: array
           items:
             type: string
         uri:
           type: string
-          description: riferimento al file caricato su safestorage 
+          description: riferimento al file caricato su safestorage
         errorCode:
           type: string
           description: >-
             codice di errore _man mano che si trovano casi aggiungerli alla lista seguente_
             - __F4__ : sono rimasto basito (non è serio)
             - __BO__ : mi è andata una bruschetta nell'occhio (non è serio)
+    
 
-      
     ############################################################################################
     ###                      BODY DELL'EVENTO DA INVIARE A EVENT BRIDGE                      ###
     ############################################################################################
@@ -497,12 +525,12 @@ components:
         metadataValidationEnd:
           $ref: '#/components/schemas/MetadataValidationEndEvent'
 
-    
+
     Problem:
       $ref: './remote-refs.yaml#/components/schemas/Problem'
 
   parameters:
-    
+
     ############################################################################################
     ###                                 PARAMETRI TECNICI                                    ###
     ############################################################################################
@@ -513,8 +541,8 @@ components:
       schema:
         type: string
         pattern: /[A-Za-z0-9]+/
-  
-  
+
+
     ############################################################################################
     ###                             PARAMETRI GENERAZIONE F24                                ###
     ############################################################################################
