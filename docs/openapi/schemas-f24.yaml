@@ -20,23 +20,6 @@ components:
           nullable: true
           allOf:
             - $ref: "#/components/schemas/F24Elid"
-    F24Item:
-      allOf:
-        - $ref: "#/components/schemas/F24Metadata"
-      required:
-        - pathTokens
-      type: object
-      properties:
-        pathTokens:
-          type: array
-          description: Lista di id da usare per costruire l'alberatura che identifica il singolo metadato
-          items:
-            type: string
-            description: id
-    F24ItemArray:
-      type: array
-      items:
-        $ref: "#/components/schemas/F24Item"
     IncludeNotificationCost:
       type: object
       required:

@@ -497,7 +497,13 @@ components:
             codice di errore _man mano che si trovano casi aggiungerli alla lista seguente_
             - __F4__ : sono rimasto basito (non è serio)
             - __BO__ : mi è andata una bruschetta nell'occhio (non è serio)
-    
+
+    ############################################################################################
+    ###                      METADATA                                                        ###
+    ############################################################################################
+    F24Metadata:
+      $ref: './schemas-f24.yaml#/components/schemas/F24Metadata'
+
 
     ############################################################################################
     ###                      BODY DELL'EVENTO DA INVIARE A EVENT BRIDGE                      ###

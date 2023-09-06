@@ -2,6 +2,8 @@ package it.pagopa.pn.f24.util;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import it.pagopa.pn.f24.dto.F24Type;
+import it.pagopa.pn.f24.generated.openapi.server.v1.dto.F24Metadata;
 
 import java.util.List;
 import java.util.function.Predicate;
@@ -25,6 +27,12 @@ public class Utility {
                 .orElse(INDEX_NOT_FOUND);
     }
 
+    public static <T> Integer countElementsByPredicate(List<T> list, Predicate<T> matcher) {
+        return Math.toIntExact(list.stream()
+                .filter(matcher)
+                .count());
+    }
+
     public static <T> String objectToJsonString(T object) {
         ObjectMapper objectMapper = new ObjectMapper();
         try {
@@ -33,5 +41,19 @@ public class Utility {
             //TODO Gestire eccezione
             throw new RuntimeException(e);
         }
+    }
+
+    public static F24Type getF24TypeFromMetadata(F24Metadata f24Metadata) {
+        if(f24Metadata.getF24Standard() != null) {
+            return F24Type.F24_STANDARD;
+        } else if(f24Metadata.getF24Simplified() != null) {
+            return F24Type.F24_SIMPLIFIED;
+        } else if(f24Metadata.getF24Elid() != null) {
+            return F24Type.F24_ELID;
+        } else if(f24Metadata.getF24Excise() != null) {
+            return F24Type.F24_EXCISE;
+        }
+
+        throw new RuntimeException("Invalid F24 Type");
     }
 }

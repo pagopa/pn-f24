@@ -1,7 +1,7 @@
 package it.pagopa.pn.f24.dto;
 
 public enum F24MetadataStatus {
-    SAVED("SAVED"),
+    VALIDATION_ENDED("VALIDATION_ENDED"),
 
     TO_VALIDATE("TO_VALIDATE");
 

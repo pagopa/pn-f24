@@ -1,7 +1,6 @@
 package it.pagopa.pn.f24.middleware.queue.consumer.handler;
 
 import it.pagopa.pn.f24.middleware.queue.consumer.handler.utils.HandleEventUtils;
-import it.pagopa.pn.f24.middleware.queue.consumer.service.SaveMetadataEventService;
 import it.pagopa.pn.f24.middleware.queue.consumer.service.ValidateMetadataEventService;
 import it.pagopa.pn.f24.middleware.queue.producer.InternalMetadataEvent;
 import lombok.AllArgsConstructor;
@@ -16,26 +15,8 @@ import java.util.function.Consumer;
 @AllArgsConstructor
 @CustomLog
 public class InternalEventHandler {
-    private final SaveMetadataEventService saveMetadataEventService;
-
     private final ValidateMetadataEventService validateMetadataEventService;
 
-
-    @Bean
-    public Consumer<Message<InternalMetadataEvent.Payload>> pnF24SaveMetadataEventInboundConsumer() {
-        return message -> {
-            log.debug("Handle save metadata message with content {}", message);
-            try {
-                InternalMetadataEvent.Payload payload = message.getPayload();
-                HandleEventUtils.addSetIdAndCxIdToMdc(payload.getSetId(), payload.getCxId());
-                saveMetadataEventService.handleSaveMetadata(payload)
-                        .subscribe();
-            } catch (Exception ex) {
-                HandleEventUtils.handleException(message.getHeaders(), ex);
-                throw ex;
-            }
-        };
-    }
 
     @Bean
     public Consumer<Message<InternalMetadataEvent.Payload>> pnF24ValidateMetadataEventInboundConsumer() {
@@ -44,7 +25,7 @@ public class InternalEventHandler {
             try {
                 InternalMetadataEvent.Payload payload = message.getPayload();
                 HandleEventUtils.addSetIdAndCxIdToMdc(payload.getSetId(), payload.getCxId());
-                validateMetadataEventService.handleValidateMetadata(payload)
+                validateMetadataEventService.handleSaveMetadata(payload)
                         .subscribe();
             } catch (Exception ex) {
                 HandleEventUtils.handleException(message.getHeaders(), ex);
