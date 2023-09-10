@@ -1,10 +1,13 @@
 package it.pagopa.pn.f24.middleware.dao.f24metadataset.dynamo.entity;
 
-import it.pagopa.pn.f24.middleware.dao.f24metadataset.dynamo.mapper.F24MetadataStatusEntityConverter;
+import it.pagopa.pn.f24.middleware.dao.f24metadataset.dynamo.mapper.F24MetadataSetFileKeysConverter;
+import it.pagopa.pn.f24.middleware.dao.f24metadataset.dynamo.mapper.F24MetadataSetValidationResultConverter;
+import it.pagopa.pn.f24.middleware.dao.f24metadataset.dynamo.mapper.F24MetadataSetStatusEntityConverter;
 import lombok.*;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.*;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
 
 @Builder
@@ -17,13 +20,12 @@ public class F24MetadataSetEntity {
     public static final String FIELD_PK = "pk";
     public static final String FIELD_STATUS = "status";
     public static final String FIELD_FILE_KEYS = "fileKeys";
-
     public static final String FIELD_SHA_256 = "sha256";
     public static final String FIELD_HAVE_TO_SEND_VALIDATION_EVENT = "haveToSendValidationEvent";
     public static final String FIELD_VALIDATION_EVENT_SENT = "validationEventSent";
     public static final String FIELD_CREATED = "created";
     public static final String FIELD_UPDATED = "updated";
-
+    public static final String FIELD_TTL = "ttl";
     public static final String FIELD_VALIDATION_RESULT = "validationResult";
 
     @Getter(onMethod=@__({
@@ -33,10 +35,13 @@ public class F24MetadataSetEntity {
     private String pk;
     @Getter(onMethod=@__({
             @DynamoDbAttribute(FIELD_STATUS),
-            @DynamoDbConvertedBy(F24MetadataStatusEntityConverter.class)
+            @DynamoDbConvertedBy(F24MetadataSetStatusEntityConverter.class)
     }))
     private F24MetadataSetStatusEntity status;
-    @Getter(onMethod=@__({@DynamoDbAttribute(FIELD_FILE_KEYS)}))
+    @Getter(onMethod=@__({
+            @DynamoDbAttribute(FIELD_FILE_KEYS),
+            @DynamoDbConvertedBy(F24MetadataSetFileKeysConverter.class)
+    }))
     private Map<String, F24MetadataRefEntity> fileKeys;
     @Getter(onMethod=@__({@DynamoDbAttribute(FIELD_SHA_256)}))
     private String sha256;
@@ -44,10 +49,16 @@ public class F24MetadataSetEntity {
     private Boolean haveToSendValidationEvent;
     @Getter(onMethod=@__({@DynamoDbAttribute(FIELD_VALIDATION_EVENT_SENT)}))
     private Boolean validationEventSent;
+    @Getter(onMethod=@__({
+            @DynamoDbAttribute(FIELD_VALIDATION_RESULT),
+            @DynamoDbConvertedBy(F24MetadataSetValidationResultConverter.class)
+    }))
+    private List<F24MetadataValidationEntity> validationResult;
     @Getter(onMethod=@__({@DynamoDbAttribute(FIELD_CREATED)}))
     private Instant created;
     @Getter(onMethod = @__({@DynamoDbAttribute(FIELD_UPDATED)}))
     private Instant updated;
-
+    @Getter(onMethod = @__({@DynamoDbAttribute(FIELD_TTL)}))
+    private Long ttl;
 
 }

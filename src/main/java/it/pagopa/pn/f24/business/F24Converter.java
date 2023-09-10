@@ -14,7 +14,7 @@ public abstract class F24Converter {
         treasurySection.setOfficeCode(inputTreasurySection.getOffice());
         treasurySection.setDocumentCode(inputTreasurySection.getDocument());
         if(inputTreasurySection.getRecords() != null) {
-            treasurySection.setRecordList(
+            treasurySection.setTaxList(
                     inputTreasurySection.getRecords().stream()
                             .map(this::convertTreasuryRecord)
                             .collect(Collectors.toList())
@@ -23,14 +23,14 @@ public abstract class F24Converter {
         return treasurySection;
     }
 
-    private org.f24.dto.component.Record convertTreasuryRecord(Tax tax) {
-        org.f24.dto.component.Record record = new org.f24.dto.component.Record();
+    private org.f24.dto.component.Tax convertTreasuryRecord(Tax tax) {
+        org.f24.dto.component.Tax record = new org.f24.dto.component.Tax();
         //TODO ? record.setDeduction(tax);
         record.setCreditAmount(tax.getCredit());
         record.setDebitAmount(tax.getDebit());
-        //TODO ? tax.getTaxType();
-        //TODO ? tax.getInstallment();
-        //TODO ? tax.getYear();
+        record.setInstallment(tax.getInstallment());
+        record.setYear(tax.getYear());
+        record.setTaxTypeCode(tax.getTaxType());
         return record;
     }
 

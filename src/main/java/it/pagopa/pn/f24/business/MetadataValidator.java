@@ -103,8 +103,17 @@ public class MetadataValidator {
             Validator validator = ValidatorFactory.createValidator(f24Form);
             validator.validate();
         } catch (ResourceException | ProcessingException | IOException e) {
-            throw new RuntimeException(e);
+            handleLibValidationException(e);
         }
+    }
+
+    private void handleLibValidationException(Throwable t) {
+        if(t instanceof ResourceException) {
+            createAndAddIssue(t.getMessage(), PnF24ExceptionCodes.ERROR_CODE_F24_METADATA_VALIDATION_ERROR);
+            return;
+        }
+
+        throw new RuntimeException(t);
     }
 
     private void createAndAddIssue(String detail, String code) {

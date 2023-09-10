@@ -4,7 +4,7 @@ import it.pagopa.pn.f24.config.F24Config;
 import it.pagopa.pn.f24.dto.F24MetadataSet;
 import it.pagopa.pn.f24.middleware.dao.f24metadataset.F24MetadataSetDao;
 import it.pagopa.pn.f24.middleware.dao.f24metadataset.dynamo.entity.F24MetadataSetEntity;
-import it.pagopa.pn.f24.middleware.dao.f24metadataset.dynamo.mapper.F24MetadataMapper;
+import it.pagopa.pn.f24.middleware.dao.f24metadataset.dynamo.mapper.F24MetadataSetMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
@@ -30,11 +30,6 @@ public class F24MetadataSetRepositoryImpl implements F24MetadataSetDao {
     }
 
     @Override
-    public Mono<F24MetadataSet> getItem(String pk) {
-        return getItem(pk, false);
-    }
-
-    @Override
     public Mono<F24MetadataSet> getItem(String setId, String cxId) {
         String partitionKey = cxId+DEFAULT_SEPARATOR+setId;
         return getItem(partitionKey, false);
@@ -55,17 +50,17 @@ public class F24MetadataSetRepositoryImpl implements F24MetadataSetDao {
                 .consistentRead(isConsistentRead)
                 .build();
 
-        return Mono.fromFuture(table.getItem(getItemEnhancedRequest)).map(F24MetadataMapper::entityToDto);
+        return Mono.fromFuture(table.getItem(getItemEnhancedRequest)).map(F24MetadataSetMapper::entityToDto);
     }
 
     public Mono<Void> putItem(F24MetadataSet f24MetadataSet) {
-        return Mono.fromFuture(table.putItem(F24MetadataMapper.dtoToEntity(f24MetadataSet)));
+        return Mono.fromFuture(table.putItem(F24MetadataSetMapper.dtoToEntity(f24MetadataSet)));
     }
 
     @Override
     public Mono<F24MetadataSet> updateItem(F24MetadataSet f24MetadataSet) {
-        return Mono.fromFuture(table.updateItem(createUpdateItemEnhancedRequest(F24MetadataMapper.dtoToEntity(f24MetadataSet))))
-                .map(F24MetadataMapper::entityToDto);
+        return Mono.fromFuture(table.updateItem(createUpdateItemEnhancedRequest(F24MetadataSetMapper.dtoToEntity(f24MetadataSet))))
+                .map(F24MetadataSetMapper::entityToDto);
     }
 
     private UpdateItemEnhancedRequest<F24MetadataSetEntity> createUpdateItemEnhancedRequest(F24MetadataSetEntity entity) {
@@ -79,7 +74,6 @@ public class F24MetadataSetRepositoryImpl implements F24MetadataSetDao {
                 .builder(F24MetadataSetEntity.class)
                 .conditionExpression(expressionBuilder("#pk = :pk", expressionValues, expressionNames))
                 .item(entity)
-                .ignoreNulls(true)
                 .build();
     }
 

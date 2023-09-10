@@ -11,14 +11,11 @@ import org.springframework.stereotype.Component;
 public class F24ConverterFactory {
     public static F24Converter getConverter(F24Type f24Type) {
 
-        switch (f24Type) {
+        return switch (f24Type) {
             case F24_STANDARD -> new F24StandardConverter();
             case F24_SIMPLIFIED -> new F24SimplifiedConverter();
             case F24_ELID -> new F24ElidConverter();
             case F24_EXCISE -> new F24ExciseConverter();
-            default -> throw new RuntimeException("Invalid F24Type");
-        }
-
-        return null;
+        };
     }
 }

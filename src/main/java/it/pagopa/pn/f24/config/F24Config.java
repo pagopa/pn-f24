@@ -31,8 +31,7 @@ public class F24Config {
     public static class EventBus {
         private String name;
         private String source;
-        private EventBusEvent metadataValidationEvent;
-        private EventBusEvent pdfSetReadyEvent;
+        private EventBusEvent outcomeEvent;
     }
 
     @Data

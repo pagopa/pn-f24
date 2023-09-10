@@ -15,10 +15,6 @@ public class Utility {
     /**
      * Returns the first index of an element that matches the predicate
      * or -1 if there are no matching elements
-     * @param list
-     * @param matcher
-     * @return
-     * @param <T>
      */
     public static <T> Integer getIndexOfByPredicate(List<T> list, Predicate<Integer> matcher) {
         return IntStream.range(0, list.size())
@@ -55,5 +51,17 @@ public class Utility {
         }
 
         throw new RuntimeException("Invalid F24 Type");
+    }
+
+    public static String getCxIdFromMetadataSetPk(String pk) {
+        return getSectionFromMetadataSetPk(pk, 0);
+    }
+
+    public static String getSetIdFromMetadataSetPk(String pk) {
+        return getSectionFromMetadataSetPk(pk, 1);
+    }
+
+    private static String getSectionFromMetadataSetPk(String pk, int sectionIndex) {
+        return pk.split("#")[sectionIndex];
     }
 }

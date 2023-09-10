@@ -64,18 +64,15 @@ public class F24SimplifiedConverter extends F24Converter {
     private PaymentReasonRecord convertReasonRecord(SimplifiedPaymentRecord record) {
         PaymentReasonRecord paymentReasonRecord = new PaymentReasonRecord();
         paymentReasonRecord.setSection(record.getSection());
-        /*
-        TODO ?
-        paymentReasonRecord.setAdvancePayment();
-        paymentReasonRecord.setFullPayment();
-        paymentReasonRecord.setMonth();
-        paymentReasonRecord.setYear();
-        paymentReasonRecord.setReconsideration();
-        paymentReasonRecord.setMunicipalityCode();
-        paymentReasonRecord.setPropertiesChanges();
-        paymentReasonRecord.setTaxTypeCode();
-        paymentReasonRecord.setNumberOfProperties();
-        */
+        paymentReasonRecord.setAdvancePayment(record.getAdvancePayment());
+        paymentReasonRecord.setFullPayment(record.getFullPayment());
+        //TODO paymentReasonRecord.setMonth(record.getM);
+        paymentReasonRecord.setYear(record.getYear());
+        paymentReasonRecord.setReconsideration(record.getReconsideration());
+        paymentReasonRecord.setMunicipalityCode(record.getMunicipality());
+        paymentReasonRecord.setPropertiesChanges(record.getPropertiesChanges());
+        paymentReasonRecord.setTaxTypeCode(record.getTaxType());
+        paymentReasonRecord.setNumberOfProperties(record.getNumberOfProperties());
         return paymentReasonRecord;
     }
 }

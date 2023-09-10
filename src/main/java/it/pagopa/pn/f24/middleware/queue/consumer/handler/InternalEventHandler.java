@@ -25,8 +25,8 @@ public class InternalEventHandler {
             try {
                 InternalMetadataEvent.Payload payload = message.getPayload();
                 HandleEventUtils.addSetIdAndCxIdToMdc(payload.getSetId(), payload.getCxId());
-                validateMetadataEventService.handleSaveMetadata(payload)
-                        .subscribe();
+                validateMetadataEventService.handleMetadataValidation(payload)
+                        .block();
             } catch (Exception ex) {
                 HandleEventUtils.handleException(message.getHeaders(), ex);
                 throw ex;

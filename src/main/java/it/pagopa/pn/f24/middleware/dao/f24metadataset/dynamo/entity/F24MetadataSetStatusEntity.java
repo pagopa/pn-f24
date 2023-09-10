@@ -4,7 +4,7 @@ import lombok.ToString;
 
 @ToString
 public enum F24MetadataSetStatusEntity {
-    SAVED("SAVED"),
+    VALIDATION_ENDED("VALIDATION_ENDED"),
 
     TO_VALIDATE("TO_VALIDATE");
 
