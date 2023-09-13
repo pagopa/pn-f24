@@ -9,6 +9,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class PnF24AsyncEventBridgeProducerImpl extends AbstractEventBridgeProducer<PnF24AsyncEvent> {
     protected PnF24AsyncEventBridgeProducerImpl(AmazonEventBridgeAsync amazonEventBridge, F24Config f24Config) {
-        super(amazonEventBridge, f24Config, f24Config.getEventBus().getOutcomeEvent().getDetailType(), f24Config.getEventBus().getName());
+        super(amazonEventBridge, f24Config.getEventBus().getSource(), f24Config.getEventBus().getOutcomeEvent().getDetailType(), f24Config.getEventBus().getName());
     }
 }

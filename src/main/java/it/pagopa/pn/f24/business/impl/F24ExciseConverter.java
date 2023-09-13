@@ -4,9 +4,6 @@ import it.pagopa.pn.f24.generated.openapi.server.v1.dto.*;
 import it.pagopa.pn.f24.business.F24Converter;
 import org.f24.dto.component.TaxPayer;
 
-import java.util.stream.Collectors;
-
-
 public class F24ExciseConverter extends F24Converter {
     @Override
     public org.f24.dto.form.F24Excise convert(F24Metadata f24Metadata) {
@@ -15,8 +12,6 @@ public class F24ExciseConverter extends F24Converter {
         if(f24ExciseItem == null) {
             return f24Excise;
         }
-
-        //TODO ? f24Excise.setIbanCode();
 
         if(f24ExciseItem.getInps() != null) {
             f24Excise.setInpsSection(this.convertInpsSection(f24ExciseItem.getInps()));
@@ -46,8 +41,7 @@ public class F24ExciseConverter extends F24Converter {
         taxPayer.setTaxCode(dvTaxPayer.getTaxCode());
         taxPayer.setIsNotTaxYear(dvTaxPayer.getIsNotTaxYear());
         taxPayer.setRelativePersonTaxCode(dvTaxPayer.getRelativePersonTaxCode());
-        // TODO ? taxPayer.setDocumentCode();
-        // TODO ?  taxPayer.setOfficeCode();
+
         if(dvTaxPayer.getPerson() != null) {
             taxPayer.setPersonData(this.convertPersonData(dvTaxPayer.getPerson()));
         }
@@ -67,7 +61,7 @@ public class F24ExciseConverter extends F24Converter {
                     excise.getRecords()
                             .stream()
                             .map(this::convertExciseRecord)
-                            .collect(Collectors.toList())
+                            .toList()
             );
         }
         return exciseSection;
@@ -75,7 +69,6 @@ public class F24ExciseConverter extends F24Converter {
 
     private org.f24.dto.component.ExciseTax convertExciseRecord(ExciseTax inputExciseTax) {
         org.f24.dto.component.ExciseTax exciseTax = new org.f24.dto.component.ExciseTax();
-        // TODO ? inputExciseTax.getInstitution(); Non va settato?
         exciseTax.setIdCode(inputExciseTax.getId());
         exciseTax.setYear(inputExciseTax.getYear());
         exciseTax.setMonth(inputExciseTax.getMonth());
@@ -83,7 +76,6 @@ public class F24ExciseConverter extends F24Converter {
         exciseTax.setTaxTypeCode(inputExciseTax.getTaxType());
         exciseTax.setInstallment(inputExciseTax.getInstallment());
         exciseTax.setDebitAmount(inputExciseTax.getDebit());
-        // TODO ? exciseTax.setMunicipality(dv);
         return exciseTax;
     }
 }

@@ -4,8 +4,6 @@ import it.pagopa.pn.f24.generated.openapi.server.v1.dto.*;
 import org.apache.commons.lang3.StringUtils;
 import org.f24.dto.form.F24Form;
 
-import java.util.stream.Collectors;
-
 public abstract class F24Converter {
     public abstract F24Form convert(F24Metadata f24Metadata);
 
@@ -17,7 +15,7 @@ public abstract class F24Converter {
             treasurySection.setTaxList(
                     inputTreasurySection.getRecords().stream()
                             .map(this::convertTreasuryRecord)
-                            .collect(Collectors.toList())
+                            .toList()
             );
         }
         return treasurySection;
@@ -25,7 +23,6 @@ public abstract class F24Converter {
 
     private org.f24.dto.component.Tax convertTreasuryRecord(Tax tax) {
         org.f24.dto.component.Tax record = new org.f24.dto.component.Tax();
-        //TODO ? record.setDeduction(tax);
         record.setCreditAmount(tax.getCredit());
         record.setDebitAmount(tax.getDebit());
         record.setInstallment(tax.getInstallment());
@@ -41,10 +38,9 @@ public abstract class F24Converter {
                     dvInpsSection.getRecords()
                             .stream()
                             .map(this::convertInpsRecord)
-                            .collect(Collectors.toList())
+                            .toList()
             );
         }
-        //TODO ? inpsSection.setRecordList();
         return inpsSection;
     }
 
@@ -56,7 +52,6 @@ public abstract class F24Converter {
         inpsRecord.setContributionReason(inputInpsRecord.getReason());
         inpsRecord.setCreditAmount(inputInpsRecord.getCredit());
         inpsRecord.setDebitAmount(inputInpsRecord.getDebit());
-        //TODO inpsRecord.setDeduction(dv.g);
         return inpsRecord;
     }
 
@@ -85,10 +80,9 @@ public abstract class F24Converter {
                     inputRegionSection.getRecords()
                             .stream()
                             .map(this::convertRegionRecord)
-                            .collect(Collectors.toList())
+                            .toList()
             );
         }
-        //TODO ? regionSection.setRecordList();
         return regionSection;
     }
 
@@ -98,7 +92,6 @@ public abstract class F24Converter {
         regionRecord.setRegionCode(dvRegionRecord.getRegion());
         regionRecord.setYear(dvRegionRecord.getYear());
         regionRecord.setTaxTypeCode(dvRegionRecord.getTaxType());
-        //TODO ? regionRecord.setDeduction(dv);
         regionRecord.setCreditAmount(dvRegionRecord.getCredit());
         regionRecord.setDebitAmount(dvRegionRecord.getDebit());
         return regionRecord;
@@ -113,10 +106,9 @@ public abstract class F24Converter {
                     inputLocalTaxSection.getRecords()
                             .stream()
                             .map(this::convertLocalTaxRecord)
-                            .collect(Collectors.toList())
+                            .toList()
             );
         }
-        //TODO? localTaxSection.setRecordList(inputLocalTaxSection.get);
 
         return localTaxSection;
     }
@@ -133,7 +125,6 @@ public abstract class F24Converter {
         localTaxRecord.setTaxTypeCode(inputLocalTaxRecord.getTaxType());
         localTaxRecord.setYear(inputLocalTaxRecord.getYear());
         localTaxRecord.setDebitAmount(inputLocalTaxRecord.getDebit());
-        //TODO localTaxRecord.setDeduction(inputLocalTaxRecord.get);
         localTaxRecord.setCreditAmount(inputLocalTaxRecord.getCredit());
         return localTaxRecord;
     }

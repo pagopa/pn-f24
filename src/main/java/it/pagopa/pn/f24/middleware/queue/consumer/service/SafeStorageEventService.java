@@ -51,12 +51,10 @@ public class SafeStorageEventService {
         }
     }
     private Mono<Void> tryToUpdateF24MetadataTable(FileDownloadResponse response) {
-        //TODO
         return Mono.empty();
     }
 
     private Mono<Void> handleF24FileKey(FileDownloadResponse response) {
-        //TODO
         return Mono.empty();
     }
 }

@@ -8,7 +8,6 @@ import it.pagopa.pn.f24.dto.F24MetadataValidationIssue;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class PnF24AsyncEventBuilderHelper {
     private static final String OK_STATUS = "OK";
@@ -46,6 +45,6 @@ public class PnF24AsyncEventBuilderHelper {
                         .element(e.getElement())
                         .build()
                 )
-                .collect(Collectors.toList());
+                .toList();
     }
 }

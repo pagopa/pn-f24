@@ -2,6 +2,7 @@ package it.pagopa.pn.f24.util;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import it.pagopa.pn.commons.exceptions.PnInternalException;
 import it.pagopa.pn.f24.dto.F24Type;
 import it.pagopa.pn.f24.generated.openapi.server.v1.dto.F24Metadata;
 
@@ -34,8 +35,7 @@ public class Utility {
         try {
             return objectMapper.writeValueAsString(object);
         } catch (JsonProcessingException e) {
-            //TODO Gestire eccezione
-            throw new RuntimeException(e);
+            throw new PnInternalException("Couldn't convert object in JSON String", "JSON_PROCESSING");
         }
     }
 

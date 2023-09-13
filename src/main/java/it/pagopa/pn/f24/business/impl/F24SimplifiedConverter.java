@@ -6,7 +6,6 @@ import org.f24.dto.component.PaymentReasonRecord;
 import org.f24.dto.component.PaymentReasonSection;
 import org.f24.dto.component.PersonData;
 import org.f24.dto.component.TaxPayer;
-import java.util.stream.Collectors;
 
 public class F24SimplifiedConverter extends F24Converter {
 
@@ -32,14 +31,12 @@ public class F24SimplifiedConverter extends F24Converter {
     private TaxPayer convertTaxPayer(TaxPayerSimplified inputTaxPayer) {
         TaxPayer taxPayer = new TaxPayer();
         taxPayer.setIdCode(inputTaxPayer.getId());
-        //TODO ? taxPayer.setIsNotTaxYear(inputTaxPayer.g);
         taxPayer.setTaxCode(inputTaxPayer.getTaxCode());
         taxPayer.setOfficeCode(inputTaxPayer.getOffice());
         taxPayer.setDocumentCode(inputTaxPayer.getDocument());
         taxPayer.setRelativePersonTaxCode(inputTaxPayer.getRelativePersonTaxCode());
 
         if(inputTaxPayer.getPersonalData() != null) {
-            // TODO è giusto andare a settare solo i PersonData dentro i Personal?
             PersonData personData = new PersonData();
             personData.setPersonalData(this.convertPersonalData(inputTaxPayer.getPersonalData()));
             taxPayer.setPersonData(personData);
@@ -55,9 +52,8 @@ public class F24SimplifiedConverter extends F24Converter {
                     payments.getRecords()
                             .stream()
                             .map(this::convertReasonRecord)
-                            .collect(Collectors.toList()));
+                            .toList());
         }
-        //TODO ? paymentReasonSection.setRecordList();
         return paymentReasonSection;
     }
 
@@ -66,7 +62,6 @@ public class F24SimplifiedConverter extends F24Converter {
         paymentReasonRecord.setSection(record.getSection());
         paymentReasonRecord.setAdvancePayment(record.getAdvancePayment());
         paymentReasonRecord.setFullPayment(record.getFullPayment());
-        //TODO paymentReasonRecord.setMonth(record.getM);
         paymentReasonRecord.setYear(record.getYear());
         paymentReasonRecord.setReconsideration(record.getReconsideration());
         paymentReasonRecord.setMunicipalityCode(record.getMunicipality());

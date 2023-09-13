@@ -12,7 +12,6 @@ import it.pagopa.pn.f24.middleware.dao.f24metadataset.dynamo.entity.F24MetadataV
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public class F24MetadataSetMapper {
     public static F24MetadataSet entityToDto(F24MetadataSetEntity f24MetadataSetEntity) {
@@ -54,7 +53,7 @@ public class F24MetadataSetMapper {
                                 .build()
 
                 )
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public static F24MetadataSetEntity dtoToEntity(F24MetadataSet f24MetadataSet) {
@@ -98,6 +97,6 @@ public class F24MetadataSetMapper {
                         .build()
 
                 )
-                .collect(Collectors.toList());
+                .toList();
     }
 }
