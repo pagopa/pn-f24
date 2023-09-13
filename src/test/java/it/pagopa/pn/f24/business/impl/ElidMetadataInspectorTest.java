@@ -41,7 +41,7 @@ class ElidMetadataInspectorTest {
         f24Elid.setTreasury(treasuryAndOtherSection);
 
         assertEquals(1, elidMetadataInspector
-                .countMetadataApplyCost(new F24Metadata(new F24Standard(), new F24Simplified(), new F24Excise(), new F24Elid())));
+                .countMetadataApplyCost(new F24Metadata(new F24Standard(), new F24Simplified(), new F24Excise(), f24Elid)));
     }
 }
 
