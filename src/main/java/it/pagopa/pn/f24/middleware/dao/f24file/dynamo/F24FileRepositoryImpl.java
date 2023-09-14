@@ -12,8 +12,12 @@ import software.amazon.awssdk.enhanced.dynamodb.*;
 import software.amazon.awssdk.enhanced.dynamodb.model.GetItemEnhancedRequest;
 import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional;
 import software.amazon.awssdk.enhanced.dynamodb.model.QueryEnhancedRequest;
+import software.amazon.awssdk.enhanced.dynamodb.model.UpdateItemEnhancedRequest;
+import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static it.pagopa.pn.f24.middleware.dao.f24file.dynamo.entity.F24FileEntity.SK_PK_GSI;
 
@@ -35,7 +39,7 @@ public class F24FileRepositoryImpl implements F24FileDao {
 
     @Override
     public Mono<F24File> getItem(String setId, String cxId, String created, boolean isConsistentRead) {
-        String partitionKey = cxId+DEFAULT_SEPARATOR+setId;
+        String partitionKey = cxId + DEFAULT_SEPARATOR + setId;
         Key pk = Key.builder().partitionValue(partitionKey).sortValue(created).build();
 
         GetItemEnhancedRequest getItemEnhancedRequest = GetItemEnhancedRequest.builder()
@@ -63,9 +67,46 @@ public class F24FileRepositoryImpl implements F24FileDao {
                 .map(f24FileEntityPage -> F24FileMapper.entityToDto(f24FileEntityPage.items().get(0)));
     }
 
+    @Override
+    public Mono<F24File> updateItem(F24File f24File) {
+        return Mono.fromFuture(table.updateItem(createUpdateItemEnhancedRequest(F24FileMapper.dtoToEntity(f24File))))
+                .map(F24FileMapper::entityToDto);
+    }
+
+    private UpdateItemEnhancedRequest<F24FileEntity> createUpdateItemEnhancedRequest(F24FileEntity entity) {
+        Map<String, String> expressionNames = new HashMap<>();
+        expressionNames.put("#pk", "pk");
+        expressionNames.put("#created", "created");
+
+        Map<String, AttributeValue> expressionValues = new HashMap<>();
+        expressionValues.put(":pk", AttributeValue.builder().s(entity.getPk()).build());
+        expressionValues.put(":created", AttributeValue.builder().s(entity.getCreated()).build());
+
+        return UpdateItemEnhancedRequest
+                .builder(F24FileEntity.class)
+                .conditionExpression(expressionBuilder("#pk = :pk and #created = :created", expressionValues, expressionNames))
+                .item(entity)
+                .ignoreNulls(true)
+                .build();
+    }
+
+    public static Expression expressionBuilder(String expression, Map<String, AttributeValue> expressionValues, Map<String, String> expressionNames) {
+        Expression.Builder expressionBuilder = Expression.builder();
+        if (expression != null) {
+            expressionBuilder.expression(expression);
+        }
+        if (expressionValues != null) {
+            expressionBuilder.expressionValues(expressionValues);
+        }
+        if (expressionNames != null) {
+            expressionBuilder.expressionNames(expressionNames);
+        }
+        return expressionBuilder.build();
+    }
+
     private String buildPathTokensPartitionKey(String cost, List<String> pathTokens) {
         String partitionKey = "";
-        if(cost != null && !cost.equalsIgnoreCase("")) {
+        if (cost != null && !cost.equalsIgnoreCase("")) {
             partitionKey = cost;
         } else {
             partitionKey = NO_FEE;

@@ -38,7 +38,8 @@ public class F24FileEntity {
 
     @Getter(onMethod = @__({
             @DynamoDbPartitionKey,
-            @DynamoDbAttribute(COL_PK)
+            @DynamoDbAttribute(COL_PK),
+            @DynamoDbSecondarySortKey(indexNames = SK_PK_GSI)
     }))
     private String pk;
 

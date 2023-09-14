@@ -11,4 +11,8 @@ public interface F24FileDao {
     Mono<F24File> getItem(String setId, String cxId, String created, boolean isConsistentRead);
 
     Mono<F24File> getItemByPathTokens(String setId, String cxId, List<String> pathTokens, String cost);
+
+    Mono<F24File> updateItem(F24File f24File);
+
+    //todo:putItem
 }

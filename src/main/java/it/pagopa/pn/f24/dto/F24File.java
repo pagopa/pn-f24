@@ -1,10 +1,12 @@
 package it.pagopa.pn.f24.dto;
 
+import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDateTime;
 
 @Data
+@Builder
 public class F24File {
     private String pk;
     private String created;

@@ -16,4 +16,6 @@ public class PnF24ExceptionCodes {
     public static final String ERROR_MESSAGE_F24_METADATA_NOT_FOUND = "MetadataSet with setId %s and cxId %s not found on dynamo";
     public static final String ERROR_CODE_F24_READ_FILE_ERROR = "PN_F24_READ_FILE_ERROR";
 
+    //todo:check with the team[Manu] if this is the correct error code
+    public static final String ERROR_CODE_F24_BAD_REQUEST = "PN_F24_BAD_REQUEST";
 }

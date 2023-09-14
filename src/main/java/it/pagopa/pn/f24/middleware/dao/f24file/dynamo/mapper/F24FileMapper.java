@@ -1,22 +1,25 @@
 package it.pagopa.pn.f24.middleware.dao.f24file.dynamo.mapper;
 
+
+
 import it.pagopa.pn.f24.dto.F24File;
 import it.pagopa.pn.f24.middleware.dao.f24file.dynamo.entity.F24FileEntity;
 
 public class F24FileMapper {
 
     public static F24File entityToDto(F24FileEntity f24FileEntity){
-        F24File f24File = new F24File();
-        f24File.setPk(f24FileEntity.getPk());
-        f24File.setCreated(f24FileEntity.getCreated());
-        f24File.setSk(f24FileEntity.getSk());
-        f24File.setRequestId(f24FileEntity.getRequestId());
-        f24File.setStatus(f24FileEntity.getStatus());
-        f24File.setFileKey(f24FileEntity.getFileKey());
-        f24File.setTtl(f24FileEntity.getTtl());
-        f24File.setUpdated(f24FileEntity.getUpdated());
-        return f24File;
+        return F24File.builder()
+                .pk(f24FileEntity.getPk())
+                .created((f24FileEntity.getCreated()))
+                .sk(f24FileEntity.getSk())
+                .requestId(f24FileEntity.getRequestId())
+                .status(f24FileEntity.getStatus())
+                .fileKey(f24FileEntity.getFileKey())
+                .ttl(f24FileEntity.getTtl())
+                .updated(f24FileEntity.getUpdated())
+                .build();
     }
+
 
     public static F24FileEntity dtoToEntity(F24File f24File){
         return F24FileEntity.builder()
