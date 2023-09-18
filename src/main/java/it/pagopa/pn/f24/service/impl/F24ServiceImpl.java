@@ -7,6 +7,8 @@ import it.pagopa.pn.api.dto.events.MomProducer;
 import it.pagopa.pn.api.dto.events.PnF24AsyncEvent;
 import it.pagopa.pn.f24.business.ApplyCost;
 import it.pagopa.pn.f24.business.F24ResponseConverter;
+import it.pagopa.pn.f24.business.MetadataInspector;
+import it.pagopa.pn.f24.business.MetadataInspectorFactory;
 import it.pagopa.pn.f24.dto.F24File;
 import it.pagopa.pn.f24.dto.F24MetadataRef;
 import it.pagopa.pn.f24.dto.F24MetadataSet;
@@ -33,6 +35,7 @@ import it.pagopa.pn.f24.util.Sha256Handler;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
@@ -43,14 +46,20 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.*;
 
+import static it.pagopa.pn.f24.util.Utility.getF24TypeFromMetadata;
 import static it.pagopa.pn.f24.util.Utility.objectToJsonString;
-import static org.springframework.core.io.support.LocalizedResourceHelper.DEFAULT_SEPARATOR;
 
 @Service
 @Slf4j
 public class F24ServiceImpl implements F24Service {
     private static final String REQUEST_ACCEPTED_STATUS = "Success!";
     private static final String REQUEST_ACCEPTED_DESCRIPTION = "Ok";
+    private static final String DEFAULT_SEPARATOR = "#";
+
+    //TODO Manu check CONST
+    private static final String CONTENT_TYPE = "application/pdf";
+
+    private static final String COST = "NO_FEE";
     private static final long SECONDS_TO_DELAY = 4;
 
     private final F24Generator f24Generator;
@@ -262,11 +271,12 @@ public class F24ServiceImpl implements F24Service {
     public Mono<F24Response> generatePDF(String xPagopaF24CxId, String setId, List<String> pathTokens, Integer cost) {
         String pathTokensInString = String.join(DEFAULT_SEPARATOR, pathTokens);
 
+
         return f24FileDao.getItemByPathTokens(setId, xPagopaF24CxId, pathTokens, String.valueOf(cost)).flatMap(f ->
                 pnSafeStorageClient.getFile(f.getFileKey(), false).map(FileDownloadResponse::getDownload).map(FileDownloadInfo -> {
                     log.info("pdf found for setId: {} pathTokens: {}", setId, pathTokensInString);
                     return F24ResponseConverter.fileDownloadInfoToF24Response(FileDownloadInfo);
-                })).switchIfEmpty(generateFromMetadata(setId, xPagopaF24CxId, pathTokensInString, cost));
+                })).switchIfEmpty(Mono.defer(() -> generateFromMetadata(setId, xPagopaF24CxId, pathTokensInString, cost)));
     }
 
     private Mono<F24Response> generateFromMetadata(String setId, String xPagopaF24CxId, String pathTokensInString, Integer cost) {
@@ -278,32 +288,39 @@ public class F24ServiceImpl implements F24Service {
             }
             return downloadPOC(f24MetadataRef).flatMap(f24Metadata -> {
                 // 4. Verifica l'applyCost e il valore di costo
-                if (f24MetadataRef.isApplyCost() && cost != null) {
-                    ApplyCost.applyCost(f24Metadata, cost);
+                if (f24MetadataRef.isApplyCost() && cost != null && cost != 0) {
+
+                    MetadataInspector inspector = MetadataInspectorFactory.getInspector(getF24TypeFromMetadata(f24Metadata));
+                    inspector.addCostToDebit(f24Metadata,cost);
+
                 } else if (!f24MetadataRef.isApplyCost() && cost != null) {
-                    return Mono.error(new PnBadRequestException("applyCost is required when cost is populated", "", PnF24ExceptionCodes.ERROR_CODE_F24_BAD_REQUEST));
+                    return Mono.error(new PnBadRequestException("applyCost is required when cost is populated", "", PnF24ExceptionCodes.ERROR_CODE_F24_METADATA_VALIDATION_INCONSISTENT_APPLY_COST));
+                } else if (f24MetadataRef.isApplyCost() && cost == null) {
+                    return Mono.error(new PnBadRequestException("cost is required when applyCost is true", "", PnF24ExceptionCodes.ERROR_CODE_F24_METADATA_VALIDATION_INCONSISTENT_APPLY_COST));
                 }
                 FileCreationWithContentRequest fileCreationRequest = generaPdf(f24Metadata);
                 return uploadF24FileAndPut(fileCreationRequest, cost, pathTokensInString, f24MetadataSet)
-                        .flatMap(f24File -> pnSafeStorageClient.getFile(f24File.getFileKey(), false).delayElement(Duration.ofMillis(5000)))
-                        .map(FileDownloadResponse::getDownload).map(fileDownloadInfo -> {
-                            log.info("pdf generated for setId: {} pathTokens: {}", setId, pathTokensInString);
-                            return F24ResponseConverter.fileDownloadInfoToF24Response(fileDownloadInfo);
-                        });
+                        .flatMap(f24File -> Mono.delay(Duration.ofSeconds(10))
+                                .flatMap(unused -> pnSafeStorageClient.getFile(f24File.getFileKey(), false))
+                                //     .map(FileDownloadResponse::getDownload)
+                                .map(fileDownloadInfo -> {
+                                    log.info("pdf generated for setId: {} pathTokens: {}", setId, pathTokensInString);
+                                    return F24ResponseConverter.fileDownloadInfoToF24Response(fileDownloadInfo.getDownload());
+                                }).publishOn(Schedulers.boundedElastic()));
 
             });
         });
     }
 
+
     private Mono<F24MetadataSet> retrieveMetadataSet(String setId, String xPagopaF24CxId) {
         return f24MetadataSetDao.getItem(setId, xPagopaF24CxId)
-                .switchIfEmpty(Mono.error(new PnNotFoundException("file not found", "", PnF24ExceptionCodes.ERROR_CODE_F24_METADATA_NOT_FOUND)))
-                .doOnError(t -> log.error("====================================", t));
-
+                .switchIfEmpty(Mono.error(new PnNotFoundException("file not found", "", PnF24ExceptionCodes.ERROR_CODE_F24_METADATA_NOT_FOUND)));
     }
 
     private Mono<F24Metadata> downloadPOC(F24MetadataRef f24MetadataRef) {
         return pnSafeStorageClient.getFile(f24MetadataRef.getFileKey(), false).flatMap(fileDownloadResponse -> {
+            assert fileDownloadResponse.getDownload() != null;
             byte[] bytes = pnSafeStorageClient.downloadPieceOfContent(fileDownloadResponse.getDownload().getUrl(), -1);
             String fileContent = new String(bytes, StandardCharsets.UTF_8);
             F24Metadata f24Meta = jsonStringToObject(fileContent);
@@ -315,19 +332,29 @@ public class F24ServiceImpl implements F24Service {
         byte[] generatedPdf = f24Generator.generate(f24Meta);
         FileCreationWithContentRequest fileCreationWithContentRequest = new FileCreationWithContentRequest();
         fileCreationWithContentRequest.setContent(generatedPdf);
-        //todo:considera costante per il content type
-        fileCreationWithContentRequest.setContentType("application/pdf");
+        fileCreationWithContentRequest.setContentType(CONTENT_TYPE);
         log.info("generated pdf for f24 with metadata: {} ", f24Meta);
         return fileCreationWithContentRequest;
     }
 
     private Mono<F24File> uploadF24FileAndPut(FileCreationWithContentRequest fileCreationWithContentRequest, Integer cost, String pathTokensInString, F24MetadataSet f24Metadataset) {
-        return safeStorageService.createAndUploadContent(fileCreationWithContentRequest).flatMap(fileCreationResponse -> f24FileDao.updateItem(F24File.builder()
+
+        String finalCost = cost == null ? COST : cost.toString();
+
+        return safeStorageService.createAndUploadContent(fileCreationWithContentRequest).flatMap(fileCreationResponse ->
+                Mono.just(F24File.builder()
+                        .pk(f24Metadataset.getPk())
+                        .created(String.valueOf(Instant.now()))
+                        .sk(finalCost + "#" + pathTokensInString)
+                        .fileKey(fileCreationResponse.getKey())
+                        //todo: add enum for status
+                        .status("GENERATED").requestId(UUID.randomUUID() + "_SYNC").build()));
+    }
+                /*f24FileDao putItem(F24File.builder()
                 .pk(f24Metadataset.getPk())
                 .created(String.valueOf(Instant.now()))
-                .sk(cost.toString() + "#" + pathTokensInString)
+                .sk(finalCost + "#" + pathTokensInString)
                 .fileKey(fileCreationResponse.getKey())
-                //todo: add enum for status
                 .status("GENERATED").requestId(UUID.randomUUID() + "_SYNC").build()));
-    }
+    }*/
 }

@@ -9,10 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import software.amazon.awssdk.enhanced.dynamodb.*;
-import software.amazon.awssdk.enhanced.dynamodb.model.GetItemEnhancedRequest;
-import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional;
-import software.amazon.awssdk.enhanced.dynamodb.model.QueryEnhancedRequest;
-import software.amazon.awssdk.enhanced.dynamodb.model.UpdateItemEnhancedRequest;
+import software.amazon.awssdk.enhanced.dynamodb.model.*;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 
 import java.util.HashMap;
@@ -63,9 +60,16 @@ public class F24FileRepositoryImpl implements F24FileDao {
                 .queryConditional(queryConditional)
                 .scanIndexForward(false)
                 .build();
+
         return Mono.from(table.index(SK_PK_GSI).query(queryEnhancedRequest))
-                .map(f24FileEntityPage -> F24FileMapper.entityToDto(f24FileEntityPage.items().get(0)));
+                .flatMap(f24FileEntityPage -> {
+                    if (f24FileEntityPage.items().isEmpty()) {
+                        return Mono.empty();
+                    }
+                    return Mono.just(F24FileMapper.entityToDto(f24FileEntityPage.items().get(0)));
+                });
     }
+
 
     @Override
     public Mono<F24File> updateItem(F24File f24File) {
@@ -104,6 +108,24 @@ public class F24FileRepositoryImpl implements F24FileDao {
         return expressionBuilder.build();
     }
 
+    @Override
+    public Mono<F24File> putItem(F24File f24File) {
+        F24FileEntity entity = F24FileMapper.dtoToEntity(f24File);
+
+        // Crea una richiesta di inserimento
+        PutItemEnhancedRequest<F24FileEntity> putRequest = createPutItemEnhancedRequest(entity);
+
+        // Esegui l'inserimento
+        return Mono.fromFuture(table.putItem(putRequest))
+                .map(response -> f24File); // Restituisci l'oggetto originale, poiché stai inserendo
+    }
+
+    private PutItemEnhancedRequest<F24FileEntity> createPutItemEnhancedRequest(F24FileEntity entity) {
+        return PutItemEnhancedRequest.builder(F24FileEntity.class)
+                .item(entity)
+                .build();
+    }
+
     private String buildPathTokensPartitionKey(String cost, List<String> pathTokens) {
         String partitionKey = "";
         if (cost != null && !cost.equalsIgnoreCase("")) {
@@ -119,6 +141,4 @@ public class F24FileRepositoryImpl implements F24FileDao {
 
         return partitionKey;
     }
-
-
 }

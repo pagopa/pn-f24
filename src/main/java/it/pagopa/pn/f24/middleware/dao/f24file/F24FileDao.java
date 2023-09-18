@@ -14,5 +14,5 @@ public interface F24FileDao {
 
     Mono<F24File> updateItem(F24File f24File);
 
-    //todo:putItem
+    Mono<F24File> putItem(F24File f24File);
 }
