@@ -1,29 +1,28 @@
 package it.pagopa.pn.f24;
 
 
+import it.pagopa.pn.f24.config.F24Config;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.reactive.config.CorsRegistry;
 import org.springframework.web.reactive.config.WebFluxConfigurer;
 
-import java.util.List;
-
 @Configuration
 @Slf4j
+@AllArgsConstructor
 public class CorsGlobalConfiguration implements WebFluxConfigurer {
 
-    @Value("${cors.allowed.domains:}")
-    private List<String> corsAllowedDomains;
+    private F24Config f24Config;
 
     @Override
     public void addCorsMappings(CorsRegistry corsRegistry) {
 
         if (log.isInfoEnabled())
-            log.info("allowed domains:" + String.join(", ", corsAllowedDomains));
+            log.info("allowed domains:" + String.join(", ", f24Config.getCorsAllowedDomains()));
 
         corsRegistry.addMapping("/**")
-                .allowedOrigins( corsAllowedDomains.toArray( new String[0] ) )
+                .allowedOrigins( f24Config.getCorsAllowedDomains().toArray( new String[0] ) )
                 .allowedMethods("GET", "HEAD", "OPTIONS", "POST", "PUT", "DELETE", "PATCH")
                 .maxAge(3600);
     }
