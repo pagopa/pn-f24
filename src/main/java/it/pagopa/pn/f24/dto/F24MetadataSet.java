@@ -1,13 +1,11 @@
 package it.pagopa.pn.f24.dto;
 
+import it.pagopa.pn.f24.middleware.dao.util.EntityKeysUtils;
 import lombok.Data;
 
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
-
-import static it.pagopa.pn.f24.util.Utility.getCxIdFromMetadataSetPk;
-import static it.pagopa.pn.f24.util.Utility.getSetIdFromMetadataSetPk;
 
 @Data
 public class F24MetadataSet {
@@ -23,10 +21,10 @@ public class F24MetadataSet {
     private Long ttl;
 
     public String getSetId() {
-        return getSetIdFromMetadataSetPk(this.pk);
+        return EntityKeysUtils.F24MetadataSet.getSetId(this.pk);
     }
 
     public String getCxId() {
-        return getCxIdFromMetadataSetPk(this.pk);
+        return EntityKeysUtils.F24MetadataSet.getCxId(this.pk);
     }
 }

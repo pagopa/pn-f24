@@ -6,6 +6,7 @@ import lombok.ToString;
 public enum F24MetadataSetStatusEntity {
     VALIDATION_ENDED("VALIDATION_ENDED"),
 
+    PROCESSING("PROCESSING"),
     TO_VALIDATE("TO_VALIDATE");
 
     private final String value;

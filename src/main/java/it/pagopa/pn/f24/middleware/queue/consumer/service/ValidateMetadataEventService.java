@@ -1,13 +1,10 @@
 package it.pagopa.pn.f24.middleware.queue.consumer.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import it.pagopa.pn.api.dto.events.PnF24AsyncEvent;
 import it.pagopa.pn.f24.business.MetadataValidator;
-import it.pagopa.pn.f24.config.F24Config;
 import it.pagopa.pn.f24.dto.*;
 import it.pagopa.pn.f24.exception.PnF24ExceptionCodes;
 import it.pagopa.pn.f24.exception.PnNotFoundException;
-import it.pagopa.pn.f24.generated.openapi.server.v1.dto.F24Metadata;
 import it.pagopa.pn.f24.middleware.dao.f24metadataset.F24MetadataSetDao;
 import it.pagopa.pn.f24.middleware.eventbus.EventBridgeProducer;
 import it.pagopa.pn.f24.middleware.eventbus.util.PnF24AsyncEventBuilderHelper;
@@ -28,15 +25,10 @@ import java.util.Map;
 public class ValidateMetadataEventService {
     private final F24MetadataSetDao f24MetadataSetDao;
     private final SafeStorageService safeStorageService;
-    private final F24Config f24Config;
     private final EventBridgeProducer<PnF24AsyncEvent> metadataValidationEventProducer;
-
-    public static final Long DOWNLOAD_WHOLE_FILE = -1L;
-
-    public ValidateMetadataEventService(F24MetadataSetDao f24MetadataSetDao, SafeStorageService safeStorageService, F24Config f24Config, EventBridgeProducer<PnF24AsyncEvent> metadataValidationEventProducer) {
+    public ValidateMetadataEventService(F24MetadataSetDao f24MetadataSetDao, SafeStorageService safeStorageService, EventBridgeProducer<PnF24AsyncEvent> metadataValidationEventProducer) {
         this.f24MetadataSetDao = f24MetadataSetDao;
         this.safeStorageService = safeStorageService;
-        this.f24Config = f24Config;
         this.metadataValidationEventProducer = metadataValidationEventProducer;
     }
 
@@ -51,15 +43,6 @@ public class ValidateMetadataEventService {
                 .doOnNext(unused -> log.logEndingProcess(processName))
                 .doOnError(throwable -> log.logEndingProcess(processName, false, throwable.getMessage()))
                 .then();
-        /*
-        return f24MetadataSetDao.getItem(setId, cxId)
-                .flatMap(f24Metadata -> startMetadataValidation(f24Metadata, payload))
-                .switchIfEmpty(Mono.defer(() -> handleMetadataNotFound(payload)))
-                .doOnNext(unused -> log.logEndingProcess(processName))
-                .doOnError(throwable -> log.logEndingProcess(processName, false, throwable.getMessage()))
-                .then();
-
-         */
     }
 
     private Mono<F24MetadataSet> getMetadataSet(String setId, String cxId) {
@@ -70,7 +53,7 @@ public class ValidateMetadataEventService {
                             return Mono.error(
                                     new PnNotFoundException(
                                             "MetadataSet not found",
-                                            String.format(PnF24ExceptionCodes.ERROR_MESSAGE_F24_METADATA_NOT_FOUND, setId, cxId),
+                                            String.format(PnF24ExceptionCodes.ERROR_MESSAGE_F24_METADATA_SET_NOT_FOUND, setId, cxId),
                                             PnF24ExceptionCodes.ERROR_CODE_F24_METADATA_NOT_FOUND
                                     )
                             );
@@ -81,13 +64,27 @@ public class ValidateMetadataEventService {
 
     private Mono<Void> startMetadataValidation(F24MetadataSet f24MetadataSet) {
         if(f24MetadataSet.getStatus().equals(F24MetadataStatus.VALIDATION_ENDED)) {
-            log.warn("Metadata with setId {} and cxId {} already saved and validated", f24MetadataSet.getSetId(), f24MetadataSet.getCxId());
-            return Mono.error(new RuntimeException("Metadata already validated"));
+            log.debug("Metadata with setId {} and cxId {} already saved and validated", f24MetadataSet.getSetId(), f24MetadataSet.getCxId());
+            return Mono.empty();
         }
 
-        return downloadMetadataSetFromSafeStorage(f24MetadataSet.getFileKeys())
+        if(f24MetadataSet.getStatus().equals(F24MetadataStatus.PROCESSING)) {
+            log.debug("Metadata with setId {} and cxId {} already processing", f24MetadataSet.getSetId(), f24MetadataSet.getCxId());
+            return Mono.empty();
+        }
+
+        return takeChargeOfMetadataValidation(f24MetadataSet)
+            .flatMap(updatedF24MetadataSet -> downloadMetadataSetFromSafeStorage(updatedF24MetadataSet.getFileKeys()))
             .map(this::validateMetadataList)
             .flatMap(f24MetadataValidationIssues -> endValidationProcess(f24MetadataValidationIssues, f24MetadataSet));
+    }
+
+    private Mono<F24MetadataSet> takeChargeOfMetadataValidation(F24MetadataSet f24MetadataSet) {
+        f24MetadataSet.setUpdated(Instant.now());
+        f24MetadataSet.setStatus(F24MetadataStatus.PROCESSING);
+
+        return f24MetadataSetDao.updateItem(f24MetadataSet)
+                .doOnError(throwable -> log.warn("Error setting MetadataSet status with pk {} in PROCESSING", f24MetadataSet.getPk()));
     }
 
     private Mono<List<MetadataToValidate>> downloadMetadataSetFromSafeStorage(Map<String, F24MetadataRef> fileKeys) {
@@ -96,10 +93,8 @@ public class ValidateMetadataEventService {
                     F24MetadataRef f24MetadataRef = fileKeys.get(pathTokensString);
                     String fileKey = fileKeys.get(pathTokensString).getFileKey();
                     return downloadFileFromSafeStorage(fileKey)
-                            .map(this::convertBytesToMetadataObject)
-                            .doOnError(throwable -> log.warn("Couldn't parse all metadata in set", throwable))
-                            .map(f24Metadata -> MetadataToValidate.builder()
-                                    .metadata(f24Metadata)
+                            .map(file -> MetadataToValidate.builder()
+                                    .metadataFile(file)
                                     .ref(f24MetadataRef)
                                     .pathTokensKey(pathTokensString)
                                     .build()
@@ -109,18 +104,10 @@ public class ValidateMetadataEventService {
     }
 
     private Mono<byte[]> downloadFileFromSafeStorage(String fileKey) {
+        final int DOWNLOAD_WHOLE_FILE = -1;
         return safeStorageService.getFile(fileKey, false)
                 .flatMap(fileDownloadResponseInt -> safeStorageService.downloadPieceOfContent(fileKey, fileDownloadResponseInt.getDownload().getUrl(), DOWNLOAD_WHOLE_FILE))
                 .doOnError(throwable -> log.warn("Error downloading file with fileKey {}", fileKey, throwable));
-    }
-
-    private F24Metadata convertBytesToMetadataObject(byte[] metadataFileInBytes) {
-        try {
-            ObjectMapper objectMapper = new ObjectMapper();
-            return objectMapper.readValue(metadataFileInBytes, F24Metadata.class);
-        } catch (Exception e) {
-            throw new RuntimeException("Error parsing Metadata", e);
-        }
     }
 
     private List<F24MetadataValidationIssue> validateMetadataList(List<MetadataToValidate> metadataToValidateList) {

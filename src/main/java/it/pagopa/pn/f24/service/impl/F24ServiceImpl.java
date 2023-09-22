@@ -14,6 +14,7 @@ import it.pagopa.pn.f24.generated.openapi.server.v1.dto.RequestAccepted;
 import it.pagopa.pn.f24.generated.openapi.server.v1.dto.SaveF24Item;
 import it.pagopa.pn.f24.generated.openapi.server.v1.dto.SaveF24Request;
 import it.pagopa.pn.f24.middleware.dao.f24metadataset.F24MetadataSetDao;
+import it.pagopa.pn.f24.middleware.dao.util.EntityKeysUtils;
 import it.pagopa.pn.f24.middleware.eventbus.EventBridgeProducer;
 import it.pagopa.pn.f24.middleware.eventbus.util.PnF24AsyncEventBuilderHelper;
 import it.pagopa.pn.f24.middleware.msclient.safestorage.PnSafeStorageClientImpl;
@@ -25,6 +26,7 @@ import it.pagopa.pn.f24.util.Sha256Handler;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
+import software.amazon.awssdk.services.dynamodb.model.ConditionalCheckFailedException;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -38,11 +40,11 @@ public class F24ServiceImpl implements F24Service {
     private static final String REQUEST_ACCEPTED_STATUS = "Success!";
     private static final String REQUEST_ACCEPTED_DESCRIPTION = "Ok";
     private static final long SECONDS_TO_DELAY = 4;
+    private static final int MAX_PATH_TOKENS_DIMENSION = 4;
 
     private final F24Generator f24Generator;
     private final PnSafeStorageClientImpl pnSafeStorageClient;
     private final EventBridgeProducer<PnF24AsyncEvent> metadataValidationEventProducer;
-
     private final MomProducer<InternalMetadataEvent> internalMetadataEventMomProducer;
 
     private final F24MetadataSetDao f24MetadataSetDao;
@@ -60,7 +62,7 @@ public class F24ServiceImpl implements F24Service {
     public Mono<RequestAccepted> saveMetadata(String xPagopaF24CxId, String setId, Mono<SaveF24Request> monoSaveF24Request) {
         log.info("Starting saveMetadata with cxId: {} and setId: {}", xPagopaF24CxId, setId);
         return monoSaveF24Request
-                .doOnNext(this::validateRequest)
+                .doOnNext(saveF24Request -> validateSaveMetadataRequest(saveF24Request, setId))
                 .flatMap(
                     saveF24Request -> this.f24MetadataSetDao.getItem(setId, xPagopaF24CxId)
                         .map(f24Metadata -> handleExistingMetadata(f24Metadata, saveF24Request))
@@ -69,7 +71,27 @@ public class F24ServiceImpl implements F24Service {
                 .doOnNext(unused -> log.info("Ended saveMetadata with success"));
     }
 
-    private void validateRequest(SaveF24Request saveF24Request) {
+    private void validateSaveMetadataRequest(SaveF24Request saveF24Request, String pathSetId) {
+        if(!pathSetId.equalsIgnoreCase(saveF24Request.getSetId())) {
+            throw new PnBadRequestException(
+                    "incongruent setId",
+                    PnF24ExceptionCodes.ERROR_MESSAGE_F24_SET_ID_INCONGRUENT,
+                    PnF24ExceptionCodes.ERROR_CODE_F24_SET_ID_INCONGRUENT
+            );
+        }
+
+        saveF24Request.getF24Items().forEach(
+                saveF24Item -> {
+                    if(!checkPathTokensMaxDimension(saveF24Item.getPathTokens())) {
+                        throw new PnBadRequestException(
+                            "max dimension of pathTokens",
+                            String.format(PnF24ExceptionCodes.ERROR_MESSAGE_F24_PATH_TOKENS_DIMENSION_NOT_ALLOWED, MAX_PATH_TOKENS_DIMENSION),
+                            PnF24ExceptionCodes.ERROR_CODE_F24_PATH_TOKENS_NOT_ALLOWED
+                        );
+                    }
+                }
+        );
+
         if(!checkPathTokensHaveSameDimension(saveF24Request.getF24Items())) {
             throw new PnBadRequestException("pathTokens with different lengths are not allowed", "pathTokens with different lengths are not allowed", PnF24ExceptionCodes.ERROR_CODE_F24_PATH_TOKENS_NOT_ALLOWED);
         }
@@ -77,7 +99,10 @@ public class F24ServiceImpl implements F24Service {
         if(!checkPathTokensUniqueness(saveF24Request.getF24Items())) {
             throw new PnBadRequestException("pathTokens are not unique", "pathTokens are not unique", PnF24ExceptionCodes.ERROR_CODE_F24_PATH_TOKENS_NOT_ALLOWED);
         }
+    }
 
+    private boolean checkPathTokensMaxDimension(List<String> pathTokens) {
+        return pathTokens.size() < MAX_PATH_TOKENS_DIMENSION;
     }
 
     private boolean checkPathTokensHaveSameDimension(List<SaveF24Item> f24Items) {
@@ -88,7 +113,7 @@ public class F24ServiceImpl implements F24Service {
     private boolean checkPathTokensUniqueness(List<SaveF24Item> f24Items) {
         Set<String> pathTokensSet = new HashSet<>();
         for(SaveF24Item f24Item : f24Items) {
-            String pathTokensInString = String.join("#", f24Item.getPathTokens());
+            String pathTokensInString = String.join(EntityKeysUtils.DEFAULT_DELIMITER_CHAR, f24Item.getPathTokens());
             pathTokensSet.add(pathTokensInString);
         }
 
@@ -161,39 +186,26 @@ public class F24ServiceImpl implements F24Service {
     }
 
     private Mono<RequestAccepted> handleNewMetadata(SaveF24Request saveF24Request, String cxId) {
-/*
-        Mono<Void> delayedQueueInsert = Mono.delay(Duration.ofSeconds(SECONDS_TO_DELAY))
-                .doOnNext(signal -> internalMetadataEventMomProducer.push(InternalMetadataEventBuilder.buildValidateMetadataEvent(saveF24Request.getSetId(), cxId)))
-                .doOnError(throwable -> log.warn("Error sending f24SaveEvent to Queue", throwable))
-                .then();
-
-        Mono<Void> dbInsert = this.f24MetadataSetDao.putItem(this.createF24Metadata(saveF24Request, cxId))
-                .doOnNext(unused -> log.debug("Saved record in pn-f24Metadata Table"))
-                .doOnError(throwable -> log.warn("Error saving in f24Metadata Table", throwable))
-                .then();
-
-        return Mono.zip(dbInsert, delayedQueueInsert)
-                .thenReturn(createRequestAcceptedDto());
-*/
         return Mono.fromRunnable(() -> internalMetadataEventMomProducer.push(InternalMetadataEventBuilder.buildValidateMetadataEvent(saveF24Request.getSetId(), cxId)))
                 .doOnError(throwable -> log.warn("Error sending f24SaveEvent to Queue", throwable))
-                .then(this.f24MetadataSetDao.putItem(this.createF24Metadata(saveF24Request, cxId)))
-                .doOnError(throwable -> log.error("Error saving in f24Metadata Table", throwable))
-                .thenReturn(createRequestAcceptedDto());
+                .then(tryToSaveF24MetadataSet(saveF24Request, cxId));
 
-/*
-        return this.f24MetadataDao.putItem(this.createF24Metadata(saveF24Request, cxId))
-                .thenReturn(saveF24Request)
-                .doOnError(throwable -> log.error("Error saving in f24Metadata Table", throwable))
-                .flatMap(saveF24RequestSaved -> Mono.fromRunnable(() -> internalMetadataEventMomProducer.push(InternalMetadataEventBuilder.buildSaveMetadataEvent(saveF24RequestSaved.getSetId(), cxId, saveF24RequestSaved.getF24Items()))))
-                .doOnError(throwable -> log.error("Error sending SaveMetadataEvent to Queue", throwable))
-                .thenReturn(createRequestAcceptedDto());
-*/
+    }
+
+    private Mono<RequestAccepted> tryToSaveF24MetadataSet(SaveF24Request saveF24Request, String cxId) {
+        return this.f24MetadataSetDao.putItem(this.createF24Metadata(saveF24Request, cxId))
+            .thenReturn(createRequestAcceptedDto())
+            .doOnError(throwable -> log.error("Error saving in f24Metadata Table", throwable))
+            .onErrorResume(ConditionalCheckFailedException.class, e -> {
+                log.debug("MetadataSet already saved with setId: {} cxId: {}", saveF24Request.getSetId(), cxId);
+                return this.f24MetadataSetDao.getItem(saveF24Request.getSetId(), cxId)
+                        .map(f24MetadataSet -> handleExistingMetadata(f24MetadataSet, saveF24Request));
+            });
     }
 
     private F24MetadataSet createF24Metadata(SaveF24Request saveF24Request, String cxId) {
         F24MetadataSet f24MetadataSet = new F24MetadataSet();
-        f24MetadataSet.setPk(cxId + "#" + saveF24Request.getSetId());
+        f24MetadataSet.setPk(EntityKeysUtils.F24MetadataSet.createPk(cxId, saveF24Request.getSetId()));
         f24MetadataSet.setStatus(F24MetadataStatus.TO_VALIDATE);
         f24MetadataSet.setHaveToSendValidationEvent(false);
         f24MetadataSet.setValidationEventSent(false);
@@ -241,7 +253,7 @@ public class F24ServiceImpl implements F24Service {
                 .switchIfEmpty(Mono.error(
                     new PnNotFoundException(
                             "MetadataSet not found",
-                            String.format(PnF24ExceptionCodes.ERROR_MESSAGE_F24_METADATA_NOT_FOUND, setId, cxId),
+                            String.format(PnF24ExceptionCodes.ERROR_MESSAGE_F24_METADATA_SET_NOT_FOUND, setId, cxId),
                             PnF24ExceptionCodes.ERROR_CODE_F24_METADATA_NOT_FOUND
                     )
                 ));

@@ -123,21 +123,5 @@ class UtilityTest {
         f24Metadata.f24Elid(new F24Elid());
         assertEquals(F24Type.F24_ELID, Utility.getF24TypeFromMetadata(f24Metadata));
     }
-
-    /**
-     * Method under test: {@link Utility#getCxIdFromMetadataSetPk(String)}
-     */
-    @Test
-    void testGetCxIdFromMetadataSetPk() {
-        assertEquals("Pk", Utility.getCxIdFromMetadataSetPk("Pk"));
-    }
-
-    /**
-     * Method under test: {@link Utility#getSetIdFromMetadataSetPk(String)}
-     */
-    @Test
-    void testGetSetIdFromMetadataSetPk() {
-        assertEquals("Pk", Utility.getSetIdFromMetadataSetPk("#Pk"));
-    }
 }
 
