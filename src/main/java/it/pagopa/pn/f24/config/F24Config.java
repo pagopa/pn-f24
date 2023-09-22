@@ -6,6 +6,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
+import java.util.List;
+
 @Configuration
 @ConfigurationProperties( prefix = "pn.f24")
 @Data
@@ -21,6 +23,7 @@ public class F24Config {
     private Queue internalQueue;
     private Queue safeStorageQueue;
     private EventBus eventBus;
+    private List<String> corsAllowedDomains;
 
     @Data
     public static class Queue {
