@@ -52,4 +52,8 @@ public class Utility {
 
         throw new RuntimeException("Invalid F24 Type");
     }
+
+    public static String convertPathTokensList(List<String> pathTokens) {
+        return String.join(".", pathTokens);
+    }
 }

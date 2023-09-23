@@ -14,7 +14,6 @@ import it.pagopa.pn.f24.generated.openapi.server.v1.dto.RequestAccepted;
 import it.pagopa.pn.f24.generated.openapi.server.v1.dto.SaveF24Item;
 import it.pagopa.pn.f24.generated.openapi.server.v1.dto.SaveF24Request;
 import it.pagopa.pn.f24.middleware.dao.f24metadataset.F24MetadataSetDao;
-import it.pagopa.pn.f24.middleware.dao.util.EntityKeysUtils;
 import it.pagopa.pn.f24.middleware.queue.producer.util.ExternalEventBuilderHelper;
 import it.pagopa.pn.f24.middleware.msclient.safestorage.PnSafeStorageClientImpl;
 import it.pagopa.pn.f24.middleware.queue.producer.events.ValidateMetadataSetEvent;
@@ -22,6 +21,7 @@ import it.pagopa.pn.f24.middleware.queue.producer.util.InternalMetadataEventBuil
 import it.pagopa.pn.f24.service.F24Generator;
 import it.pagopa.pn.f24.service.F24Service;
 import it.pagopa.pn.f24.util.Sha256Handler;
+import it.pagopa.pn.f24.util.Utility;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
@@ -111,7 +111,7 @@ public class F24ServiceImpl implements F24Service {
     private boolean checkPathTokensUniqueness(List<SaveF24Item> f24Items) {
         Set<String> pathTokensSet = new HashSet<>();
         for(SaveF24Item f24Item : f24Items) {
-            String pathTokensInString = String.join(EntityKeysUtils.DEFAULT_DELIMITER_CHAR, f24Item.getPathTokens());
+            String pathTokensInString = Utility.convertPathTokensList(f24Item.getPathTokens());
             pathTokensSet.add(pathTokensInString);
         }
 
@@ -191,7 +191,7 @@ public class F24ServiceImpl implements F24Service {
     }
 
     private Mono<RequestAccepted> tryToSaveF24MetadataSet(SaveF24Request saveF24Request, String cxId) {
-        return this.f24MetadataSetDao.putItem(this.createF24Metadata(saveF24Request, cxId))
+        return this.f24MetadataSetDao.putItemIfAbsent(this.createF24Metadata(saveF24Request, cxId))
             .thenReturn(createRequestAcceptedDto())
             .doOnError(throwable -> log.error("Error saving in f24Metadata Table", throwable))
             .onErrorResume(ConditionalCheckFailedException.class, e -> {
@@ -203,7 +203,8 @@ public class F24ServiceImpl implements F24Service {
 
     private F24MetadataSet createF24Metadata(SaveF24Request saveF24Request, String cxId) {
         F24MetadataSet f24MetadataSet = new F24MetadataSet();
-        f24MetadataSet.setPk(EntityKeysUtils.F24MetadataSet.createPk(cxId, saveF24Request.getSetId()));
+        f24MetadataSet.setCxId(cxId);
+        f24MetadataSet.setSetId(saveF24Request.getSetId());
         f24MetadataSet.setStatus(F24MetadataStatus.TO_VALIDATE);
         f24MetadataSet.setHaveToSendValidationEvent(false);
         f24MetadataSet.setValidationEventSent(false);
@@ -223,7 +224,7 @@ public class F24ServiceImpl implements F24Service {
                     temp.setApplyCost(saveF24Item.getApplyCost());
                     temp.setSha256(saveF24Item.getSha256());
                     temp.setFileKey(saveF24Item.getFileKey());
-                    String pathTokensKey = String.join("#", saveF24Item.getPathTokens());
+                    String pathTokensKey = String.join(".", saveF24Item.getPathTokens());
                     f24MetadataItemMap.put(pathTokensKey, temp);
                 }
         );

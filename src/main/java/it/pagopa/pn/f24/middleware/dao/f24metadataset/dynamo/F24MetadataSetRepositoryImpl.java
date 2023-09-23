@@ -5,7 +5,6 @@ import it.pagopa.pn.f24.dto.F24MetadataSet;
 import it.pagopa.pn.f24.middleware.dao.f24metadataset.F24MetadataSetDao;
 import it.pagopa.pn.f24.middleware.dao.f24metadataset.dynamo.entity.F24MetadataSetEntity;
 import it.pagopa.pn.f24.middleware.dao.f24metadataset.dynamo.mapper.F24MetadataSetMapper;
-import it.pagopa.pn.f24.middleware.dao.util.EntityKeysUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
@@ -32,19 +31,13 @@ public class F24MetadataSetRepositoryImpl implements F24MetadataSetDao {
 
     @Override
     public Mono<F24MetadataSet> getItem(String setId, String cxId) {
-        String partitionKey = EntityKeysUtils.F24MetadataSet.createPk(cxId, setId);
-        return getItem(partitionKey, false);
+        return getItem(setId, cxId, false);
     }
 
     @Override
     public Mono<F24MetadataSet> getItem(String setId, String cxId, boolean isConsistentRead) {
-        String partitionKey = EntityKeysUtils.F24MetadataSet.createPk(cxId, setId);
-        return getItem(partitionKey, isConsistentRead);
-    }
-
-    @Override
-    public Mono<F24MetadataSet> getItem(String partitionKey, boolean isConsistentRead) {
-        Key pk = Key.builder().partitionValue(partitionKey).build();
+        F24MetadataSetEntity f24MetadataSetEntity = new F24MetadataSetEntity(cxId, setId);
+        Key pk = Key.builder().partitionValue(f24MetadataSetEntity.getPk()).build();
 
         GetItemEnhancedRequest getItemEnhancedRequest = GetItemEnhancedRequest.builder()
                 .key(pk)
@@ -55,7 +48,7 @@ public class F24MetadataSetRepositoryImpl implements F24MetadataSetDao {
     }
 
     @Override
-    public Mono<Void> putItem(F24MetadataSet f24MetadataSet) {
+    public Mono<Void> putItemIfAbsent(F24MetadataSet f24MetadataSet) {
         PutItemEnhancedRequest<F24MetadataSetEntity> putItemEnhancedRequest = PutItemEnhancedRequest.builder(F24MetadataSetEntity.class)
                 .item(F24MetadataSetMapper.dtoToEntity(f24MetadataSet))
                 .conditionExpression(

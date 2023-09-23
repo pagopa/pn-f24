@@ -85,7 +85,7 @@ class F24MetadataSetRepositoryImplTest {
         F24MetadataSet f24MetadataSet = new F24MetadataSet();
         f24MetadataSet.setPk("42");
 
-        StepVerifier.create(f24MetadataSetRepository.putItem(f24MetadataSet))
+        StepVerifier.create(f24MetadataSetRepository.putItemIfAbsent(f24MetadataSet))
                 .expectComplete();
     }
 
