@@ -1,14 +1,14 @@
 package it.pagopa.pn.f24.middleware.queue.consumer.service;
 
+import it.pagopa.pn.api.dto.events.MomProducer;
 import it.pagopa.pn.api.dto.events.PnF24AsyncEvent;
 import it.pagopa.pn.f24.business.MetadataValidator;
 import it.pagopa.pn.f24.dto.*;
 import it.pagopa.pn.f24.exception.PnF24ExceptionCodes;
 import it.pagopa.pn.f24.exception.PnNotFoundException;
 import it.pagopa.pn.f24.middleware.dao.f24metadataset.F24MetadataSetDao;
-import it.pagopa.pn.f24.middleware.eventbus.EventBridgeProducer;
-import it.pagopa.pn.f24.middleware.eventbus.util.PnF24AsyncEventBuilderHelper;
-import it.pagopa.pn.f24.middleware.queue.producer.InternalMetadataEvent;
+import it.pagopa.pn.f24.middleware.queue.producer.util.ExternalEventBuilderHelper;
+import it.pagopa.pn.f24.middleware.queue.producer.events.ValidateMetadataSetEvent;
 import it.pagopa.pn.f24.service.SafeStorageService;
 import lombok.CustomLog;
 import org.springframework.stereotype.Service;
@@ -25,14 +25,14 @@ import java.util.Map;
 public class ValidateMetadataEventService {
     private final F24MetadataSetDao f24MetadataSetDao;
     private final SafeStorageService safeStorageService;
-    private final EventBridgeProducer<PnF24AsyncEvent> metadataValidationEventProducer;
-    public ValidateMetadataEventService(F24MetadataSetDao f24MetadataSetDao, SafeStorageService safeStorageService, EventBridgeProducer<PnF24AsyncEvent> metadataValidationEventProducer) {
+    private final MomProducer<PnF24AsyncEvent> externalEventProducer;
+    public ValidateMetadataEventService(F24MetadataSetDao f24MetadataSetDao, SafeStorageService safeStorageService, MomProducer<PnF24AsyncEvent> externalEventProducer) {
         this.f24MetadataSetDao = f24MetadataSetDao;
         this.safeStorageService = safeStorageService;
-        this.metadataValidationEventProducer = metadataValidationEventProducer;
+        this.externalEventProducer = externalEventProducer;
     }
 
-    public Mono<Void> handleMetadataValidation(InternalMetadataEvent.Payload payload) {
+    public Mono<Void> handleMetadataValidation(ValidateMetadataSetEvent.Payload payload) {
         String setId = payload.getSetId();
         String cxId = payload.getCxId();
         log.info("handle metadata validation with setId {} and cxId {}", setId, cxId);
@@ -130,7 +130,7 @@ public class ValidateMetadataEventService {
                     String setId = f24MetadataSet.getSetId();
                     if(refreshedF24MetadataSet.getHaveToSendValidationEvent()) {
                         log.debug("MetadataSet with setId {} and cxId {} has to send validation end event", setId, cxId);
-                        return Mono.fromRunnable(() -> metadataValidationEventProducer.sendEvent(PnF24AsyncEventBuilderHelper.buildMetadataValidationEndEvent(cxId, setId, f24MetadataValidationIssues)))
+                        return Mono.fromRunnable(() -> externalEventProducer.push(ExternalEventBuilderHelper.buildMetadataValidationEndEvent(cxId, setId, f24MetadataValidationIssues)))
                                 .doOnError(throwable -> log.warn("Error sending validation end event", throwable))
                                 .then(updateMetadataSetWithValidation(refreshedF24MetadataSet, f24MetadataValidationIssues, true));
                     } else {

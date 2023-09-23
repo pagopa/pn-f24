@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import it.pagopa.pn.api.dto.events.GenericEventHeader;
 import org.junit.jupiter.api.Test;
 
-class InternalMetadataEventBuilderTest {
+class ValidateMetadataSetEventBuilderTest {
     /**
      * Method under test: {@link InternalMetadataEventBuilder#buildValidateMetadataEvent(String, String)}
      */

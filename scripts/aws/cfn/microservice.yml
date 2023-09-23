@@ -238,21 +238,13 @@ Parameters:
     Type: String
     Description: SafeStorage-to-f24 queue age alarm ARN
 
-  F24EventBusName:
+  PnF24OutputQueueName:
     Type: String
-    Description: F24 event bus name
+    Description: f24 output queue name
 
-  F24EventBusARN:
+  PnF24OutputQueueARN:
     Type: String
-    Description: F24 event bus ARN
-
-  F24EventBusDLQARN:
-    Type: String
-    Description: F24 event bus DLQ ARN
-
-  PnCoreTargetEventBus:
-    Type: String
-    Description: ARN of the core target event bus
+    Description: f24 output queue ARN
 
 Conditions:
     SendLogToKinesis: !Not [ !Equals [ !Ref LogsKinesisSourceStreamArn, '' ] ]
@@ -292,7 +284,7 @@ Resources:
         ContainerEnvEntry8: !Sub 'PN_SAFESTORAGE_BASE_URL=${SandboxSafeStorageBaseUrl}'
         ContainerEnvEntry9: !Sub 'PN_F24_TOPICS_INTERNAL=${PnF24InternalQueueName}'
         ContainerEnvEntry10: !Sub 'PN_F24_TOPICS_FROM_SAFE_STORAGE=${SafeStorageToF24QueueName}'
-        ContainerEnvEntry11: !Sub 'PN_F24_EVENTBUS_NAME=${F24EventBusName}'
+        ContainerEnvEntry11: !Sub 'PN_F24_TOPICS_EXTERNAL=${PnF24OutputQueueName}'
         ContainerEnvEntry18: !Sub 'LOLLIPOP_EXPECTED_LC_ORIGINAL_URL=${LollipopExpectedLcOriginalUrl}'
         ContainerEnvEntry19: !Sub 'LOLLIPOP_ENABLE_CONSUMER_LOGGING=${LollipopEnableConsumerLogging}'
         MicroServiceSecretPrefix: pn-f24-Secrets
@@ -330,6 +322,7 @@ Resources:
             Resource:
               - !Ref PnF24InternalQueueARN
               - !Ref SafeStorageToF24QueueARN
+              - !Ref PnF24OutputQueueARN
           - Effect: Allow
             Action:
               - dynamodb:GetItem
@@ -340,11 +333,6 @@ Resources:
             Resource:
               - !Sub "${F24MetadataSetTableArn}"
               - !Sub "${F24FileTableArn}"
-          - Effect: Allow
-            Action:
-              - events:PutEvents
-            Resource:
-              - !Ref F24EventBusARN
 
   # Expose PN-f24 microservice public API with API-GW for B2B usage
   F24MicroservicePublicAPI:
@@ -392,46 +380,7 @@ Resources:
           - ','
           - - !Ref PnF24InternalQueueARN
             - !Ref SafeStorageToF24QueueARN
-            - !Ref F24EventBusDLQARN
+            - !Ref PnF24ExternalQueueARN
         LogGroupsNames: !Join
           - ','
           - - !Sub '/aws/ecs/${ProjectName}-f24'
-
-  # Event Bus to target bus role
-  F24EventBusTargetRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Statement:
-          - Action: sts:AssumeRole
-            Effect: Allow
-            Principal:
-              Service: events.amazonaws.com
-        Version: "2012-10-17"
-      Policies:
-        - PolicyName: putEventIntoTargetBus
-          PolicyDocument:
-            Statement:
-              - Sid: putEvents
-                Action:
-                  - events:PutEvents
-                Effect: Allow
-                Resource:
-                  - !Ref PnCoreTargetEventBus
-
-  # Event Bus rule that direct event to target event bus
-  F24EventBusToTarget:
-    Type: AWS::Events::Rule
-    Properties:
-      Description: Route Address Manager Events to target event bus
-      RoleArn: !GetAtt F24EventBusTargetRole.Arn
-      EventBusName: !Ref F24EventBusName
-      EventPattern:
-        detail-type: [ "PnF24OutcomeEvent" ]
-        source: [ "pn-f24" ]
-      Targets:
-        - Id: !Sub '${ProjectName}-F24Bus-PnCoreTargetEventBus'
-          Arn: !Ref PnCoreTargetEventBus
-          RoleArn: !GetAtt F24EventBusTargetRole.Arn
-          DeadLetterConfig:
-            Arn: !Ref F24EventBusDLQARN

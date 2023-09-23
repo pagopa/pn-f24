@@ -1,4 +1,4 @@
-package it.pagopa.pn.f24.middleware.queue.producer;
+package it.pagopa.pn.f24.middleware.queue.producer.events;
 
 import it.pagopa.pn.api.dto.events.GenericEvent;
 import it.pagopa.pn.api.dto.events.GenericEventHeader;
@@ -10,7 +10,7 @@ import lombok.*;
 @Builder(toBuilder = true)
 @EqualsAndHashCode
 @ToString
-public class InternalMetadataEvent implements GenericEvent<GenericEventHeader, InternalMetadataEvent.Payload> {
+public class ValidateMetadataSetEvent implements GenericEvent<GenericEventHeader, ValidateMetadataSetEvent.Payload> {
     private GenericEventHeader header;
 
     private Payload payload;

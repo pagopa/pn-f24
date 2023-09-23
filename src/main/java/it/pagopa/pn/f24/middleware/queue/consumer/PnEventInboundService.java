@@ -31,7 +31,7 @@ public class PnEventInboundService {
     
     public PnEventInboundService(EventHandler eventHandler, F24Config cfg) {
         this.eventHandler = eventHandler;
-        this.safeStorageEventQueueName = cfg.getSafeStorageQueue().getName();
+        this.safeStorageEventQueueName = cfg.getSafeStorageQueueName();
     }
 
     @Bean

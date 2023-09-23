@@ -21,7 +21,7 @@ public class F24FileRequestRepositoryImpl implements F24FileRequestDao {
     private final DynamoDbAsyncTable<F24FileRequestEntity> table;
 
     public F24FileRequestRepositoryImpl(DynamoDbEnhancedAsyncClient dynamoDbEnhancedClient, F24Config f24Config) {
-        this.table = dynamoDbEnhancedClient.table(f24Config.getFileDao().getTableName(), TableSchema.fromBean(F24FileRequestEntity.class));
+        this.table = dynamoDbEnhancedClient.table(f24Config.getFileTableName(), TableSchema.fromBean(F24FileRequestEntity.class));
     }
 
     @Override

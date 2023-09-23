@@ -27,7 +27,7 @@ public class F24FileCacheRepositoryImpl implements F24FileCacheDao {
     private final DynamoDbAsyncTable<F24FileCacheEntity> table;
 
     public F24FileCacheRepositoryImpl(DynamoDbEnhancedAsyncClient dynamoDbEnhancedClient, F24Config f24Config) {
-        this.table = dynamoDbEnhancedClient.table(f24Config.getFileDao().getTableName(), TableSchema.fromBean(F24FileCacheEntity.class));
+        this.table = dynamoDbEnhancedClient.table(f24Config.getFileTableName(), TableSchema.fromBean(F24FileCacheEntity.class));
     }
 
     @Override

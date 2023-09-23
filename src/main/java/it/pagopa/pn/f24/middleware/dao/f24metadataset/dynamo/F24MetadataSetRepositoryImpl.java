@@ -21,14 +21,13 @@ import java.util.Map;
 @Component
 @Slf4j
 public class F24MetadataSetRepositoryImpl implements F24MetadataSetDao {
-    private static final String DEFAULT_SEPARATOR = "#";
     private final DynamoDbAsyncTable<F24MetadataSetEntity> table;
 
     private final F24Config f24Config;
 
     public F24MetadataSetRepositoryImpl(DynamoDbEnhancedAsyncClient dynamoDbEnhancedClient, F24Config f24Config) {
         this.f24Config = f24Config;
-        this.table = dynamoDbEnhancedClient.table(f24Config.getMetadataDao().getTableName(), TableSchema.fromBean(F24MetadataSetEntity.class));
+        this.table = dynamoDbEnhancedClient.table(f24Config.getMetadataSetTableName(), TableSchema.fromBean(F24MetadataSetEntity.class));
     }
 
     @Override

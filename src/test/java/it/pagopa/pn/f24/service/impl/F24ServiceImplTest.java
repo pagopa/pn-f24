@@ -12,9 +12,8 @@ import it.pagopa.pn.api.dto.events.PnF24AsyncEvent;
 import it.pagopa.pn.f24.dto.F24MetadataSet;
 import it.pagopa.pn.f24.exception.PnBadRequestException;
 import it.pagopa.pn.f24.middleware.dao.f24metadataset.F24MetadataSetDao;
-import it.pagopa.pn.f24.middleware.eventbus.EventBridgeProducer;
 import it.pagopa.pn.f24.middleware.msclient.safestorage.PnSafeStorageClientImpl;
-import it.pagopa.pn.f24.middleware.queue.producer.InternalMetadataEvent;
+import it.pagopa.pn.f24.middleware.queue.producer.events.ValidateMetadataSetEvent;
 import it.pagopa.pn.f24.service.F24Generator;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,7 +27,7 @@ import reactor.core.publisher.Mono;
 @ExtendWith(SpringExtension.class)
 class F24ServiceImplTest {
     @MockBean
-    private EventBridgeProducer<PnF24AsyncEvent> eventBridgeProducer;
+    private MomProducer<PnF24AsyncEvent> momProducerExternal;
 
     @MockBean
     private F24Generator f24Generator;
@@ -40,7 +39,7 @@ class F24ServiceImplTest {
     private F24ServiceImpl f24ServiceImpl;
 
     @MockBean
-    private MomProducer<InternalMetadataEvent> momProducer;
+    private MomProducer<ValidateMetadataSetEvent> momProducer;
 
     @MockBean
     private PnSafeStorageClientImpl pnSafeStorageClientImpl;
