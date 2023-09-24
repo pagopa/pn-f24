@@ -1,6 +1,7 @@
 package it.pagopa.pn.f24.dto;
 
 public enum F24FileStatus {
+    TO_PROCESS("TO_PROCESS"),
     PROCESSING("PROCESSING"),
     GENERATED("GENERATED"),
     DONE("DONE");

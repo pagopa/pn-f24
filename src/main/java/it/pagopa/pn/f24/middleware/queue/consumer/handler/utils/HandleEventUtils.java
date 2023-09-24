@@ -49,41 +49,26 @@ public class HandleEventUtils {
         addCxIdToMdc(cxId);
     }
 
+    public static void addCxIdAndRequestIdToMdc(String cxId, String requestId) {
+        addCxIdToMdc(cxId);
+        addRequestIdToMdc(requestId);
+    }
+
     private static void addCxIdToMdc(String cxId) {
         MDC.put(MDCUtils.MDC_CX_ID_KEY, cxId);
     }
 
+    //TODO Aggiungere key in MDCUtils
     private static void addSetIdToMdc(String setId) {
         MDC.put("setId", setId);
     }
-
-    public static void addIunAndCorrIdToMdc(String iun, String correlationId) {
-        addIunToMdc(iun);
-        addCorrelationIdToMdc(correlationId);
-    }
-
-    public static void addIunAndRecIndexAndCorrIdToMdc(String iun, Integer recIndex, String correlationId) {
-        addIunToMdc(iun);
-        addRecIndexToMdc(recIndex);
-        addCorrelationIdToMdc(correlationId);
-    }
-
-    public static void addIunAndRecIndexToMdc(String iun, int recIndex) {
-        addIunToMdc(iun);
-        addRecIndexToMdc(recIndex);
-    }
-
-    public static void addIunToMdc(String iun) {
-        MDC.put(MDCUtils.MDC_PN_IUN_KEY, iun);
-    }
-
-    public static void addRecIndexToMdc(Integer recIndex) {
-        if(recIndex != null){
-            MDC.put(MDCUtils.MDC_PN_CTX_RECIPIENT_INDEX, String.valueOf(recIndex));
-        }
+    //TODO Aggiungere key in MDCUtils
+    private static void addRequestIdToMdc(String requestId) {
+        MDC.put("requestId", requestId);
     }
 
     public static void addCorrelationIdToMdc(String correlationId) {
         MDC.put(MDCUtils.MDC_PN_CTX_REQUEST_ID, correlationId);
     }
+
 }

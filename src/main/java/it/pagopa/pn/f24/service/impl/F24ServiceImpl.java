@@ -3,21 +3,24 @@ package it.pagopa.pn.f24.service.impl;
 
 import it.pagopa.pn.api.dto.events.MomProducer;
 import it.pagopa.pn.api.dto.events.PnF24AsyncEvent;
-import it.pagopa.pn.f24.dto.F24MetadataRef;
-import it.pagopa.pn.f24.dto.F24MetadataSet;
-import it.pagopa.pn.f24.dto.F24MetadataStatus;
+import it.pagopa.pn.f24.config.F24Config;
+import it.pagopa.pn.f24.dto.*;
 import it.pagopa.pn.f24.exception.PnBadRequestException;
 import it.pagopa.pn.f24.exception.PnConflictException;
 import it.pagopa.pn.f24.exception.PnF24ExceptionCodes;
 import it.pagopa.pn.f24.exception.PnNotFoundException;
+import it.pagopa.pn.f24.generated.openapi.server.v1.dto.PrepareF24Request;
 import it.pagopa.pn.f24.generated.openapi.server.v1.dto.RequestAccepted;
 import it.pagopa.pn.f24.generated.openapi.server.v1.dto.SaveF24Item;
 import it.pagopa.pn.f24.generated.openapi.server.v1.dto.SaveF24Request;
+import it.pagopa.pn.f24.middleware.dao.f24file.F24FileRequestDao;
 import it.pagopa.pn.f24.middleware.dao.f24metadataset.F24MetadataSetDao;
+import it.pagopa.pn.f24.middleware.queue.producer.events.PreparePdfEvent;
 import it.pagopa.pn.f24.middleware.queue.producer.util.ExternalEventBuilderHelper;
 import it.pagopa.pn.f24.middleware.msclient.safestorage.PnSafeStorageClientImpl;
 import it.pagopa.pn.f24.middleware.queue.producer.events.ValidateMetadataSetEvent;
 import it.pagopa.pn.f24.middleware.queue.producer.util.InternalMetadataEventBuilder;
+import it.pagopa.pn.f24.middleware.queue.producer.util.PreparePdfEventBuilder;
 import it.pagopa.pn.f24.service.F24Generator;
 import it.pagopa.pn.f24.service.F24Service;
 import it.pagopa.pn.f24.util.Sha256Handler;
@@ -30,6 +33,7 @@ import software.amazon.awssdk.services.dynamodb.model.ConditionalCheckFailedExce
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static it.pagopa.pn.f24.util.Utility.*;
 
@@ -45,15 +49,21 @@ public class F24ServiceImpl implements F24Service {
     private final PnSafeStorageClientImpl pnSafeStorageClient;
     private final MomProducer<PnF24AsyncEvent> externalEventProducer;
     private final MomProducer<ValidateMetadataSetEvent> validateMetadataSetEventProducer;
+    private final MomProducer<PreparePdfEvent> preparePdfEventProducer;
     private final F24MetadataSetDao f24MetadataSetDao;
+    private final F24FileRequestDao f24FileRequestDao;
+    private final F24Config f24Config;
 
 
-    public F24ServiceImpl(F24Generator f24Generator, PnSafeStorageClientImpl pnSafeStorageClient, MomProducer<PnF24AsyncEvent> externalEventProducer, MomProducer<ValidateMetadataSetEvent> validateMetadataSetEventProducer, F24MetadataSetDao f24MetadataSetDao) {
+    public F24ServiceImpl(F24Generator f24Generator, PnSafeStorageClientImpl pnSafeStorageClient, MomProducer<PnF24AsyncEvent> externalEventProducer, MomProducer<ValidateMetadataSetEvent> validateMetadataSetEventProducer, MomProducer<PreparePdfEvent> preparePdfEventProducer, F24MetadataSetDao f24MetadataSetDao, F24FileRequestDao f24FileRequestDao, F24Config f24Config) {
         this.f24Generator = f24Generator;
         this.pnSafeStorageClient = pnSafeStorageClient;
         this.externalEventProducer = externalEventProducer;
         this.validateMetadataSetEventProducer = validateMetadataSetEventProducer;
+        this.preparePdfEventProducer = preparePdfEventProducer;
         this.f24MetadataSetDao = f24MetadataSetDao;
+        this.f24FileRequestDao = f24FileRequestDao;
+        this.f24Config = f24Config;
     }
 
     @Override
@@ -309,6 +319,117 @@ public class F24ServiceImpl implements F24Service {
         //Se necessario includere anche il costo della notifica, allora va rivisto cambiando l'ordine delle chiamate
 
         return null;
+    }
+
+    @Override
+    public Mono<RequestAccepted> preparePDF(String xPagopaF24CxId, String requestId, Mono<PrepareF24Request> monoPrepareF24Request) {
+        log.info("starting preparePdf with requestId {} for cxId {}", requestId, xPagopaF24CxId);
+        return monoPrepareF24Request
+                .flatMap(prepareF24Request -> validatePreparePdfRequest(prepareF24Request, xPagopaF24CxId))
+                .flatMap(prepareF24Request -> f24FileRequestDao.getItem(xPagopaF24CxId, requestId)
+                        .map(f24Request -> handleExistingRequest(f24Request, prepareF24Request))
+                        .switchIfEmpty(Mono.defer(() -> handleNewPreparePdfRequest(xPagopaF24CxId, requestId, prepareF24Request)))
+                );
+    }
+
+    private Mono<PrepareF24Request> validatePreparePdfRequest(PrepareF24Request prepareF24Request, String cxId) {
+        if(!checkPathTokensMaxDimension(prepareF24Request.getPathTokens())) {
+            return Mono.error(new PnBadRequestException(
+                    "max dimension of pathTokens",
+                    String.format(PnF24ExceptionCodes.ERROR_MESSAGE_F24_PATH_TOKENS_DIMENSION_NOT_ALLOWED, MAX_PATH_TOKENS_DIMENSION),
+                    PnF24ExceptionCodes.ERROR_CODE_F24_PATH_TOKENS_NOT_ALLOWED
+            ));
+        }
+
+        //Cerco se nel set di metadata è presente almeno un metadata con path tokens indicato nel body della richiesta.
+        return getMetadataSet(prepareF24Request.getSetId(), cxId)
+                .doOnNext(f24MetadataSet -> {
+                    String pathTokensString = Utility.convertPathTokensList(prepareF24Request.getPathTokens());
+                    Map<String, F24MetadataRef> fileKeysByPathTokens = filterFileKeysByPathTokens(f24MetadataSet.getFileKeys(), pathTokensString);
+
+                    if(fileKeysByPathTokens.isEmpty()) {
+                        throw new PnNotFoundException(
+                                "MetadataSet not found",
+                                String.format(PnF24ExceptionCodes.ERROR_MESSAGE_F24_METADATA_NOT_FOUND, pathTokensString, prepareF24Request.getSetId(), cxId),
+                                PnF24ExceptionCodes.ERROR_CODE_F24_METADATA_NOT_FOUND
+                        );
+                    }
+
+                    boolean metadataRequiresCost = checkIfFileKeysRequireApplyCosts(fileKeysByPathTokens);
+                    if(metadataRequiresCost && prepareF24Request.getNotificationCost() == null) {
+                        throw new PnBadRequestException("Invalid request payload", "Requested metadata require notificationCost", PnF24ExceptionCodes.ERROR_CODE_F24_PREPARE_PDF_VALIDATION_ERROR);
+                    } else if (!metadataRequiresCost && prepareF24Request.getNotificationCost() != null) {
+                        throw new PnBadRequestException("Invalid request payload", "Requested metadata don't require notificationCost", PnF24ExceptionCodes.ERROR_CODE_F24_PREPARE_PDF_VALIDATION_ERROR);
+                    }
+                })
+                .thenReturn(prepareF24Request);
+    }
+
+    private Map<String, F24MetadataRef> filterFileKeysByPathTokens(Map<String, F24MetadataRef> fileKeys, String pathTokensInString) {
+        return fileKeys.entrySet().stream()
+                .filter(entry -> entry.getKey().startsWith(pathTokensInString))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    }
+
+    private boolean checkIfFileKeysRequireApplyCosts(Map<String, F24MetadataRef> fileKeys) {
+        return fileKeys.entrySet().stream().anyMatch(entry -> entry.getValue().isApplyCost());
+    }
+
+    private RequestAccepted handleExistingRequest(F24Request f24Request, PrepareF24Request prepareF24Request) {
+        log.debug("Handling prepare pdf request already existing");
+        String pathTokensString = Utility.convertPathTokensList(prepareF24Request.getPathTokens());
+        if(
+                !f24Request.getSetId().equalsIgnoreCase(prepareF24Request.getSetId()) ||
+                        !f24Request.getPathTokens().equalsIgnoreCase(pathTokensString) ||
+                        !Objects.equals(f24Request.getCost(), prepareF24Request.getNotificationCost())
+        ) {
+            throw new PnConflictException("Conflict", "requestId already processed with different payload", PnF24ExceptionCodes.ERROR_CODE_F24_SAVE_REQUEST_CONFLICT);
+        }
+        return createRequestAcceptedDto();
+    }
+
+
+    private Mono<RequestAccepted> handleNewPreparePdfRequest(String xPagopaF24CxId, String requestId, PrepareF24Request prepareF24Request) {
+        log.debug("Handling new prepare pdf request");
+        return sendPreparePdfEvent(xPagopaF24CxId, requestId, prepareF24Request)
+                .then(tryToSaveF24Request(xPagopaF24CxId, requestId, prepareF24Request));
+    }
+
+    private Mono<Void> sendPreparePdfEvent(String cxId, String requestId, PrepareF24Request prepareF24Request) {
+        log.debug("Sending prepare pdf event for requestId={}",requestId);
+
+        return Mono.fromRunnable(() -> preparePdfEventProducer.push(
+                PreparePdfEventBuilder.buildPreparePdfEvent(cxId ,requestId)
+        ))
+        .doOnError(t -> log.warn("Error sending preparePdf event"))
+        .then();
+    }
+
+    private Mono<RequestAccepted> tryToSaveF24Request(String xPagopaF24CxId, String requestId, PrepareF24Request prepareF24Request) {
+        log.debug("Try to save F24Request");
+        return f24FileRequestDao.putItemIfAbsent(buildF24Request(xPagopaF24CxId, requestId, prepareF24Request))
+                .thenReturn(createRequestAcceptedDto())
+                .doOnError(throwable -> log.error("Error saving in f24Request Table", throwable))
+                .onErrorResume(ConditionalCheckFailedException.class, e -> {
+                    log.debug("Request already saved with requestId: {}", requestId);
+                    return this.f24FileRequestDao.getItem(xPagopaF24CxId, requestId)
+                            .map(f24Request -> handleExistingRequest(f24Request, prepareF24Request));
+                });
+    }
+
+    private F24Request buildF24Request(String xPagopaF24CxId, String requestId, PrepareF24Request prepareF24Request) {
+        F24Request f24Request = new F24Request();
+        f24Request.setCxId(xPagopaF24CxId);
+        f24Request.setRequestId(requestId);
+        f24Request.setSetId(prepareF24Request.getSetId());
+        f24Request.setCost(prepareF24Request.getNotificationCost());
+        String pathTokens = Utility.convertPathTokensList(prepareF24Request.getPathTokens());
+        f24Request.setPathTokens(pathTokens);
+        //TODO build files
+        f24Request.setStatus(F24RequestStatus.TO_PROCESS);
+        f24Request.setCreated(Instant.now());
+        f24Request.setTtl(Instant.now().plus(Duration.ofDays(f24Config.getRetentionForF24RequestsInDays())).getEpochSecond());
+        return f24Request;
     }
 
 }

@@ -4,6 +4,7 @@ import it.pagopa.pn.f24.config.F24Config;
 import it.pagopa.pn.f24.dto.F24File;
 import it.pagopa.pn.f24.middleware.dao.f24file.F24FileCacheDao;
 import it.pagopa.pn.f24.middleware.dao.f24file.dynamo.entity.F24FileCacheEntity;
+import it.pagopa.pn.f24.middleware.dao.f24file.dynamo.entity.F24RequestStatusEntity;
 import it.pagopa.pn.f24.middleware.dao.f24file.dynamo.mapper.F24FileCacheMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -20,6 +21,7 @@ import java.util.Map;
 
 import static it.pagopa.pn.f24.middleware.dao.f24file.dynamo.entity.BaseEntity.COL_PK;
 import static it.pagopa.pn.f24.middleware.dao.f24file.dynamo.entity.F24FileCacheEntity.GSI_FILE_KEY;
+import static it.pagopa.pn.f24.middleware.dao.f24file.dynamo.entity.F24FileCacheEntity.COL_STATUS;
 
 @Component
 @Slf4j
@@ -30,6 +32,8 @@ public class F24FileCacheRepositoryImpl implements F24FileCacheDao {
         this.table = dynamoDbEnhancedClient.table(f24Config.getFileTableName(), TableSchema.fromBean(F24FileCacheEntity.class));
     }
 
+
+
     @Override
     public Mono<F24File> getItem(String cxId, String setId, Integer cost, String pathTokens) {
         return getItem(setId, cxId, cost, pathTokens, false);
@@ -38,8 +42,17 @@ public class F24FileCacheRepositoryImpl implements F24FileCacheDao {
     @Override
     public Mono<F24File> getItem(String cxId, String setId, Integer cost, String pathTokens, boolean isConsistentRead) {
         F24FileCacheEntity f24FileCacheEntity = new F24FileCacheEntity(cxId, setId, cost, pathTokens);
-        Key pk = Key.builder().partitionValue(f24FileCacheEntity.getPk()).build();
+        return getItem(f24FileCacheEntity.getPk(), isConsistentRead);
+    }
 
+    @Override
+    public Mono<F24File> getItem(String filePk) {
+        return getItem(filePk, false);
+    }
+
+    @Override
+    public Mono<F24File> getItem(String filePk, boolean isConsistentRead) {
+        Key pk = Key.builder().partitionValue(filePk).build();
         GetItemEnhancedRequest getItemEnhancedRequest = GetItemEnhancedRequest.builder()
                 .key(pk)
                 .consistentRead(isConsistentRead)
@@ -51,6 +64,42 @@ public class F24FileCacheRepositoryImpl implements F24FileCacheDao {
     @Override
     public Mono<F24File> updateItem(F24File f24File) {
         return Mono.fromFuture(table.updateItem(createUpdateItemEnhancedRequest(F24FileCacheMapper.dtoToEntity(f24File))))
+                .map(F24FileCacheMapper::entityToDto);
+    }
+
+    @Override
+    public Mono<F24File> setF24FileStatusProcessing(F24File f24File) {
+        Map<String, String> expressionNames = new HashMap<>();
+        expressionNames.put("#status", COL_STATUS);
+
+        Map<String, AttributeValue> expressionValues = new HashMap<>();
+        expressionValues.put(":status", AttributeValue.builder().s(F24RequestStatusEntity.TO_PROCESS.getValue()).build());
+
+        UpdateItemEnhancedRequest<F24FileCacheEntity> updateItemEnhancedRequest = UpdateItemEnhancedRequest
+                .builder(F24FileCacheEntity.class)
+                .conditionExpression(expressionBuilder("#status = :status", expressionValues, expressionNames))
+                .item(F24FileCacheMapper.dtoToEntity(f24File))
+                .build();
+
+        return Mono.fromFuture(table.updateItem(updateItemEnhancedRequest))
+                .map(F24FileCacheMapper::entityToDto);
+    }
+
+    @Override
+    public Mono<F24File> setF24FileStatusDone(F24File f24File) {
+        Map<String, String> expressionNames = new HashMap<>();
+        expressionNames.put("#status", COL_STATUS);
+
+        Map<String, AttributeValue> expressionValues = new HashMap<>();
+        expressionValues.put(":status", AttributeValue.builder().s(F24RequestStatusEntity.PROCESSING.getValue()).build());
+
+        UpdateItemEnhancedRequest<F24FileCacheEntity> updateItemEnhancedRequest = UpdateItemEnhancedRequest
+                .builder(F24FileCacheEntity.class)
+                .conditionExpression(expressionBuilder("#status = :status", expressionValues, expressionNames))
+                .item(F24FileCacheMapper.dtoToEntity(f24File))
+                .build();
+
+        return Mono.fromFuture(table.updateItem(updateItemEnhancedRequest))
                 .map(F24FileCacheMapper::entityToDto);
     }
 

@@ -16,7 +16,7 @@ public class F24FileRequestEntity extends BaseEntity {
     public static final String COL_SET_ID = "setId";
     public static final String COL_PATH_TOKENS = "pathTokens";
     public static final String COL_COST = "cost";
-    private static final String COL_RECORD_VERSION = "recordVersion";
+    public static final String COL_RECORD_VERSION = "recordVersion";
     public static final String COL_STATUS = "status";
     public static final String COL_TTL = "ttl";
 
@@ -29,7 +29,7 @@ public class F24FileRequestEntity extends BaseEntity {
     }
 
     @Getter(onMethod = @__({@DynamoDbAttribute(COL_FILES)}))
-    private Map<String, FileKeyEntity> files;
+    private Map<String, FileRefEntity> files;
 
     @Getter(onMethod = @__({@DynamoDbAttribute(COL_SET_ID)}))
     private String setId;

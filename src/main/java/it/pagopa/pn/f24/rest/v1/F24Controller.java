@@ -47,6 +47,8 @@ public class F24Controller implements F24ControllerApi {
 
     @Override
     public Mono<ResponseEntity<RequestAccepted>> preparePDF(String xPagopaF24CxId, String requestId, Mono<PrepareF24Request> prepareF24Request, final ServerWebExchange exchange) {
-        return null;
+        return f24Service.preparePDF(xPagopaF24CxId, requestId, prepareF24Request)
+                .map(requestAccepted -> ResponseEntity.status(HttpStatus.ACCEPTED).body(requestAccepted))
+                .publishOn(scheduler);
     }
 }

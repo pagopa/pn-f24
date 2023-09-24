@@ -24,4 +24,6 @@ public class F24Config {
     private String externalQueueName;
     private String safeStorageQueueName;
     private List<String> corsAllowedDomains;
+    private Integer retentionForF24RequestsInDays;
+    private Integer retentionForF24FilesInDays;
 }
