@@ -128,7 +128,7 @@ public class MetadataValidator {
     private void createAndAddIssue(String detail, String code) {
         this.f24MetadataValidationIssues.add(
                 F24MetadataValidationIssue.builder()
-                        .element("PathTokens:" + this.metadataToValidate.getPathTokensKey())
+                        .element("FileKey:" + this.metadataToValidate.getRef().getFileKey())
                         .detail(detail)
                         .code(code)
                         .build()

@@ -83,7 +83,7 @@ public class ValidateMetadataEventService {
         f24MetadataSet.setUpdated(Instant.now());
         f24MetadataSet.setStatus(F24MetadataStatus.PROCESSING);
 
-        return f24MetadataSetDao.updateItem(f24MetadataSet)
+        return f24MetadataSetDao.setF24MetadataSetStatusProcessing(f24MetadataSet)
                 .doOnError(throwable -> log.warn("Error setting MetadataSet status with pk {} in PROCESSING", f24MetadataSet.getPk()));
     }
 
@@ -124,7 +124,7 @@ public class ValidateMetadataEventService {
     }
 
     private Mono<Void> endValidationProcess(List<F24MetadataValidationIssue> f24MetadataValidationIssues, F24MetadataSet f24MetadataSet) {
-        return this.f24MetadataSetDao.getItem(f24MetadataSet.getPk(), true)
+        return this.f24MetadataSetDao.getItem(f24MetadataSet.getSetId(), f24MetadataSet.getCxId(), true)
                 .flatMap(refreshedF24MetadataSet -> {
                     String cxId = f24MetadataSet.getCxId();
                     String setId = f24MetadataSet.getSetId();
