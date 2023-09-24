@@ -9,12 +9,8 @@ import static org.mockito.Mockito.when;
 import it.pagopa.pn.f24.dto.F24MetadataRef;
 import it.pagopa.pn.f24.dto.F24MetadataValidationIssue;
 import it.pagopa.pn.f24.dto.MetadataToValidate;
-import it.pagopa.pn.f24.generated.openapi.server.v1.dto.F24Elid;
-import it.pagopa.pn.f24.generated.openapi.server.v1.dto.F24Excise;
-import it.pagopa.pn.f24.generated.openapi.server.v1.dto.F24Metadata;
-import it.pagopa.pn.f24.generated.openapi.server.v1.dto.F24Simplified;
-import it.pagopa.pn.f24.generated.openapi.server.v1.dto.F24Standard;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -32,7 +28,7 @@ class MetadataValidatorTest {
 
         MetadataToValidate metadataToValidate = mock(MetadataToValidate.class);
         when(metadataToValidate.getRef()).thenReturn(f24MetadataRef);
-        when(metadataToValidate.getMetadata()).thenReturn(new F24Metadata(new F24Standard(), new F24Simplified(), new F24Excise(), new F24Elid()));
+        when(metadataToValidate.getMetadataFile()).thenReturn("test".getBytes(StandardCharsets.UTF_8));
         when(metadataToValidate.getPathTokensKey()).thenReturn("ABC123");
 
         List<F24MetadataValidationIssue> actualValidateMetadataResult = new MetadataValidator(metadataToValidate).validateMetadata();
@@ -54,7 +50,7 @@ class MetadataValidatorTest {
         assertEquals("PathTokens:ABC123", getResult2.getElement());
         assertEquals("PathTokens:ABC123", getResult3.getElement());
         verify(metadataToValidate, atLeast(1)).getRef();
-        verify(metadataToValidate, atLeast(1)).getMetadata();
+        verify(metadataToValidate, atLeast(1)).getMetadataFile();
         verify(metadataToValidate, atLeast(1)).getPathTokensKey();
     }
 }
