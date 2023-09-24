@@ -12,7 +12,7 @@ public class PreparePdfEventBuilder {
 
     public static PreparePdfEvent buildPreparePdfEvent(String cxId, String requestId) {
         return PreparePdfEvent.builder()
-                .header(buildInternalEventHeader(cxId, requestId, PREPARE_PDF_EVENT_ID_DESCRIPTOR, F24InternalEventType.PREPARE_PDF))
+                .header(buildInternalEventHeader(cxId, requestId))
                 .payload(PreparePdfEvent.Payload.builder()
                         .cxId(cxId)
                         .requestId(requestId)
@@ -20,11 +20,11 @@ public class PreparePdfEventBuilder {
                 .build();
     }
 
-    private static GenericEventHeader buildInternalEventHeader(String cxId, String requestId, String descriptor, F24InternalEventType f24InternalEventType) {
-        String eventId = cxId + descriptor + requestId;
+    private static GenericEventHeader buildInternalEventHeader(String cxId, String requestId) {
+        String eventId = cxId + PREPARE_PDF_EVENT_ID_DESCRIPTOR + requestId;
         return GenericEventHeader.builder()
                 .eventId(eventId)
-                .eventType(f24InternalEventType.getValue())
+                .eventType(F24InternalEventType.PREPARE_PDF.getValue())
                 .publisher(EventPublisher.F24.name())
                 .createdAt(Instant.now())
                 .build();

@@ -13,7 +13,7 @@ public class GeneratePdfEventBuilder {
 
     public static GeneratePdfEvent buildGeneratePdfEvent(F24File f24File) {
         return GeneratePdfEvent.builder()
-                .header(buildInternalEventHeader(f24File.getPk(), GENERATE_PDF_EVENT_ID_DESCRIPTOR, F24InternalEventType.GENERATE_PDF))
+                .header(buildInternalEventHeader(f24File.getPk()))
                 .payload(
                         GeneratePdfEvent.Payload.builder()
                                 .filePk(f24File.getPk())
@@ -25,11 +25,11 @@ public class GeneratePdfEventBuilder {
                 .build();
     }
 
-    private static GenericEventHeader buildInternalEventHeader(String f24FilePk, String descriptor, F24InternalEventType f24InternalEventType) {
-        String eventId = f24FilePk + descriptor;
+    private static GenericEventHeader buildInternalEventHeader(String f24FilePk) {
+        String eventId = f24FilePk + GENERATE_PDF_EVENT_ID_DESCRIPTOR;
         return GenericEventHeader.builder()
                 .eventId(eventId)
-                .eventType(f24InternalEventType.getValue())
+                .eventType(F24InternalEventType.GENERATE_PDF.getValue())
                 .publisher(EventPublisher.F24.name())
                 .createdAt(Instant.now())
                 .build();
