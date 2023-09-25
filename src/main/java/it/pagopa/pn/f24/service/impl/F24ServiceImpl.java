@@ -16,7 +16,8 @@ import it.pagopa.pn.f24.exception.PnNotFoundException;
 import it.pagopa.pn.f24.generated.openapi.server.v1.dto.*;
 import it.pagopa.pn.f24.middleware.dao.f24file.F24FileDao;
 import it.pagopa.pn.f24.middleware.dao.f24metadataset.F24MetadataSetDao;
-import it.pagopa.pn.f24.middleware.queue.producer.util.ExternalEventBuilderHelper;
+import it.pagopa.pn.f24.middleware.eventbus.EventBridgeProducer;
+import it.pagopa.pn.f24.middleware.eventbus.util.PnF24AsyncEventBuilderHelper;
 import it.pagopa.pn.f24.middleware.msclient.safestorage.PnSafeStorageClientImpl;
 import it.pagopa.pn.f24.middleware.queue.producer.events.ValidateMetadataSetEvent;
 import it.pagopa.pn.f24.middleware.queue.producer.util.InternalMetadataEventBuilder;
@@ -58,17 +59,17 @@ public class F24ServiceImpl implements F24Service {
     private final F24Generator f24Generator;
     //todo service
     private final PnSafeStorageClientImpl pnSafeStorageClient;
-    private final MomProducer<PnF24AsyncEvent> externalEventProducer;
+    private final EventBridgeProducer<PnF24AsyncEvent> eventBridgeProducer;
     private final MomProducer<ValidateMetadataSetEvent> validateMetadataSetEventProducer;
     private final F24MetadataSetDao f24MetadataSetDao;
 
     private final F24FileDao f24FileDao;
 
 
-    public F24ServiceImpl(F24Generator f24Generator, PnSafeStorageClientImpl pnSafeStorageClient, MomProducer<PnF24AsyncEvent> externalEventProducer, MomProducer<ValidateMetadataSetEvent> validateMetadataSetEventProducer, F24MetadataSetDao f24MetadataSetDao) {
+    public F24ServiceImpl(F24Generator f24Generator, PnSafeStorageClientImpl pnSafeStorageClient, EventBridgeProducer<PnF24AsyncEvent> eventBridgeProducer, MomProducer<ValidateMetadataSetEvent> validateMetadataSetEventProducer, F24MetadataSetDao f24MetadataSetDao) {
         this.f24Generator = f24Generator;
         this.pnSafeStorageClient = pnSafeStorageClient;
-        this.externalEventProducer = externalEventProducer;
+        this.eventBridgeProducer = eventBridgeProducer;
         this.validateMetadataSetEventProducer = validateMetadataSetEventProducer;
         this.f24MetadataSetDao = f24MetadataSetDao;
         this.f24FileDao = f24FileRepository;
@@ -264,7 +265,7 @@ public class F24ServiceImpl implements F24Service {
         String setId = f24MetadataSet.getSetId();
         String cxId = f24MetadataSet.getCxId();
         log.debug("Sending validation ended event for metadata with setId : {} and cxId : {}", setId, cxId);
-        return Mono.fromRunnable(() -> externalEventProducer.push(ExternalEventBuilderHelper.buildMetadataValidationEndEvent(cxId, setId, f24MetadataSet.getValidationResult())))
+        return Mono.fromRunnable(() -> eventBridgeProducer.sendEvent(PnF24AsyncEventBuilderHelper.buildMetadataValidationEndEvent(cxId, setId, f24MetadataSet.getValidationResult())))
                 .doOnError(throwable -> log.warn("Error sending validation ended event", throwable))
                 .then(Mono.defer(() -> {
                     //Indifferente a questo punto, lo setto solo per coerenza. (HaveToSendValidationEvent)

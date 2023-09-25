@@ -21,7 +21,14 @@ public class F24Config {
     private String metadataSetTableName;
     private String fileTableName;
     private String internalQueueName;
-    private String externalQueueName;
     private String safeStorageQueueName;
+    private EventBus eventBus;
     private List<String> corsAllowedDomains;
+
+    @Data
+    public static class EventBus {
+        private String name;
+        private String source;
+        private String outcomeEventDetailType;
+    }
 }

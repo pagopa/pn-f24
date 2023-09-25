@@ -1,19 +1,20 @@
 package it.pagopa.pn.f24.middleware.queue.consumer.service;
 
-import it.pagopa.pn.api.dto.events.MomProducer;
 import it.pagopa.pn.api.dto.events.PnF24AsyncEvent;
 import it.pagopa.pn.f24.business.MetadataValidator;
 import it.pagopa.pn.f24.dto.*;
 import it.pagopa.pn.f24.exception.PnF24ExceptionCodes;
 import it.pagopa.pn.f24.exception.PnNotFoundException;
 import it.pagopa.pn.f24.middleware.dao.f24metadataset.F24MetadataSetDao;
-import it.pagopa.pn.f24.middleware.queue.producer.util.ExternalEventBuilderHelper;
+import it.pagopa.pn.f24.middleware.eventbus.EventBridgeProducer;
+import it.pagopa.pn.f24.middleware.eventbus.util.PnF24AsyncEventBuilderHelper;
 import it.pagopa.pn.f24.middleware.queue.producer.events.ValidateMetadataSetEvent;
 import it.pagopa.pn.f24.service.SafeStorageService;
 import lombok.CustomLog;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import software.amazon.awssdk.services.dynamodb.model.ConditionalCheckFailedException;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -25,11 +26,11 @@ import java.util.Map;
 public class ValidateMetadataEventService {
     private final F24MetadataSetDao f24MetadataSetDao;
     private final SafeStorageService safeStorageService;
-    private final MomProducer<PnF24AsyncEvent> externalEventProducer;
-    public ValidateMetadataEventService(F24MetadataSetDao f24MetadataSetDao, SafeStorageService safeStorageService, MomProducer<PnF24AsyncEvent> externalEventProducer) {
+    private final EventBridgeProducer<PnF24AsyncEvent> eventBridgeProducer;
+    public ValidateMetadataEventService(F24MetadataSetDao f24MetadataSetDao, SafeStorageService safeStorageService, EventBridgeProducer<PnF24AsyncEvent> eventBridgeProducer) {
         this.f24MetadataSetDao = f24MetadataSetDao;
         this.safeStorageService = safeStorageService;
-        this.externalEventProducer = externalEventProducer;
+        this.eventBridgeProducer = eventBridgeProducer;
     }
 
     public Mono<Void> handleMetadataValidation(ValidateMetadataSetEvent.Payload payload) {
@@ -68,23 +69,9 @@ public class ValidateMetadataEventService {
             return Mono.empty();
         }
 
-        if(f24MetadataSet.getStatus().equals(F24MetadataStatus.PROCESSING)) {
-            log.debug("Metadata with setId {} and cxId {} already processing", f24MetadataSet.getSetId(), f24MetadataSet.getCxId());
-            return Mono.empty();
-        }
-
-        return takeChargeOfMetadataValidation(f24MetadataSet)
-            .flatMap(updatedF24MetadataSet -> downloadMetadataSetFromSafeStorage(updatedF24MetadataSet.getFileKeys()))
+        return downloadMetadataSetFromSafeStorage(f24MetadataSet.getFileKeys())
             .map(this::validateMetadataList)
             .flatMap(f24MetadataValidationIssues -> endValidationProcess(f24MetadataValidationIssues, f24MetadataSet));
-    }
-
-    private Mono<F24MetadataSet> takeChargeOfMetadataValidation(F24MetadataSet f24MetadataSet) {
-        f24MetadataSet.setUpdated(Instant.now());
-        f24MetadataSet.setStatus(F24MetadataStatus.PROCESSING);
-
-        return f24MetadataSetDao.updateItem(f24MetadataSet)
-                .doOnError(throwable -> log.warn("Error setting MetadataSet status with pk {} in PROCESSING", f24MetadataSet.getPk()));
     }
 
     private Mono<List<MetadataToValidate>> downloadMetadataSetFromSafeStorage(Map<String, F24MetadataRef> fileKeys) {
@@ -124,13 +111,13 @@ public class ValidateMetadataEventService {
     }
 
     private Mono<Void> endValidationProcess(List<F24MetadataValidationIssue> f24MetadataValidationIssues, F24MetadataSet f24MetadataSet) {
-        return this.f24MetadataSetDao.getItem(f24MetadataSet.getPk(), true)
+        return this.f24MetadataSetDao.getItem(f24MetadataSet.getSetId(), f24MetadataSet.getCxId(), true)
                 .flatMap(refreshedF24MetadataSet -> {
                     String cxId = f24MetadataSet.getCxId();
                     String setId = f24MetadataSet.getSetId();
                     if(refreshedF24MetadataSet.getHaveToSendValidationEvent()) {
                         log.debug("MetadataSet with setId {} and cxId {} has to send validation end event", setId, cxId);
-                        return Mono.fromRunnable(() -> externalEventProducer.push(ExternalEventBuilderHelper.buildMetadataValidationEndEvent(cxId, setId, f24MetadataValidationIssues)))
+                        return Mono.fromRunnable(() -> eventBridgeProducer.sendEvent(PnF24AsyncEventBuilderHelper.buildMetadataValidationEndEvent(cxId, setId, f24MetadataValidationIssues)))
                                 .doOnError(throwable -> log.warn("Error sending validation end event", throwable))
                                 .then(updateMetadataSetWithValidation(refreshedF24MetadataSet, f24MetadataValidationIssues, true));
                     } else {
@@ -149,6 +136,10 @@ public class ValidateMetadataEventService {
         }
         f24MetadataSet.setStatus(F24MetadataStatus.VALIDATION_ENDED);
 
-        return f24MetadataSetDao.updateItem(f24MetadataSet);
+        return f24MetadataSetDao.setF24MetadataSetStatusValidationEnded(f24MetadataSet)
+                .onErrorResume(ConditionalCheckFailedException.class, e -> {
+                    log.debug("MetadataSet with setId: {} cxId: {} already with status VALIDATION_ENDED ", f24MetadataSet.getSetId(), f24MetadataSet.getCxId());
+                    return Mono.empty();
+                });
     }
 }

@@ -8,4 +8,5 @@ public interface F24MetadataSetDao {
     Mono<F24MetadataSet> getItem(String setId, String cxId, boolean isConsistentRead);
     Mono<Void> putItemIfAbsent(F24MetadataSet f24MetadataSet);
     Mono<F24MetadataSet> updateItem(F24MetadataSet f24MetadataSet);
+    Mono<F24MetadataSet> setF24MetadataSetStatusValidationEnded(F24MetadataSet f24MetadataSet);
 }

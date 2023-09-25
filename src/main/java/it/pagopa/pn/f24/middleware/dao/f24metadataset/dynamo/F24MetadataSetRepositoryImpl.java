@@ -4,6 +4,7 @@ import it.pagopa.pn.f24.config.F24Config;
 import it.pagopa.pn.f24.dto.F24MetadataSet;
 import it.pagopa.pn.f24.middleware.dao.f24metadataset.F24MetadataSetDao;
 import it.pagopa.pn.f24.middleware.dao.f24metadataset.dynamo.entity.F24MetadataSetEntity;
+import it.pagopa.pn.f24.middleware.dao.f24metadataset.dynamo.entity.F24MetadataSetStatusEntity;
 import it.pagopa.pn.f24.middleware.dao.f24metadataset.dynamo.mapper.F24MetadataSetMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -16,6 +17,8 @@ import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import static it.pagopa.pn.f24.middleware.dao.f24metadataset.dynamo.entity.F24MetadataSetEntity.FIELD_STATUS;
 
 @Component
 @Slf4j
@@ -59,6 +62,24 @@ public class F24MetadataSetRepositoryImpl implements F24MetadataSetDao {
                 .build();
 
         return Mono.fromFuture(table.putItem(putItemEnhancedRequest));
+    }
+
+    @Override
+    public Mono<F24MetadataSet> setF24MetadataSetStatusValidationEnded(F24MetadataSet f24MetadataSet) {
+        Map<String, String> expressionNames = new HashMap<>();
+        expressionNames.put("#status", FIELD_STATUS);
+
+        Map<String, AttributeValue> expressionValues = new HashMap<>();
+        expressionValues.put(":status", AttributeValue.builder().s(F24MetadataSetStatusEntity.TO_VALIDATE.getValue()).build());
+
+        UpdateItemEnhancedRequest<F24MetadataSetEntity> updateItemEnhancedRequest = UpdateItemEnhancedRequest
+                .builder(F24MetadataSetEntity.class)
+                .conditionExpression(expressionBuilder("#status = :status", expressionValues, expressionNames))
+                .item(F24MetadataSetMapper.dtoToEntity(f24MetadataSet))
+                .build();
+
+        return Mono.fromFuture(table.updateItem(updateItemEnhancedRequest))
+                .map(F24MetadataSetMapper::entityToDto);
     }
 
     @Override

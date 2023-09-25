@@ -42,13 +42,17 @@ import java.util.Objects;
 @ExtendWith(SpringExtension.class)
 class F24ServiceImplTest {
     @MockBean
-    private EventBridgeProducer<PnF24AsyncEvent> eventBridgeProducer;
+    private EventBridgeProducer<PnF24AsyncEvent> momProducerExternal;
+
     @MockBean
     private F24Generator f24Generator;
+
     @MockBean
     private F24MetadataSetDao f24MetadataSetDao;
+
     @Autowired
     private F24ServiceImpl f24ServiceImpl;
+
     @MockBean
     private MomProducer<InternalMetadataEvent> momProducer;
     @MockBean
@@ -267,5 +271,4 @@ class F24ServiceImplTest {
     }
 
 }
-
 

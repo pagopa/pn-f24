@@ -12,18 +12,18 @@ public class InternalMetadataEventBuilder {
 
     public static ValidateMetadataSetEvent buildValidateMetadataEvent(String setId, String cxId) {
         return ValidateMetadataSetEvent.builder()
-                .header(buildInternalEventHeader(setId, cxId, VALIDATE_METADATA_EVENT_ID_DESCRIPTOR, F24InternalEventType.VALIDATE_METADATA))
+                .header(buildInternalEventHeader(setId, cxId))
                 .payload(ValidateMetadataSetEvent.Payload.builder()
                         .setId(setId)
                         .cxId(cxId)
                         .build())
                 .build();
     }
-    private static GenericEventHeader buildInternalEventHeader(String setId, String cxId, String descriptor, F24InternalEventType f24InternalEventType) {
-        String eventId = cxId + descriptor + setId;
+    private static GenericEventHeader buildInternalEventHeader(String setId, String cxId) {
+        String eventId = cxId + VALIDATE_METADATA_EVENT_ID_DESCRIPTOR + setId;
         return GenericEventHeader.builder()
                 .eventId(eventId)
-                .eventType(f24InternalEventType.getValue())
+                .eventType(F24InternalEventType.VALIDATE_METADATA.getValue())
                 .publisher(EventPublisher.F24.name())
                 .createdAt(Instant.now())
                 .build();
