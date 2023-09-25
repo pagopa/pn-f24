@@ -225,7 +225,7 @@ public class F24ServiceImpl implements F24Service {
                     temp.setApplyCost(saveF24Item.getApplyCost());
                     temp.setSha256(saveF24Item.getSha256());
                     temp.setFileKey(saveF24Item.getFileKey());
-                    String pathTokensKey = String.join(".", saveF24Item.getPathTokens());
+                    String pathTokensKey = Utility.convertPathTokensList(saveF24Item.getPathTokens());
                     f24MetadataItemMap.put(pathTokensKey, temp);
                 }
         );
