@@ -238,14 +238,6 @@ Parameters:
     Type: String
     Description: SafeStorage-to-f24 queue age alarm ARN
 
-  PnF24OutputQueueName:
-    Type: String
-    Description: f24 output queue name
-
-  PnF24OutputQueueARN:
-    Type: String
-    Description: f24 output queue ARN
-
 Conditions:
     SendLogToKinesis: !Not [ !Equals [ !Ref LogsKinesisSourceStreamArn, '' ] ]
 
@@ -284,7 +276,7 @@ Resources:
         ContainerEnvEntry8: !Sub 'PN_SAFESTORAGE_BASE_URL=${SandboxSafeStorageBaseUrl}'
         ContainerEnvEntry9: !Sub 'PN_F24_TOPICS_INTERNAL=${PnF24InternalQueueName}'
         ContainerEnvEntry10: !Sub 'PN_F24_TOPICS_FROM_SAFE_STORAGE=${SafeStorageToF24QueueName}'
-        ContainerEnvEntry11: !Sub 'PN_F24_TOPICS_EXTERNAL=${PnF24OutputQueueName}'
+        ContainerEnvEntry11: !Sub 'PN_F24_EVENT_BUS_NAME=arn:aws:events:${AWS::Region}:${AWS::AccountId}:event-bus/${ProjectName}-CoreEventBus'
         ContainerEnvEntry18: !Sub 'LOLLIPOP_EXPECTED_LC_ORIGINAL_URL=${LollipopExpectedLcOriginalUrl}'
         ContainerEnvEntry19: !Sub 'LOLLIPOP_ENABLE_CONSUMER_LOGGING=${LollipopEnableConsumerLogging}'
         MicroServiceSecretPrefix: pn-f24-Secrets
@@ -322,7 +314,6 @@ Resources:
             Resource:
               - !Ref PnF24InternalQueueARN
               - !Ref SafeStorageToF24QueueARN
-              - !Ref PnF24OutputQueueARN
           - Effect: Allow
             Action:
               - dynamodb:GetItem
