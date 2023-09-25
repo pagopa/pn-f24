@@ -64,7 +64,7 @@ public class F24FileEntity {
     @Getter(onMethod = @__({
             @DynamoDbAttribute(COL_STATUS)
     }))
-    private String status;
+    private F24FileStatusEntity status;
 
     @Getter(onMethod = @__({
             @DynamoDbAttribute(COL_FILE_KEY),

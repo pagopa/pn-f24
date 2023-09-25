@@ -34,6 +34,5 @@ public class SimplifiedMetadataInspector implements MetadataInspector {
                 }
             }
         }
-
     }
 }
