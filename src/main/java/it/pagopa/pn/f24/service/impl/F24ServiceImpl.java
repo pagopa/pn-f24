@@ -56,7 +56,7 @@ public class F24ServiceImpl implements F24Service {
     private final F24Config f24Config;
 
 
-    public F24ServiceImpl(F24Generator f24Generator, PnSafeStorageClientImpl pnSafeStorageClient, EventBridgeProducer<PnF24AsyncEvent> externalEventProducer, MomProducer<ValidateMetadataSetEvent> validateMetadataSetEventProducer, MomProducer<PreparePdfEvent> preparePdfEventProducer, F24MetadataSetDao f24MetadataSetDao, F24FileRequestDao f24FileRequestDao, F24Config f24Config) {
+    public F24ServiceImpl(F24Generator f24Generator, PnSafeStorageClientImpl pnSafeStorageClient, EventBridgeProducer<PnF24AsyncEvent> eventBridgeProducer, MomProducer<ValidateMetadataSetEvent> validateMetadataSetEventProducer, MomProducer<PreparePdfEvent> preparePdfEventProducer, F24MetadataSetDao f24MetadataSetDao, F24FileRequestDao f24FileRequestDao, F24Config f24Config) {
         this.f24Generator = f24Generator;
         this.pnSafeStorageClient = pnSafeStorageClient;
         this.eventBridgeProducer = eventBridgeProducer;
@@ -426,7 +426,6 @@ public class F24ServiceImpl implements F24Service {
         f24Request.setCost(prepareF24Request.getNotificationCost());
         String pathTokens = Utility.convertPathTokensList(prepareF24Request.getPathTokens());
         f24Request.setPathTokens(pathTokens);
-        //TODO build files
         f24Request.setStatus(F24RequestStatus.TO_PROCESS);
         f24Request.setCreated(Instant.now());
         f24Request.setTtl(Instant.now().plus(Duration.ofDays(f24Config.getRetentionForF24RequestsInDays())).getEpochSecond());

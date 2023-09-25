@@ -1,9 +1,7 @@
 package it.pagopa.pn.f24.middleware.eventbus.util;
 
-import it.pagopa.pn.api.dto.events.PnF24AsyncEvent;
+import it.pagopa.pn.api.dto.events.*;
 
-import it.pagopa.pn.api.dto.events.PnF24MetadataValidationEndEventPayload;
-import it.pagopa.pn.api.dto.events.PnF24MetadataValidationIssue;
 import it.pagopa.pn.f24.dto.F24MetadataValidationIssue;
 import it.pagopa.pn.f24.dto.F24Request;
 
@@ -14,9 +12,6 @@ import java.util.Map;
 public class PnF24AsyncEventBuilderHelper {
     private static final String OK_STATUS = "OK";
     private static final String KO_STATUS = "KO";
-    private static final String METADATA_VALIDATION_EVENT_ID_DESCRIPTOR = "_f24_metadata_validation_";
-
-    private static final String PDF_SET_READY_EVENT_ID_DESCRIPTOR = "_f24_pdf_set_ready_";
 
     public static PnF24AsyncEvent buildMetadataValidationEndEvent(String cxId, String setId, List<F24MetadataValidationIssue> errors) {
         return PnF24AsyncEvent.builder()
@@ -57,9 +52,8 @@ public class PnF24AsyncEventBuilderHelper {
     public static PnF24AsyncEvent buildPdfSetReadyEvent(F24Request f24Request) {
         //All files in the list should share cxId, requestId and setId.
         return PnF24AsyncEvent.builder()
-                .header(buildF24EventHeader(f24Request.getCxId(), f24Request.getSetId(), PDF_SET_READY_EVENT_ID_DESCRIPTOR, F24ExternalEventType.F24_PDF_READY))
-                .payload(
-                        PnF24AsyncEvent.Payload.builder()
+                .detail(
+                        PnF24AsyncEvent.Detail.builder()
                                 .cxId(f24Request.getCxId())
                                 .pdfSetReady(buildPdfSetReadyPayload(f24Request))
                                 .build()

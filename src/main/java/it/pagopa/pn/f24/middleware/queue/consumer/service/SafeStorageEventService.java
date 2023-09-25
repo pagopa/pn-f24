@@ -1,15 +1,15 @@
 package it.pagopa.pn.f24.middleware.queue.consumer.service;
 
-import it.pagopa.pn.api.dto.events.MomProducer;
 import it.pagopa.pn.api.dto.events.PnF24AsyncEvent;
 import it.pagopa.pn.f24.config.F24Config;
 import it.pagopa.pn.f24.dto.*;
 import it.pagopa.pn.f24.generated.openapi.msclient.safestorage.model.FileDownloadResponse;
 import it.pagopa.pn.f24.middleware.dao.f24file.F24FileCacheDao;
 import it.pagopa.pn.f24.middleware.dao.f24file.F24FileRequestDao;
+import it.pagopa.pn.f24.middleware.eventbus.EventBridgeProducer;
+import it.pagopa.pn.f24.middleware.eventbus.util.PnF24AsyncEventBuilderHelper;
 import it.pagopa.pn.f24.middleware.msclient.safestorage.PnSafeStorageClient;
 import it.pagopa.pn.f24.middleware.queue.consumer.handler.utils.HandleEventUtils;
-import it.pagopa.pn.f24.middleware.queue.producer.util.ExternalEventBuilderHelper;
 import lombok.AllArgsConstructor;
 import lombok.CustomLog;
 import org.apache.commons.lang3.StringUtils;
@@ -28,7 +28,7 @@ public class SafeStorageEventService {
     private final F24FileCacheDao f24FileCacheDao;
     private final F24FileRequestDao f24RequestDao;
     private final F24Config f24Config;
-    private final MomProducer<PnF24AsyncEvent> pdfSetReadyProducer;
+    private final EventBridgeProducer<PnF24AsyncEvent> pdfSetReadyProducer;
 
 
     public Mono<Void> handleSafeStorageResponse(FileDownloadResponse response) {
@@ -110,7 +110,7 @@ public class SafeStorageEventService {
             .flatMap(consistentF24Request -> {
                 if(allFilesWithStatusDone(f24Request.getFiles())) {
                     log.debug("F24Request with pk: {} has all file with status DONE. Sending PdfSetReady event", f24Request.getPk());
-                    return Mono.fromRunnable(() -> pdfSetReadyProducer.push(ExternalEventBuilderHelper.buildPdfSetReadyEvent(consistentF24Request)))
+                    return Mono.fromRunnable(() -> pdfSetReadyProducer.sendEvent(PnF24AsyncEventBuilderHelper.buildPdfSetReadyEvent(consistentF24Request)))
                             .doOnError(throwable -> log.warn("Error sending PdfSetReady event"))
                             .then(updateF24RequestStatusInDone(f24Request))
                             .then();

@@ -9,7 +9,8 @@ import it.pagopa.pn.f24.exception.PnNotFoundException;
 import it.pagopa.pn.f24.middleware.dao.f24file.F24FileCacheDao;
 import it.pagopa.pn.f24.middleware.dao.f24metadataset.F24MetadataSetDao;
 import it.pagopa.pn.f24.middleware.dao.f24file.F24FileRequestDao;
-import it.pagopa.pn.f24.middleware.queue.producer.util.ExternalEventBuilderHelper;
+import it.pagopa.pn.f24.middleware.eventbus.EventBridgeProducer;
+import it.pagopa.pn.f24.middleware.eventbus.util.PnF24AsyncEventBuilderHelper;
 import it.pagopa.pn.f24.middleware.queue.producer.events.GeneratePdfEvent;
 import it.pagopa.pn.f24.middleware.queue.producer.events.PreparePdfEvent;
 import it.pagopa.pn.f24.middleware.queue.producer.util.GeneratePdfEventBuilder;
@@ -39,11 +40,11 @@ public class PreparePdfEventService {
 
     private final MomProducer<GeneratePdfEvent> generatePdfEventProducer;
 
-    private final MomProducer<PnF24AsyncEvent> pdfSetReadyEventProducer;
+    private final EventBridgeProducer<PnF24AsyncEvent> pdfSetReadyEventProducer;
 
     private final F24Config f24Config;
 
-    public PreparePdfEventService(F24FileCacheDao f24FileCacheDao, F24MetadataSetDao f24MetadataSetDao, F24FileRequestDao f24FileRequestDao, MomProducer<GeneratePdfEvent> generatePdfEventProducer, MomProducer<PnF24AsyncEvent> pdfSetReadyEventProducer, F24Config f24Config) {
+    public PreparePdfEventService(F24FileCacheDao f24FileCacheDao, F24MetadataSetDao f24MetadataSetDao, F24FileRequestDao f24FileRequestDao, MomProducer<GeneratePdfEvent> generatePdfEventProducer, EventBridgeProducer<PnF24AsyncEvent> pdfSetReadyEventProducer, F24Config f24Config) {
         this.f24FileCacheDao = f24FileCacheDao;
         this.f24MetadataSetDao = f24MetadataSetDao;
         this.f24FileRequestDao = f24FileRequestDao;
@@ -227,7 +228,7 @@ public class PreparePdfEventService {
         } else {
             log.debug("All files ({}) are already processed, sending PdfSetReady Event", f24FilesReady.size());
 
-            return Mono.fromRunnable(() -> pdfSetReadyEventProducer.push(ExternalEventBuilderHelper.buildPdfSetReadyEvent(f24Request)))
+            return Mono.fromRunnable(() -> pdfSetReadyEventProducer.sendEvent(PnF24AsyncEventBuilderHelper.buildPdfSetReadyEvent(f24Request)))
                     .doOnError(throwable -> log.warn("Error sending PdfSetReady event"))
                     .then(updateF24RequestStatus(preparePdfLists))
                     .then();
