@@ -14,6 +14,7 @@ import lombok.CustomLog;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import software.amazon.awssdk.services.dynamodb.model.ConditionalCheckFailedException;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -68,23 +69,9 @@ public class ValidateMetadataEventService {
             return Mono.empty();
         }
 
-        if(f24MetadataSet.getStatus().equals(F24MetadataStatus.PROCESSING)) {
-            log.debug("Metadata with setId {} and cxId {} already processing", f24MetadataSet.getSetId(), f24MetadataSet.getCxId());
-            return Mono.empty();
-        }
-
-        return takeChargeOfMetadataValidation(f24MetadataSet)
-            .flatMap(updatedF24MetadataSet -> downloadMetadataSetFromSafeStorage(updatedF24MetadataSet.getFileKeys()))
+        return downloadMetadataSetFromSafeStorage(f24MetadataSet.getFileKeys())
             .map(this::validateMetadataList)
             .flatMap(f24MetadataValidationIssues -> endValidationProcess(f24MetadataValidationIssues, f24MetadataSet));
-    }
-
-    private Mono<F24MetadataSet> takeChargeOfMetadataValidation(F24MetadataSet f24MetadataSet) {
-        f24MetadataSet.setUpdated(Instant.now());
-        f24MetadataSet.setStatus(F24MetadataStatus.PROCESSING);
-
-        return f24MetadataSetDao.setF24MetadataSetStatusProcessing(f24MetadataSet)
-                .doOnError(throwable -> log.warn("Error setting MetadataSet status with pk {} in PROCESSING", f24MetadataSet.getPk()));
     }
 
     private Mono<List<MetadataToValidate>> downloadMetadataSetFromSafeStorage(Map<String, F24MetadataRef> fileKeys) {
@@ -149,6 +136,10 @@ public class ValidateMetadataEventService {
         }
         f24MetadataSet.setStatus(F24MetadataStatus.VALIDATION_ENDED);
 
-        return f24MetadataSetDao.updateItem(f24MetadataSet);
+        return f24MetadataSetDao.setF24MetadataSetStatusValidationEnded(f24MetadataSet)
+                .onErrorResume(ConditionalCheckFailedException.class, e -> {
+                    log.debug("MetadataSet with setId: {} cxId: {} already with status VALIDATION_ENDED ", f24MetadataSet.getSetId(), f24MetadataSet.getCxId());
+                    return Mono.empty();
+                });
     }
 }

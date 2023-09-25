@@ -65,7 +65,7 @@ public class F24MetadataSetRepositoryImpl implements F24MetadataSetDao {
     }
 
     @Override
-    public Mono<F24MetadataSet> setF24MetadataSetStatusProcessing(F24MetadataSet f24MetadataSet) {
+    public Mono<F24MetadataSet> setF24MetadataSetStatusValidationEnded(F24MetadataSet f24MetadataSet) {
         Map<String, String> expressionNames = new HashMap<>();
         expressionNames.put("#status", FIELD_STATUS);
 
