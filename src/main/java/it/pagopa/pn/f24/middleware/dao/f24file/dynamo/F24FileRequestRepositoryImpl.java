@@ -10,6 +10,7 @@ import it.pagopa.pn.f24.middleware.dao.f24file.dynamo.entity.F24FileRequestEntit
 import it.pagopa.pn.f24.middleware.dao.f24file.dynamo.entity.F24RequestStatusEntity;
 import it.pagopa.pn.f24.middleware.dao.f24file.dynamo.mapper.F24FileCacheMapper;
 import it.pagopa.pn.f24.middleware.dao.f24file.dynamo.mapper.F24FileRequestMapper;
+import it.pagopa.pn.f24.util.DateUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
@@ -21,6 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static it.pagopa.pn.f24.middleware.dao.f24file.dynamo.entity.BaseEntity.COL_UPDATED;
 import static it.pagopa.pn.f24.middleware.dao.f24file.dynamo.entity.F24FileRequestEntity.COL_RECORD_VERSION;
 import static it.pagopa.pn.f24.middleware.dao.f24file.dynamo.entity.F24FileRequestEntity.COL_STATUS;
 
@@ -97,17 +99,21 @@ public class F24FileRequestRepositoryImpl implements F24FileRequestDao {
                 .item(entity)
                 .build();
     }
+
     @Override
-    public Mono<F24Request> setRequestStatusProcessing(F24Request f24Request) {
+    public Mono<F24Request> setRequestStatusDone(F24Request f24Request) {
         Map<String, String> expressionNames = new HashMap<>();
         expressionNames.put("#status", COL_STATUS);
+        expressionNames.put("#recordVersion", COL_RECORD_VERSION);
 
         Map<String, AttributeValue> expressionValues = new HashMap<>();
         expressionValues.put(":status", AttributeValue.builder().s(F24RequestStatusEntity.TO_PROCESS.getValue()).build());
+        expressionValues.put(":recordVersion", AttributeValue.builder().s(f24Request.getRecordVersion().toString()).build());
 
+        String expression = "#status = :status AND #recordVersion = :recordVersion";
         UpdateItemEnhancedRequest<F24FileRequestEntity> updateItemEnhancedRequest = UpdateItemEnhancedRequest
                 .builder(F24FileRequestEntity.class)
-                .conditionExpression(expressionBuilder("#status = :status", expressionValues, expressionNames))
+                .conditionExpression(expressionBuilder(expression, expressionValues, expressionNames))
                 .item(F24FileRequestMapper.dtoToEntity(f24Request))
                 .build();
 
@@ -121,7 +127,9 @@ public class F24FileRequestRepositoryImpl implements F24FileRequestDao {
 
         TransactUpdateItemEnhancedRequest<F24FileRequestEntity> fileRequestUpdate = buildFileRequestUpdateItemRequest(preparePdfLists.getF24Request());
 
-        TransactWriteItemsEnhancedRequest transaction = createTransactWriteItems(fileCachePutItemRequests, fileRequestUpdate);
+        List<TransactUpdateItemEnhancedRequest<F24FileCacheEntity>> fileCacheUpdateRequests = buildFileCacheUpdateItemRequests(preparePdfLists.getFilesNotReady());
+
+        TransactWriteItemsEnhancedRequest transaction = createTransactWriteItems(fileCachePutItemRequests, fileRequestUpdate, fileCacheUpdateRequests);
 
         return Mono.fromFuture(dynamoDbEnhancedAsyncClient.transactWriteItems(transaction))
                 .then();
@@ -138,13 +146,42 @@ public class F24FileRequestRepositoryImpl implements F24FileRequestDao {
     }
 
     private TransactUpdateItemEnhancedRequest<F24FileRequestEntity> buildFileRequestUpdateItemRequest(F24Request f24Request) {
+        Map<String, String> expressionNames = new HashMap<>();
+        expressionNames.put("#status", COL_STATUS);
+        expressionNames.put("#recordVersion", COL_RECORD_VERSION);
+
+        Map<String, AttributeValue> expressionValues = new HashMap<>();
+        expressionValues.put(":status", AttributeValue.builder().s(F24RequestStatusEntity.TO_PROCESS.getValue()).build());
+        expressionValues.put(":recordVersion", AttributeValue.builder().s(f24Request.getRecordVersion().toString()).build());
+
+        String expression = "#status = :status AND #recordVersion = :recordVersion";
+
         return TransactUpdateItemEnhancedRequest
                 .builder(F24FileRequestEntity.class)
                 .item(F24FileRequestMapper.dtoToEntity(f24Request))
+                .conditionExpression(expressionBuilder(expression, expressionValues, expressionNames))
                 .build();
     }
 
-    private TransactWriteItemsEnhancedRequest createTransactWriteItems(List<TransactPutItemEnhancedRequest<F24FileCacheEntity>> fileCachePutItemRequests, TransactUpdateItemEnhancedRequest<F24FileRequestEntity> fileRequestUpdate) {
+    private List<TransactUpdateItemEnhancedRequest<F24FileCacheEntity>> buildFileCacheUpdateItemRequests(List<F24File> f24Files) {
+        return f24Files.stream().map(f24File -> {
+            Map<String, String> expressionNames = new HashMap<>();
+            expressionNames.put("#updated", COL_UPDATED);
+
+            Map<String, AttributeValue> expressionValues = new HashMap<>();
+            expressionValues.put(":updated", AttributeValue.builder().s(DateUtils.formatInstantToString(f24File.getUpdated())).build());
+
+            return TransactUpdateItemEnhancedRequest
+                    .builder(F24FileCacheEntity.class)
+                    .item(F24FileCacheMapper.dtoToEntity(f24File))
+                    .conditionExpression(expressionBuilder("#updated = :updated", expressionValues, expressionNames))
+                    .build();
+        }).toList();
+    }
+
+    private TransactWriteItemsEnhancedRequest createTransactWriteItems(List<TransactPutItemEnhancedRequest<F24FileCacheEntity>> fileCachePutItemRequests,
+                                                                       TransactUpdateItemEnhancedRequest<F24FileRequestEntity> fileRequestUpdate,
+                                                                       List<TransactUpdateItemEnhancedRequest<F24FileCacheEntity>> fileCacheUpdateItemRequests) {
         TransactWriteItemsEnhancedRequest.Builder requestBuilder = TransactWriteItemsEnhancedRequest.builder();
 
         fileCachePutItemRequests.forEach(putItemRequest -> {
@@ -152,10 +189,13 @@ public class F24FileRequestRepositoryImpl implements F24FileRequestDao {
         });
 
         requestBuilder.addUpdateItem(f24FileRequestTable, fileRequestUpdate);
+
+        fileCacheUpdateItemRequests.forEach(fileUpdateRequest -> {
+            requestBuilder.addUpdateItem(f24FileCacheTable, fileUpdateRequest);
+        });
+
         return requestBuilder.build();
     }
-
-
 
     @Override
     public Mono<F24Request> updateRequestFile(F24Request f24Request) {

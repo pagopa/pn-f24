@@ -12,7 +12,6 @@ import it.pagopa.pn.f24.middleware.msclient.safestorage.PnSafeStorageClient;
 import it.pagopa.pn.f24.middleware.queue.consumer.handler.utils.HandleEventUtils;
 import lombok.AllArgsConstructor;
 import lombok.CustomLog;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -98,7 +97,6 @@ public class SafeStorageEventService {
 
         F24Request.FileRef fileRefToUpdate = mapFiles.get(f24File.getPk());
         fileRefToUpdate.setFileKey(f24File.getFileKey());
-        fileRefToUpdate.setStatus(f24File.getStatus()); //DONE
 
         mapFiles.put(f24File.getPk(), fileRefToUpdate);
 
@@ -108,7 +106,7 @@ public class SafeStorageEventService {
     private Mono<Void> checkIfRequestIsCompleted(F24Request f24Request) {
         return f24RequestDao.getItem(f24Request.getPk(), true)
             .flatMap(consistentF24Request -> {
-                if(allFilesWithStatusDone(f24Request.getFiles())) {
+                if(allFilesHaveFileKey(f24Request.getFiles())) {
                     log.debug("F24Request with pk: {} has all file with status DONE. Sending PdfSetReady event", f24Request.getPk());
                     return Mono.fromRunnable(() -> pdfSetReadyProducer.sendEvent(PnF24AsyncEventBuilderHelper.buildPdfSetReadyEvent(consistentF24Request)))
                             .doOnError(throwable -> log.warn("Error sending PdfSetReady event"))
@@ -121,10 +119,10 @@ public class SafeStorageEventService {
             });
     }
 
-    private boolean allFilesWithStatusDone(Map<String, F24Request.FileRef> files) {
+    private boolean allFilesHaveFileKey(Map<String, F24Request.FileRef> files) {
         return files.values()
                 .stream()
-                .allMatch(fileRef -> fileRef.getStatus() == F24FileStatus.DONE && StringUtils.isNotEmpty(fileRef.getFileKey()));
+                .allMatch(fileRef -> fileRef.getFileKey() != null);
     }
 
     private Mono<F24Request> updateF24RequestStatusInDone(F24Request f24Request) {

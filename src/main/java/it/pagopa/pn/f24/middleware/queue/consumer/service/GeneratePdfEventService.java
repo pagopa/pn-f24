@@ -19,6 +19,8 @@ import lombok.CustomLog;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
+import software.amazon.awssdk.services.dynamodb.model.ConditionalCheckFailedException;
+
 import java.time.Instant;
 
 @Service
@@ -45,7 +47,7 @@ public class GeneratePdfEventService {
         log.logStartingProcess(processName);
 
         return getF24File(payload.getFilePk())
-                .flatMap(this::setF24FileStatusProcessing)
+                .flatMap(this::checkF24FileStatus)
                 .zipWith(getMetadataSet(payload.getSetId(), payload.getCxId()))
                 .flatMap(tuple -> generateF24Pdf(tuple.getT2(), tuple.getT1()))
                 .doOnNext(unused -> log.logEndingProcess(processName))
@@ -70,21 +72,13 @@ public class GeneratePdfEventService {
                 );
     }
 
-    private Mono<F24File> setF24FileStatusProcessing(F24File f24File) {
+    private Mono<F24File> checkF24FileStatus(F24File f24File) {
         if(f24File.getStatus() == F24FileStatus.GENERATED || f24File.getStatus() == F24FileStatus.DONE) {
             log.warn("File with pk: {} is already in status: {}", f24File.getPk(), f24File.getStatus().getValue());
             return Mono.empty();
         }
 
-        if(f24File.getStatus() == F24FileStatus.PROCESSING) {
-            log.debug("File with pk: {} is already in status PROCESSING", f24File.getPk());
-            return Mono.empty();
-        }
-
-        f24File.setUpdated(Instant.now());
-        f24File.setStatus(F24FileStatus.PROCESSING);
-        return f24FileCacheDao.setF24FileStatusProcessing(f24File)
-                .doOnError(throwable -> log.warn("Error setting status PROCESSING for file with pk: {}", f24File.getPk()));
+        return Mono.just(f24File);
     }
 
 
@@ -129,8 +123,12 @@ public class GeneratePdfEventService {
         f24File.setUpdated(Instant.now());
         f24File.setStatus(F24FileStatus.GENERATED);
 
-        return f24FileCacheDao.updateItem(f24File)
+        return f24FileCacheDao.setFileKeyToF24File(f24File)
                 .doOnError(throwable -> log.warn("Error updating record f24File with pk {}", f24File.getPk()))
+                .onErrorResume(ConditionalCheckFailedException.class, e -> {
+                    log.debug("f24File with pk {} already in status GENERATED", f24File.getPk());
+                    return Mono.empty();
+                })
                 .then();
     }
 }

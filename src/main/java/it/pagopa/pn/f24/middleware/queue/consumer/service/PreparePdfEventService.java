@@ -86,31 +86,14 @@ public class PreparePdfEventService {
     }
 
     private Mono<Void> handlePreparePdf(F24Request f24Request) {
-        return takeChargeOfF24Request(f24Request)
-                .flatMap(this::searchMetadataToProcess)
-                .flatMap(fileKeys -> buildF24FilesFromFileKeys(fileKeys, f24Request))
-                .flatMap(this::dispatchEventAndSaveFiles);
-    }
-
-    private Mono<F24Request> takeChargeOfF24Request(F24Request f24Request) {
         if(f24Request.getStatus() == F24RequestStatus.DONE) {
             log.debug("F24 Request with requestId {} already in status DONE", f24Request.getRequestId());
             return Mono.empty();
         }
 
-        if(f24Request.getStatus() == F24RequestStatus.PROCESSING) {
-            log.debug("F24 Request with requestId {} already in status PROCESSING", f24Request.getRequestId());
-            return Mono.empty();
-        }
-
-        f24Request.setStatus(F24RequestStatus.PROCESSING);
-        f24Request.setUpdated(Instant.now());
-        return f24FileRequestDao.setRequestStatusProcessing(f24Request)
-                .doOnNext(unused -> log.debug("Set status PROCESSING to F24 Request with requestId {} ", f24Request.getRequestId()))
-                .onErrorResume(ConditionalCheckFailedException.class, e -> {
-                    log.debug("F24 Request with requestId {} already in status PROCESSING", f24Request.getRequestId());
-                    return Mono.empty();
-                });
+        return searchMetadataToProcess(f24Request)
+                .flatMap(fileKeys -> buildF24FilesFromFileKeys(fileKeys, f24Request))
+                .flatMap(this::dispatchEventAndSaveFiles);
     }
 
     private Mono<Map<String, F24MetadataRef>> searchMetadataToProcess(F24Request f24Request) {
@@ -158,33 +141,33 @@ public class PreparePdfEventService {
                     String pathTokensInString = entry.getKey();
 
                     return f24FileCacheDao.getItem(f24Request.getSetId(), f24Request.getCxId(), cost, pathTokensInString)
-                            .flatMap(f24File -> handleFileAlreadyInCache(f24File, f24Request))
-                            .switchIfEmpty(Mono.just(createNewF24FileForRequestId(f24Request, cost, pathTokensInString)));
-                })
-                .flatMap(f24File -> {
-                    switch (f24File.getStatus()) {
-                        case DONE -> preparePdfLists.getFilesReady().add(f24File);
-                        case TO_PROCESS -> preparePdfLists.getFilesToCreate().add(f24File);
-                        default -> preparePdfLists.getFilesNotReady().add(f24File);
-                    }
-                    return Mono.empty();
+                            .map(f24File -> handleFileAlreadyInCache(f24File, f24Request))
+                            .switchIfEmpty(Mono.just(createNewF24FileForRequestId(f24Request, cost, pathTokensInString)))
+                            .flatMap(f24File -> {
+                                switch (f24File.getStatus()) {
+                                    case DONE -> preparePdfLists.getFilesReady().add(f24File);
+                                    case TO_PROCESS -> preparePdfLists.getFilesToCreate().add(f24File);
+                                    default -> preparePdfLists.getFilesNotReady().add(f24File);
+                                }
+                                return Mono.empty();
+                            });
                 })
                 .then()
                 .thenReturn(preparePdfLists);
     }
 
-    private Mono<F24File> handleFileAlreadyInCache(F24File f24File, F24Request f24Request) {
+    private F24File handleFileAlreadyInCache(F24File f24File, F24Request f24Request) {
         if (f24File.getStatus() == F24FileStatus.DONE) {
             log.debug("File with pk: {} in status: {}", f24File.getPk(), f24File.getStatus());
-            return Mono.just(f24File);
+            return f24File;
         }
         /*
-        Se sono qui, ho trovato il file in uno dei seguenti status: TO_PROCESS / PROCESSING / GENERATED
+        Se sono qui, ho trovato il file in uno dei seguenti status: TO_PROCESS / GENERATED
         Li considero tutti come file in elaborazione, quindi gli aggiungo la requestId.
         */
-        log.debug("File with pk: {} in status : {}. Will be treated like status PROCESSING", f24File.getPk(), f24File.getStatus());
+        log.debug("File with pk: {} in status : {}. Adding requestId {} to the file", f24File.getPk(), f24File.getStatus(), f24Request.getRequestId());
         addRequestIdToFile(f24File, f24Request.getPk());
-        return f24FileCacheDao.updateItem(f24File);
+        return f24File;
     }
 
     private void addRequestIdToFile(F24File f24File, String requestId) {
@@ -207,7 +190,9 @@ public class PreparePdfEventService {
         f24File.setCost(cost);
         f24File.setPathTokens(pathTokensInString);
         f24File.setRequestIds(List.of(f24Request.getPk()));
-        f24File.setTtl(Instant.now().plus(Duration.ofDays(f24Config.getRetentionForF24FilesInDays())).getEpochSecond());
+        if(f24Config.getRetentionForF24FilesInDays() != null && f24Config.getRetentionForF24FilesInDays() > 0) {
+            f24File.setTtl(Instant.now().plus(Duration.ofDays(f24Config.getRetentionForF24FilesInDays())).getEpochSecond());
+        }
         f24File.setStatus(F24FileStatus.TO_PROCESS);
         return f24File;
     }
@@ -255,14 +240,21 @@ public class PreparePdfEventService {
 
     private Map<String, F24Request.FileRef> buildF24RequestFiles(PreparePdfLists preparePdfLists) {
         Map<String, F24Request.FileRef> requestFiles = new HashMap<>();
-        Consumer<F24File> addToMap = (F24File f24File) -> {
-            requestFiles.put(f24File.getPk(), new F24Request.FileRef(f24File.getFileKey(), f24File.getStatus()));
+
+        Consumer<F24File> addToFileMapIfStatusDone = (F24File f24File) -> {
+            String fileKey = f24File.getFileKey();
+            if(f24File.getStatus() != F24FileStatus.DONE) {
+                fileKey = null;
+            }
+            requestFiles.put(f24File.getPk(), new F24Request.FileRef(fileKey));
         };
-        preparePdfLists.getFilesNotReady().forEach(addToMap);
 
-        preparePdfLists.getFilesReady().forEach(addToMap);
+        preparePdfLists.getFilesNotReady().forEach(addToFileMapIfStatusDone);
 
-        preparePdfLists.getFilesToCreate().forEach(addToMap);
+        preparePdfLists.getFilesReady().forEach(addToFileMapIfStatusDone);
+
+        preparePdfLists.getFilesToCreate().forEach(addToFileMapIfStatusDone);
+
         return requestFiles;
     }
 
@@ -273,7 +265,11 @@ public class PreparePdfEventService {
         f24Request.setStatus(F24RequestStatus.DONE);
         f24Request.setUpdated(Instant.now());
         f24Request.setFiles(buildF24RequestFiles(preparePdfLists));
-        return f24FileRequestDao.updateItem(f24Request)
-                .doOnError(throwable -> log.warn("Error updating f24Request status to DONE"));
+        return f24FileRequestDao.setRequestStatusDone(f24Request)
+                .doOnError(throwable -> log.warn("Error updating f24Request status to DONE"))
+                .onErrorResume(ConditionalCheckFailedException.class, e -> {
+                    log.debug("F24 Request with requestId {} already in status DONE", f24Request.getRequestId());
+                    return Mono.empty();
+                });
     }
 }

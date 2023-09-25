@@ -25,6 +25,5 @@ public class F24Request {
     @AllArgsConstructor
     public static class FileRef {
         private String fileKey;
-        private F24FileStatus status;
     }
 }

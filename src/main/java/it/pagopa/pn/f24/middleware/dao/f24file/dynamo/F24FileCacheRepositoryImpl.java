@@ -68,7 +68,7 @@ public class F24FileCacheRepositoryImpl implements F24FileCacheDao {
     }
 
     @Override
-    public Mono<F24File> setF24FileStatusProcessing(F24File f24File) {
+    public Mono<F24File> setFileKeyToF24File(F24File f24File) {
         Map<String, String> expressionNames = new HashMap<>();
         expressionNames.put("#status", COL_STATUS);
 

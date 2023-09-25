@@ -17,7 +17,7 @@ public interface F24FileRequestDao {
 
     Mono<F24Request> updateItem(F24Request f24Request);
 
-    Mono<F24Request> setRequestStatusProcessing(F24Request f24Request);
+    Mono<F24Request> setRequestStatusDone(F24Request f24Request);
 
     Mono<Void> updateRequestAndRelatedFiles(PreparePdfLists preparePdfLists);
 

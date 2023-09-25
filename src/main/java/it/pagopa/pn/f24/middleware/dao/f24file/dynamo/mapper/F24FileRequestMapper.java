@@ -31,7 +31,7 @@ public class F24FileRequestMapper {
         return files.entrySet().stream()
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
-                        entry -> new F24Request.FileRef(entry.getValue().getFileKey(), entry.getValue().getStatus())
+                        entry -> new F24Request.FileRef(entry.getValue().getFileKey())
                 ));
     }
 
@@ -52,7 +52,7 @@ public class F24FileRequestMapper {
         return files.entrySet().stream()
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
-                        entry -> new FileRefEntity(entry.getValue().getFileKey(), entry.getValue().getStatus())
+                        entry -> new FileRefEntity(entry.getValue().getFileKey())
                 ));
     }
 }

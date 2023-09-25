@@ -392,11 +392,11 @@ public class F24ServiceImpl implements F24Service {
 
     private Mono<RequestAccepted> handleNewPreparePdfRequest(String xPagopaF24CxId, String requestId, PrepareF24Request prepareF24Request) {
         log.debug("Handling new prepare pdf request");
-        return sendPreparePdfEvent(xPagopaF24CxId, requestId, prepareF24Request)
+        return sendPreparePdfEvent(xPagopaF24CxId, requestId)
                 .then(tryToSaveF24Request(xPagopaF24CxId, requestId, prepareF24Request));
     }
 
-    private Mono<Void> sendPreparePdfEvent(String cxId, String requestId, PrepareF24Request prepareF24Request) {
+    private Mono<Void> sendPreparePdfEvent(String cxId, String requestId) {
         log.debug("Sending prepare pdf event for requestId={}",requestId);
 
         return Mono.fromRunnable(() -> preparePdfEventProducer.push(
@@ -428,7 +428,9 @@ public class F24ServiceImpl implements F24Service {
         f24Request.setPathTokens(pathTokens);
         f24Request.setStatus(F24RequestStatus.TO_PROCESS);
         f24Request.setCreated(Instant.now());
-        f24Request.setTtl(Instant.now().plus(Duration.ofDays(f24Config.getRetentionForF24RequestsInDays())).getEpochSecond());
+        if(f24Config.getRetentionForF24RequestsInDays() != null && f24Config.getRetentionForF24RequestsInDays() > 0) {
+            f24Request.setTtl(Instant.now().plus(Duration.ofDays(f24Config.getRetentionForF24RequestsInDays())).getEpochSecond());
+        }
         return f24Request;
     }
 
