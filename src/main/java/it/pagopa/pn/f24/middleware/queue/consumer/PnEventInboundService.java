@@ -31,7 +31,7 @@ public class PnEventInboundService {
     
     public PnEventInboundService(EventHandler eventHandler, F24Config cfg) {
         this.eventHandler = eventHandler;
-        this.safeStorageEventQueueName = cfg.getSafeStorageQueue().getName();
+        this.safeStorageEventQueueName = cfg.getSafeStorageQueueName();
     }
 
     @Bean
@@ -71,7 +71,7 @@ public class PnEventInboundService {
         log.debug("Received message from customRouter with header={}", message.getHeaders());
 
         String eventType = (String) message.getHeaders().get("eventType");
-        log.debug("message have eventType={}", eventType);
+        log.debug("message has eventType={}", eventType);
 
         if (!StringUtils.hasText(eventType)) {
             log.debug("message has not an eventType, search other types");

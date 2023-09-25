@@ -71,21 +71,11 @@ Parameters:
     Type: String
     Description: 'keep track of used projects commitIds'
 
-  IsMvpDefaultValue:
-    Type: String
-    Description: 'default value to return if paTaxId not present in parameter store'
-    AllowedValues: [true, false]
-
   IsLollipopActive:
     Type: String
     Description: 'lollipop authorization activation flag'
     AllowedValues: [true, false]
     Default: "false"
-
-  IsSendActiveDefaultValue:
-    Type: String
-    Description: 'default value to return if paTaxId not present in parameter store'
-    AllowedValues: [true,false]
 
   LollipopExpectedLcOriginalUrl:
     Type: String
@@ -208,25 +198,53 @@ Parameters:
     Type: String
     Default: 'FATAL'
 
-  IOBackendCidrs:
+  F24MetadataSetTableName:
     Type: String
-    Default: ''
+    Description: 'Name of dynamodb table for f24 metadata set'
 
-  F24DynamoTableName:
+  F24MetadataSetTableArn:
     Type: String
-    Description: 'Name of dynamodb table for f24 async process'
+    Description: 'ARN of dynamodb table for f24 metadata set'
 
-  F24DynamoTableArn:
+  F24FileTableName:
     Type: String
-    Description: 'ARN of dynamodb table for f24 async process'
+    Description: 'Name of dynamodb table for f24 files'
 
-  F24InputsQueueName:
+  F24FileTableArn:
     Type: String
-    Description: 'Queue to pull for inputs event'
+    Description: 'ARN of dynamodb table for f24 files'
+
+  PnF24InternalQueueName:
+    Type: String
+    Description: 'Internal Queue name'
+
+  PnF24InternalQueueARN:
+    Type: String
+    Description: 'Internal Queue ARN'
 
   SafeStorageToF24QueueName:
     Type: String
-    Description: 'Queue to pull for inputs event'
+    Description: 'SafeStorage-to-f24 queue Name'
+
+  SafeStorageToF24QueueARN:
+    Type: String
+    Description: 'SafeStorage-to-f24 queue ARN'
+
+  SafeStorageToF24QueueAlarmARN:
+    Type: String
+    Description: SafeStorage-to-f24 queue alarm ARN
+
+  SafeStorageToF24QueueAgeAlarmARN:
+    Type: String
+    Description: SafeStorage-to-f24 queue age alarm ARN
+
+  PnF24OutputQueueName:
+    Type: String
+    Description: f24 output queue name
+
+  PnF24OutputQueueARN:
+    Type: String
+    Description: f24 output queue ARN
 
 Conditions:
     SendLogToKinesis: !Not [ !Equals [ !Ref LogsKinesisSourceStreamArn, '' ] ]
@@ -257,18 +275,21 @@ Resources:
         AlarmSNSTopicArn: !Ref AlarmSNSTopicArn
         ContainerImageURI: !Sub '${ContainerImageUri}'
         ContainerEnvEntry1: !Sub 'AWS_REGIONCODE=${AWS::Region}'
-        ContainerEnvEntry8: !Sub 'CORS_ALLOWED_DOMAINS=${CorsAllowedDomains}'
-        ContainerEnvEntry9: !Sub 'PN_DELIVERY_DELIVERYPUSHBASEURL=http://${ApplicationLoadBalancerDomain}:8080'
-        ContainerEnvEntry10: !Sub 'PN_F24_TABLENAME=${F24DynamoTableName}'
-        ContainerEnvEntry11: !Sub 'SPRING_CLOUD_FUNCTIONROUTER_QUEUES_LIST=${F24InputsQueueName},${SafeStorageToF24QueueName}'
-        ContainerEnvEntry12: 'PN_F24_SAFESTORAGECXID=pn-f24'
-        ContainerEnvEntry13: !Sub 'LOLLIPOP_ACTIVE=${IsLollipopActive}'
-        ContainerEnvEntry14: !Sub 'LOLLIPOP_EXPECTED_LC_ORIGINAL_URL=${LollipopExpectedLcOriginalUrl}'
-        ContainerEnvEntry15: !Sub 'LOLLIPOP_ENABLE_CONSUMER_LOGGING=${LollipopEnableConsumerLogging}'
-        ContainerSecret1: !Sub 'ASSERTION_REST_SUBSCRIPTION_KEY=arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-Delivery-Secrets:AssertionRestSubscriptionKey:AWSCURRENT:'
+        ContainerEnvEntry2: !Sub 'CORS_ALLOWED_DOMAINS=${CorsAllowedDomains}'
+        ContainerEnvEntry3: !Sub 'PN_DELIVERY_PUSH_BASE_URL=http://${ApplicationLoadBalancerDomain}:8080'
+        ContainerEnvEntry4: !Sub 'PN_F24_METADATA_SET_TABLE_NAME=${F24MetadataSetTableName}'
+        ContainerEnvEntry5: !Sub 'PN_F24_FILE_TABLE_NAME=${F24FileTableName}'
+        ContainerEnvEntry6: !Sub 'SPRING_CLOUD_FUNCTIONROUTER_QUEUES_LIST=${PnF24InternalQueueName},${SafeStorageToF24QueueName}'
+        ContainerEnvEntry7: !Sub 'LOLLIPOP_ACTIVE=${IsLollipopActive}'
+        ContainerEnvEntry8: !Sub 'PN_SAFESTORAGE_BASE_URL=${SandboxSafeStorageBaseUrl}'
+        ContainerEnvEntry9: !Sub 'PN_F24_TOPICS_INTERNAL=${PnF24InternalQueueName}'
+        ContainerEnvEntry10: !Sub 'PN_F24_TOPICS_FROM_SAFE_STORAGE=${SafeStorageToF24QueueName}'
+        ContainerEnvEntry11: !Sub 'PN_F24_TOPICS_EXTERNAL=${PnF24OutputQueueName}'
+        ContainerEnvEntry18: !Sub 'LOLLIPOP_EXPECTED_LC_ORIGINAL_URL=${LollipopExpectedLcOriginalUrl}'
+        ContainerEnvEntry19: !Sub 'LOLLIPOP_ENABLE_CONSUMER_LOGGING=${LollipopEnableConsumerLogging}'
         MicroServiceSecretPrefix: pn-f24-Secrets
         JavaToolOptions: '-Dreactor.netty.ioWorkerCount=120 -XX:MaxMetaspaceSize=512M'
-        MappedPaths: '/f24/*'
+        MappedPaths: '/f24-private/*'
         ECSClusterName: !Ref ECSClusterName
         Subnets: !Ref VpcEgressSubnetsIds
         VpcId: !Ref VpcId
@@ -290,35 +311,28 @@ Resources:
           - Effect: Allow
             Action:
               - sqs:ChangeMessageVisibility
+              - sqs:ChangeMessageVisibilityBatch
               - sqs:DeleteMessage
+              - sqs:DeleteMessageBatch
               - sqs:GetQueueAttributes
               - sqs:GetQueueUrl
               - sqs:ReceiveMessage
               - sqs:SendMessage
+              - sqs:SendMessageBatch
             Resource:
-              - !Ref DeliveryPushInputsQueueARN
-              - !Ref Mandate2DeliveryQueueARN
-              - !Ref PnDeliveryAsseverationQueueARN
+              - !Ref PnF24InternalQueueARN
+              - !Ref SafeStorageToF24QueueARN
+              - !Ref PnF24OutputQueueARN
           - Effect: Allow
             Action:
-              - 'dynamodb:GetItem'
-              - 'dynamodb:Query'
-              - 'dynamodb:PutItem'
+              - dynamodb:GetItem
+              - dynamodb:Query
+              - dynamodb:PutItem
+              - dynamodb:TransactWriteItems
+              - dynamodb:ExecuteTransaction
             Resource:
-              - !Sub "${F24DynamoTableArn}"
-          - Effect: Allow
-            Action:
-              - 'dynamodb:BatchWriteItem'
-              - 'dynamodb:DeleteItem'
-            Resource:
-              - !Sub "${NotificationDelegationMetadataDynamoTableArn}"
-              - !Sub "${NotificationDelegationMetadataDynamoTableArn}/*"
-          - Effect: Allow
-            Action:
-              - 'dynamodb:DeleteItem'
-            Resource:
-              - !Sub "${NotificationsCostDynamoTableArn}"
-              - !Sub "${NotificationsCostDynamoTableArn}/*"
+              - !Sub "${F24MetadataSetTableArn}"
+              - !Sub "${F24FileTableArn}"
 
   # Expose PN-f24 microservice public API with API-GW for B2B usage
   F24MicroservicePublicAPI:
@@ -337,7 +351,7 @@ Resources:
         CloudwatchLogKinesisStreamArn: !Ref LogsKinesisSourceStreamArn
         OpenApiBucketName: !Ref MicroserviceBucketName
         #TODO Come si chiama lo yaml nel bucket?
-        OpenApiBucketKey: !Sub ${MicroserviceBucketBaseKey}/docs/openapi/aws/api-delivery-B2B-aws.yaml
+        OpenApiBucketKey: !Sub ${MicroserviceBucketBaseKey}/docs/openapi/aws/api-internal-f24.yaml
 
 
   # Dashboard
@@ -349,7 +363,8 @@ Resources:
         DashboardName: !Sub "${ProjectName}-f24"
         DynamoDBTableNames: !Join
           - ','
-          - - !Ref F24DynamoTableName
+          - - !Ref F24MetadataSetTableName
+          - - !Ref F24FileTableName
         RestApiStageArns: !Join
           - ','
           - - !GetAtt F24MicroservicePublicAPI.Outputs.RestApiStageArn
@@ -363,8 +378,9 @@ Resources:
             - !GetAtt F24MicroservicePublicAPI.Outputs.RestApiLatencyAlarmArn
         QueueArns: !Join
           - ','
-          - - !Ref Mandate2DeliveryQueueARN
-            - !Ref PnDeliveryAsseverationQueueARN
+          - - !Ref PnF24InternalQueueARN
+            - !Ref SafeStorageToF24QueueARN
+            - !Ref PnF24ExternalQueueARN
         LogGroupsNames: !Join
           - ','
           - - !Sub '/aws/ecs/${ProjectName}-f24'

@@ -53,15 +53,7 @@ public class Utility {
         throw new RuntimeException("Invalid F24 Type");
     }
 
-    public static String getCxIdFromMetadataSetPk(String pk) {
-        return getSectionFromMetadataSetPk(pk, 0);
-    }
-
-    public static String getSetIdFromMetadataSetPk(String pk) {
-        return getSectionFromMetadataSetPk(pk, 1);
-    }
-
-    private static String getSectionFromMetadataSetPk(String pk, int sectionIndex) {
-        return pk.split("#")[sectionIndex];
+    public static String convertPathTokensList(List<String> pathTokens) {
+        return String.join(".", pathTokens);
     }
 }

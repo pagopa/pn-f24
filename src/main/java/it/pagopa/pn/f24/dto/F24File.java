@@ -1,24 +1,22 @@
 package it.pagopa.pn.f24.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.util.List;
+
 
 @Data
-@Builder
-@AllArgsConstructor
-@NoArgsConstructor
 public class F24File {
     private String pk;
-    private String created;
-    private String sk;
-    private String requestId;
+    private String cxId;
+    private String setId;
+    private Integer cost;
+    private String pathTokens;
     private F24FileStatus status;
     private String fileKey;
+    private List<String> requestIds;
     private Long ttl;
-    private LocalDateTime updated;
-
+    private Instant created;
+    private Instant updated;
 }

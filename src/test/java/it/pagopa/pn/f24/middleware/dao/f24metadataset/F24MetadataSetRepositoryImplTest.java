@@ -33,9 +33,7 @@ class F24MetadataSetRepositoryImplTest {
 
     @Test
     void getItem() {
-        F24Config.F24MetadataDao f24MetadataDao = new F24Config.F24MetadataDao();
-        f24MetadataDao.setTableName("");
-        when(f24Config.getMetadataDao()).thenReturn(f24MetadataDao);
+        when(f24Config.getMetadataSetTableName()).thenReturn("");
         when(dynamoDbEnhancedAsyncClient.table(any(),any())).thenReturn(dynamoDbAsyncTable);
 
         F24MetadataSetRepositoryImpl f24MetadataSetRepository = new F24MetadataSetRepositoryImpl(dynamoDbEnhancedAsyncClient, f24Config);
@@ -55,9 +53,7 @@ class F24MetadataSetRepositoryImplTest {
 
     @Test
     void getItem2() {
-        F24Config.F24MetadataDao f24MetadataDao = new F24Config.F24MetadataDao();
-        f24MetadataDao.setTableName("");
-        when(f24Config.getMetadataDao()).thenReturn(f24MetadataDao);
+        when(f24Config.getMetadataSetTableName()).thenReturn("");
         when(dynamoDbEnhancedAsyncClient.table(any(),any())).thenReturn(dynamoDbAsyncTable);
 
         F24MetadataSetRepositoryImpl f24MetadataSetRepository = new F24MetadataSetRepositoryImpl(dynamoDbEnhancedAsyncClient, f24Config);
@@ -77,9 +73,7 @@ class F24MetadataSetRepositoryImplTest {
 
     @Test
     void putItem() {
-        F24Config.F24MetadataDao f24MetadataDao = new F24Config.F24MetadataDao();
-        f24MetadataDao.setTableName("");
-        when(f24Config.getMetadataDao()).thenReturn(f24MetadataDao);
+        when(f24Config.getMetadataSetTableName()).thenReturn("");
         when(dynamoDbEnhancedAsyncClient.table(any(),any())).thenReturn(dynamoDbAsyncTable);
 
         F24MetadataSetRepositoryImpl f24MetadataSetRepository = new F24MetadataSetRepositoryImpl(dynamoDbEnhancedAsyncClient, f24Config);
@@ -91,15 +85,13 @@ class F24MetadataSetRepositoryImplTest {
         F24MetadataSet f24MetadataSet = new F24MetadataSet();
         f24MetadataSet.setPk("42");
 
-        StepVerifier.create(f24MetadataSetRepository.putItem(f24MetadataSet))
+        StepVerifier.create(f24MetadataSetRepository.putItemIfAbsent(f24MetadataSet))
                 .expectComplete();
     }
 
     @Test
     void updateItem() {
-        F24Config.F24MetadataDao f24MetadataDao = new F24Config.F24MetadataDao();
-        f24MetadataDao.setTableName("");
-        when(f24Config.getMetadataDao()).thenReturn(f24MetadataDao);
+        when(f24Config.getMetadataSetTableName()).thenReturn("");
         when(dynamoDbEnhancedAsyncClient.table(any(),any())).thenReturn(dynamoDbAsyncTable);
 
         F24MetadataSetRepositoryImpl f24MetadataSetRepository = new F24MetadataSetRepositoryImpl(dynamoDbEnhancedAsyncClient, f24Config);

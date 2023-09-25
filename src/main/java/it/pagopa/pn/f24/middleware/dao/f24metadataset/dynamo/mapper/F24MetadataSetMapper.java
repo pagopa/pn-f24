@@ -17,6 +17,8 @@ public class F24MetadataSetMapper {
     public static F24MetadataSet entityToDto(F24MetadataSetEntity f24MetadataSetEntity) {
         F24MetadataSet f24MetadataSet = new F24MetadataSet();
         f24MetadataSet.setPk(f24MetadataSetEntity.getPk());
+        f24MetadataSet.setSetId(f24MetadataSetEntity.getSetId());
+        f24MetadataSet.setCxId(f24MetadataSetEntity.getCxId());
         f24MetadataSet.setFileKeys(f24MetadataSetEntity.getFileKeys() != null ? convertEntityFileKeysToDto(f24MetadataSetEntity.getFileKeys()) : null);
         f24MetadataSet.setValidationEventSent(f24MetadataSetEntity.getValidationEventSent());
         f24MetadataSet.setHaveToSendValidationEvent(f24MetadataSetEntity.getHaveToSendValidationEvent());
@@ -57,18 +59,18 @@ public class F24MetadataSetMapper {
     }
 
     public static F24MetadataSetEntity dtoToEntity(F24MetadataSet f24MetadataSet) {
-        return F24MetadataSetEntity.builder()
-                .pk(f24MetadataSet.getPk())
-                .fileKeys(f24MetadataSet.getFileKeys() != null ? convertDtoFileKeysToEntity(f24MetadataSet.getFileKeys()) : null)
-                .sha256(f24MetadataSet.getSha256())
-                .status(f24MetadataSet.getStatus() != null ? F24MetadataSetStatusEntity.valueOf(f24MetadataSet.getStatus().getValue()): null)
-                .haveToSendValidationEvent(f24MetadataSet.getHaveToSendValidationEvent())
-                .validationEventSent(f24MetadataSet.getValidationEventSent())
-                .validationResult(f24MetadataSet.getValidationResult() != null ? convertDtoValidationResultToEntity(f24MetadataSet.getValidationResult()) : null)
-                .created(f24MetadataSet.getCreated())
-                .updated(f24MetadataSet.getUpdated())
-                .ttl(f24MetadataSet.getTtl())
-                .build();
+        F24MetadataSetEntity f24MetadataSetEntity = new F24MetadataSetEntity(f24MetadataSet.getCxId(), f24MetadataSet.getSetId());
+        f24MetadataSetEntity.setFileKeys(f24MetadataSet.getFileKeys() != null ? convertDtoFileKeysToEntity(f24MetadataSet.getFileKeys()) : null);
+        f24MetadataSetEntity.setValidationEventSent(f24MetadataSet.getValidationEventSent());
+        f24MetadataSetEntity.setHaveToSendValidationEvent(f24MetadataSet.getHaveToSendValidationEvent());
+        f24MetadataSetEntity.setCreated(f24MetadataSet.getCreated());
+        f24MetadataSetEntity.setUpdated(f24MetadataSet.getUpdated());
+        f24MetadataSetEntity.setValidationResult(f24MetadataSet.getValidationResult() != null ? convertDtoValidationResultToEntity(f24MetadataSet.getValidationResult()) : null);
+        F24MetadataSetStatusEntity status = f24MetadataSet.getStatus() != null ? F24MetadataSetStatusEntity.valueOf(f24MetadataSet.getStatus().getValue()): null;
+        f24MetadataSetEntity.setStatus(status);
+        f24MetadataSetEntity.setSha256(f24MetadataSet.getSha256());
+        f24MetadataSetEntity.setTtl(f24MetadataSet.getTtl());
+        return f24MetadataSetEntity;
     }
 
     private static Map<String, F24MetadataRefEntity> convertDtoFileKeysToEntity(Map<String, F24MetadataRef> fileKeys) {

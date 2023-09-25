@@ -6,12 +6,11 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
-import static it.pagopa.pn.f24.util.Utility.getCxIdFromMetadataSetPk;
-import static it.pagopa.pn.f24.util.Utility.getSetIdFromMetadataSetPk;
-
 @Data
 public class F24MetadataSet {
     private String pk;
+    private String cxId;
+    private String setId;
     private F24MetadataStatus status;
     private Map<String, F24MetadataRef> fileKeys;
     private String sha256;
@@ -21,12 +20,4 @@ public class F24MetadataSet {
     private Instant created;
     private Instant updated;
     private Long ttl;
-
-    public String getSetId() {
-        return getSetIdFromMetadataSetPk(this.pk);
-    }
-
-    public String getCxId() {
-        return getCxIdFromMetadataSetPk(this.pk);
-    }
 }

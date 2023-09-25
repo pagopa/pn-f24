@@ -1,8 +1,5 @@
 package it.pagopa.pn.f24.dto;
 
-import lombok.ToString;
-
-@ToString
 public enum F24FileStatus {
     PROCESSING("PROCESSING"),
     GENERATED("GENERATED"),

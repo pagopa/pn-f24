@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import software.amazon.awssdk.enhanced.dynamodb.*;
 import software.amazon.awssdk.enhanced.dynamodb.model.GetItemEnhancedRequest;
+import software.amazon.awssdk.enhanced.dynamodb.model.PutItemEnhancedRequest;
 import software.amazon.awssdk.enhanced.dynamodb.model.UpdateItemEnhancedRequest;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 
@@ -19,31 +20,24 @@ import java.util.Map;
 @Component
 @Slf4j
 public class F24MetadataSetRepositoryImpl implements F24MetadataSetDao {
-    private static final String DEFAULT_SEPARATOR = "#";
     private final DynamoDbAsyncTable<F24MetadataSetEntity> table;
 
     private final F24Config f24Config;
 
     public F24MetadataSetRepositoryImpl(DynamoDbEnhancedAsyncClient dynamoDbEnhancedClient, F24Config f24Config) {
         this.f24Config = f24Config;
-        this.table = dynamoDbEnhancedClient.table(f24Config.getMetadataDao().getTableName(), TableSchema.fromBean(F24MetadataSetEntity.class));
+        this.table = dynamoDbEnhancedClient.table(f24Config.getMetadataSetTableName(), TableSchema.fromBean(F24MetadataSetEntity.class));
     }
 
     @Override
     public Mono<F24MetadataSet> getItem(String setId, String cxId) {
-        String partitionKey = cxId+DEFAULT_SEPARATOR+setId;
-        return getItem(partitionKey, false);
+        return getItem(setId, cxId, false);
     }
 
     @Override
     public Mono<F24MetadataSet> getItem(String setId, String cxId, boolean isConsistentRead) {
-        String partitionKey = cxId+DEFAULT_SEPARATOR+setId;
-        return getItem(partitionKey, isConsistentRead);
-    }
-
-    @Override
-    public Mono<F24MetadataSet> getItem(String partitionKey, boolean isConsistentRead) {
-        Key pk = Key.builder().partitionValue(partitionKey).build();
+        F24MetadataSetEntity f24MetadataSetEntity = new F24MetadataSetEntity(cxId, setId);
+        Key pk = Key.builder().partitionValue(f24MetadataSetEntity.getPk()).build();
 
         GetItemEnhancedRequest getItemEnhancedRequest = GetItemEnhancedRequest.builder()
                 .key(pk)
@@ -53,8 +47,18 @@ public class F24MetadataSetRepositoryImpl implements F24MetadataSetDao {
         return Mono.fromFuture(table.getItem(getItemEnhancedRequest)).map(F24MetadataSetMapper::entityToDto);
     }
 
-    public Mono<Void> putItem(F24MetadataSet f24MetadataSet) {
-        return Mono.fromFuture(table.putItem(F24MetadataSetMapper.dtoToEntity(f24MetadataSet)));
+    @Override
+    public Mono<Void> putItemIfAbsent(F24MetadataSet f24MetadataSet) {
+        PutItemEnhancedRequest<F24MetadataSetEntity> putItemEnhancedRequest = PutItemEnhancedRequest.builder(F24MetadataSetEntity.class)
+                .item(F24MetadataSetMapper.dtoToEntity(f24MetadataSet))
+                .conditionExpression(
+                    Expression.builder()
+                            .expression("attribute_not_exists(pk)")
+                            .build()
+                )
+                .build();
+
+        return Mono.fromFuture(table.putItem(putItemEnhancedRequest));
     }
 
     @Override

@@ -1,9 +1,15 @@
 package it.pagopa.pn.f24.dto;
 
-public enum F24EventType {
-    VALIDATE_METADATA("VALIDATE_METADATA");
+public enum F24RequestStatus {
+    TO_PROCESS("TO_PROCESS"),
+
+    PROCESSING("PROCESSING"),
+
+    DONE("DONE");
+
     private final String value;
-    F24EventType(String value) {
+
+    F24RequestStatus(String value) {
         this.value = value;
     }
 
