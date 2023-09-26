@@ -96,19 +96,6 @@ Resources:
         QueueHasAlarm: "false"
         DelaySeconds: 2
 
-  # Event Bus
-  F24EventBus:
-    Type: AWS::Events::EventBus
-    Properties:
-      Name: !Sub '${ProjectName}-F24Bus'
-
-  # Event Bus Dead Letter Queue
-  F24EventBusDLQ:
-    Type: AWS::SQS::Queue
-    Properties:
-      MessageRetentionPeriod: 1209600
-      QueueName: !Sub '${ProjectName}-F24Bus-DLQ'
-
   PnF24LogGroup:
     Type: AWS::CloudFormation::Stack
     UpdateReplacePolicy: Retain
@@ -159,18 +146,6 @@ Outputs:
   F24InternalAgeAlarmARN:
     Value: !GetAtt PnF24InternalQueue.Outputs.SqsAgeAlarmArn
     Description: internal-DLQ age alarm ARN
-
-  #Event Bridge
-  F24EventBusARN:
-    Value: !GetAtt F24EventBus.Arn
-  F24EventBusName:
-    Value: !GetAtt F24EventBus.Name
-  F24EventBusDLQARN:
-    Value: !GetAtt F24EventBusDLQ.Arn
-  F24EventBusDLQName:
-    Value: !GetAtt F24EventBusDLQ.QueueName
-  F24EventBusDLQUrl:
-    Value: !GetAtt F24EventBusDLQ.QueueUrl
 
   # Log group exports
   EcsLogGroup:
