@@ -32,7 +32,7 @@ public class F24FileCacheRepositoryImpl implements F24FileCacheDao {
 
     @Override
     public Mono<F24File> getItem(String cxId, String setId, Integer cost, String pathTokens) {
-        return getItem(setId, cxId, cost, pathTokens, false);
+        return getItem(cxId, setId, cost, pathTokens, false);
     }
 
     @Override

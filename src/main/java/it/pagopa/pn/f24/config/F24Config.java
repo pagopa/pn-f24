@@ -29,6 +29,7 @@ public class F24Config {
     public static class EventBus {
         private String name;
         private String source;
-        private String outcomeEventDetailType;
+        private String metadataValidationEventDetailType;
+        private String preparePdfEventDetailType;
     }
 }
