@@ -1,19 +1,22 @@
 package it.pagopa.pn.f24.middleware.queue.consumer.service;
 
+import it.pagopa.pn.f24.business.MetadataInspector;
+import it.pagopa.pn.f24.business.MetadataInspectorFactory;
 import it.pagopa.pn.f24.config.F24Config;
 import it.pagopa.pn.f24.dto.F24File;
 import it.pagopa.pn.f24.dto.F24FileStatus;
-import it.pagopa.pn.f24.dto.F24MetadataSet;
+import it.pagopa.pn.f24.dto.F24Type;
 import it.pagopa.pn.f24.dto.safestorage.FileCreationResponseInt;
 import it.pagopa.pn.f24.dto.safestorage.FileCreationWithContentRequest;
 import it.pagopa.pn.f24.exception.PnF24ExceptionCodes;
 import it.pagopa.pn.f24.exception.PnNotFoundException;
+import it.pagopa.pn.f24.generated.openapi.server.v1.dto.F24Metadata;
 import it.pagopa.pn.f24.middleware.dao.f24file.F24FileCacheDao;
-import it.pagopa.pn.f24.middleware.dao.f24metadataset.F24MetadataSetDao;
 import it.pagopa.pn.f24.middleware.queue.producer.events.GeneratePdfEvent;
 import it.pagopa.pn.f24.service.F24Generator;
 import it.pagopa.pn.f24.service.MetadataDownloader;
 import it.pagopa.pn.f24.service.SafeStorageService;
+import it.pagopa.pn.f24.util.Utility;
 import lombok.AllArgsConstructor;
 import lombok.CustomLog;
 import org.springframework.http.MediaType;
@@ -30,8 +33,6 @@ public class GeneratePdfEventService {
 
     private static final String SAVED = "SAVED";
     private F24Config f24Config;
-    private F24MetadataSetDao f24MetadataSetDao;
-
     private F24FileCacheDao f24FileCacheDao;
     private MetadataDownloader metadataDownloader;
     private SafeStorageService safeStorageService;
@@ -40,16 +41,15 @@ public class GeneratePdfEventService {
     public Mono<Void> generatePdf(GeneratePdfEvent.Payload payload) {
 
         log.info(
-                "generate f24 pdf file for metadata with cxId: {}, setId: {} and pathTokens:{} ",
-                payload.getCxId(), payload.getSetId(), payload.getPathTokens()
+                "generate f24 pdf file for metadata with cxId: {}, setId: {} and fileKey:{} ",
+                payload.getCxId(), payload.getSetId(), payload.getMetadataFileKey()
         );
         final String processName = "PREPARE PDF HANDLER";
         log.logStartingProcess(processName);
 
         return getF24File(payload.getFilePk())
                 .flatMap(this::checkF24FileStatus)
-                .zipWith(getMetadataSet(payload.getSetId(), payload.getCxId()))
-                .flatMap(tuple -> generateF24Pdf(tuple.getT2(), tuple.getT1()))
+                .flatMap(f24File -> generateF24Pdf(payload.getMetadataFileKey(), f24File))
                 .doOnNext(unused -> log.logEndingProcess(processName))
                 .doOnError(throwable -> log.logEndingProcess(processName, false, throwable.getMessage()));
     }
@@ -59,7 +59,7 @@ public class GeneratePdfEventService {
                 .switchIfEmpty(
                         Mono.defer(
                                 () -> {
-                                    log.warn("F24File with ok {} not found", filePk);
+                                    log.warn("F24File with pk {} not found", filePk);
                                     return Mono.error(
                                             new PnNotFoundException(
                                                     "F24File not found",
@@ -81,25 +81,9 @@ public class GeneratePdfEventService {
         return Mono.just(f24File);
     }
 
-
-    private Mono<F24MetadataSet> getMetadataSet(String setId, String cxId) {
-        return f24MetadataSetDao.getItem(setId, cxId)
-                .doOnError(t -> log.info("Error",t))
-                .switchIfEmpty(Mono.error(
-                        new PnNotFoundException(
-                                "MetadataSet not found",
-                                String.format(PnF24ExceptionCodes.ERROR_MESSAGE_F24_METADATA_SET_NOT_FOUND, setId, cxId),
-                                PnF24ExceptionCodes.ERROR_CODE_F24_METADATA_NOT_FOUND
-                        )
-                ));
-    }
-
-    private Mono<Void> generateF24Pdf(F24MetadataSet f24MetadataSet, F24File f24File) {
-        String metadataFileKey = f24MetadataSet.getFileKeys()
-                .get(f24File.getPathTokens())
-                .getFileKey();
-
+    private Mono<Void> generateF24Pdf(String metadataFileKey, F24File f24File) {
         return metadataDownloader.downloadMetadata(metadataFileKey)
+                .map(f24Metadata -> applyCost(f24Metadata, f24File))
                 .map(f24Generator::generate)
                 .doOnError(throwable -> log.warn("Error generating pdf for file with pk: {}", f24File.getPk(), throwable))
                 .map(this::buildFileCreationRequest)
@@ -107,6 +91,18 @@ public class GeneratePdfEventService {
                 .doOnError(throwable -> log.warn("Couldn't upload F24File with pk {} on safe storage", f24File.getPk(), throwable))
                 .flatMap(fileCreationResponseInt -> setFileKeyToF24File(fileCreationResponseInt, f24File));
     }
+
+    private F24Metadata applyCost(F24Metadata f24Metadata, F24File f24File) {
+        if(f24File.getCost() != null && f24File.getCost() > 0) {
+            log.debug("Applying {} euro-cents to F24File with pk: {}", f24File.getCost(), f24File.getPk());
+            F24Type f24Type = Utility.getF24TypeFromMetadata(f24Metadata);
+            MetadataInspector metadataInspector = MetadataInspectorFactory.getInspector(f24Type);
+            metadataInspector.addCostToDebit(f24Metadata, f24File.getCost());
+        }
+
+        return f24Metadata;
+    }
+
     private FileCreationWithContentRequest buildFileCreationRequest(byte[] pdfContent) {
         log.info("Building FileCreationRequest to upload generated pdf on safestorage");
         FileCreationWithContentRequest fileCreationWithContentRequest = new FileCreationWithContentRequest();
@@ -123,7 +119,7 @@ public class GeneratePdfEventService {
         f24File.setUpdated(Instant.now());
         f24File.setStatus(F24FileStatus.GENERATED);
 
-        return f24FileCacheDao.setFileKeyToF24File(f24File)
+        return f24FileCacheDao.setFileKey(f24File)
                 .doOnError(throwable -> log.warn("Error updating record f24File with pk {}", f24File.getPk()))
                 .onErrorResume(ConditionalCheckFailedException.class, e -> {
                     log.debug("f24File with pk {} already in status GENERATED", f24File.getPk());

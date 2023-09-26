@@ -22,4 +22,18 @@ public class SimplifiedMetadataInspector implements MetadataInspector {
 
         return applyCostCounter;
     }
+
+    @Override
+    public void addCostToDebit(F24Metadata f24Metadata, Integer cost) {
+        if (f24Metadata.getF24Simplified() != null) {
+            F24Simplified f24Simplified = f24Metadata.getF24Simplified();
+            for (SimplifiedPaymentRecord simplifiedPaymentRecord : f24Simplified.getPayments().getRecords()) {
+                if (simplifiedPaymentRecord.getApplyCost()) {
+                    simplifiedPaymentRecord.setDebit(MetadataInspector.convertDebitSum(simplifiedPaymentRecord.getDebit(), cost));
+                    return;
+                }
+            }
+        }
+
+    }
 }

@@ -235,7 +235,7 @@ public class F24ServiceImpl implements F24Service {
                     temp.setApplyCost(saveF24Item.getApplyCost());
                     temp.setSha256(saveF24Item.getSha256());
                     temp.setFileKey(saveF24Item.getFileKey());
-                    String pathTokensKey = String.join(".", saveF24Item.getPathTokens());
+                    String pathTokensKey = Utility.convertPathTokensList(saveF24Item.getPathTokens());
                     f24MetadataItemMap.put(pathTokensKey, temp);
                 }
         );
@@ -428,6 +428,8 @@ public class F24ServiceImpl implements F24Service {
         f24Request.setPathTokens(pathTokens);
         f24Request.setStatus(F24RequestStatus.TO_PROCESS);
         f24Request.setCreated(Instant.now());
+        f24Request.setRecordVersion(0);
+        f24Request.setFiles(new HashMap<>());
         if(f24Config.getRetentionForF24RequestsInDays() != null && f24Config.getRetentionForF24RequestsInDays() > 0) {
             f24Request.setTtl(Instant.now().plus(Duration.ofDays(f24Config.getRetentionForF24RequestsInDays())).getEpochSecond());
         }

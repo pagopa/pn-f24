@@ -54,6 +54,6 @@ public class Utility {
     }
 
     public static String convertPathTokensList(List<String> pathTokens) {
-        return String.join(".", pathTokens);
+        return String.join("_", pathTokens);
     }
 }

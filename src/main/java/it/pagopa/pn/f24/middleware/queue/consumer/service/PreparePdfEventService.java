@@ -7,6 +7,7 @@ import it.pagopa.pn.f24.dto.*;
 import it.pagopa.pn.f24.exception.PnF24ExceptionCodes;
 import it.pagopa.pn.f24.exception.PnNotFoundException;
 import it.pagopa.pn.f24.middleware.dao.f24file.F24FileCacheDao;
+import it.pagopa.pn.f24.middleware.dao.f24file.dynamo.entity.F24FileCacheEntity;
 import it.pagopa.pn.f24.middleware.dao.f24metadataset.F24MetadataSetDao;
 import it.pagopa.pn.f24.middleware.dao.f24file.F24FileRequestDao;
 import it.pagopa.pn.f24.middleware.eventbus.EventBridgeProducer;
@@ -25,7 +26,6 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 @Service
@@ -146,7 +146,10 @@ public class PreparePdfEventService {
                             .flatMap(f24File -> {
                                 switch (f24File.getStatus()) {
                                     case DONE -> preparePdfLists.getFilesReady().add(f24File);
-                                    case TO_PROCESS -> preparePdfLists.getFilesToCreate().add(f24File);
+                                    case TO_PROCESS -> {
+                                        PreparePdfLists.F24FileToCreate f24FileToCreate = new PreparePdfLists.F24FileToCreate(f24File, f24MetadataRef.getFileKey());
+                                        preparePdfLists.getFilesToCreate().add(f24FileToCreate);
+                                    }
                                     default -> preparePdfLists.getFilesNotReady().add(f24File);
                                 }
                                 return Mono.empty();
@@ -185,6 +188,8 @@ public class PreparePdfEventService {
         log.debug("F24File with cxId: {}, setId: {}, cost: {}, pathTokens: {} doesn't exist, creating a new one", cxId, setId, cost, pathTokensInString);
 
         F24File f24File = new F24File();
+        //TODO trovare un sistema migliore per generare la PK.
+        f24File.setPk(new F24FileCacheEntity(cxId, setId, cost, pathTokensInString).getPk());
         f24File.setCxId(cxId);
         f24File.setSetId(setId);
         f24File.setCost(cost);
@@ -200,12 +205,12 @@ public class PreparePdfEventService {
     private Mono<Void> dispatchEventAndSaveFiles(PreparePdfLists preparePdfLists) {
         log.debug("Choosing event to dispatch");
         List<F24File> f24FilesProcessing = preparePdfLists.getFilesNotReady();
-        List<F24File> f24FilesToCreate = preparePdfLists.getFilesToCreate();
+        List<PreparePdfLists.F24FileToCreate> f24FilesToCreate = preparePdfLists.getFilesToCreate();
         List<F24File> f24FilesReady = preparePdfLists.getFilesReady();
         F24Request f24Request = preparePdfLists.getF24Request();
 
         if(!f24FilesProcessing.isEmpty() || !f24FilesToCreate.isEmpty()) {
-            log.debug("There are {} files to process or to be created, sending GeneratePdf event", f24FilesProcessing.size());
+            log.debug("There are {} files to process and {} files to create, sending GeneratePdf event", f24FilesProcessing.size(), f24FilesToCreate.size());
 
             return Mono.fromRunnable(() -> sendGeneratePdfEvents(f24FilesToCreate))
                 .doOnError(throwable -> log.warn("Error sending preparePdf", throwable))
@@ -220,7 +225,7 @@ public class PreparePdfEventService {
         }
     }
 
-    private void sendGeneratePdfEvents(List<F24File> files) {
+    private void sendGeneratePdfEvents(List<PreparePdfLists.F24FileToCreate> files) {
         if(files.isEmpty()) {
             log.debug("There aren't files to generate, won't send any generate pdf event");
         } else {
@@ -234,26 +239,26 @@ public class PreparePdfEventService {
 
     private Mono<Void> updateF24RequestAndF24File(PreparePdfLists preparePdfLists) {
         preparePdfLists.getF24Request().setFiles(buildF24RequestFiles(preparePdfLists));
+        preparePdfLists.getF24Request().setRecordVersion(preparePdfLists.getF24Request().getRecordVersion() + 1);
         return f24FileRequestDao.updateRequestAndRelatedFiles(preparePdfLists)
-                .doOnError(t -> log.warn("Error updating Request and Files"));
+                .doOnError(t -> log.warn("Error updating Request and Files", t));
     }
 
     private Map<String, F24Request.FileRef> buildF24RequestFiles(PreparePdfLists preparePdfLists) {
         Map<String, F24Request.FileRef> requestFiles = new HashMap<>();
 
-        Consumer<F24File> addToFileMapIfStatusDone = (F24File f24File) -> {
-            String fileKey = f24File.getFileKey();
-            if(f24File.getStatus() != F24FileStatus.DONE) {
-                fileKey = null;
-            }
-            requestFiles.put(f24File.getPk(), new F24Request.FileRef(fileKey));
-        };
+        preparePdfLists.getFilesNotReady().forEach((F24File f24File) -> {
+            requestFiles.put(f24File.getPk(), new F24Request.FileRef(""));
+        });
 
-        preparePdfLists.getFilesNotReady().forEach(addToFileMapIfStatusDone);
+        preparePdfLists.getFilesReady().forEach((F24File f24File) -> {
+            requestFiles.put(f24File.getPk(), new F24Request.FileRef(f24File.getFileKey()));
+        });
 
-        preparePdfLists.getFilesReady().forEach(addToFileMapIfStatusDone);
-
-        preparePdfLists.getFilesToCreate().forEach(addToFileMapIfStatusDone);
+        preparePdfLists.getFilesToCreate().forEach((PreparePdfLists.F24FileToCreate f24FileToCreate) -> {
+            F24File f24File = f24FileToCreate.getFile();
+            requestFiles.put(f24File.getPk(), new F24Request.FileRef(""));
+        });
 
         return requestFiles;
     }
@@ -265,6 +270,7 @@ public class PreparePdfEventService {
         f24Request.setStatus(F24RequestStatus.DONE);
         f24Request.setUpdated(Instant.now());
         f24Request.setFiles(buildF24RequestFiles(preparePdfLists));
+        f24Request.setRecordVersion(f24Request.getRecordVersion() + 1);
         return f24FileRequestDao.setRequestStatusDone(f24Request)
                 .doOnError(throwable -> log.warn("Error updating f24Request status to DONE"))
                 .onErrorResume(ConditionalCheckFailedException.class, e -> {

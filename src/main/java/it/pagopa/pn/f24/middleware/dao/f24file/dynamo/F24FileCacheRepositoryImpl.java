@@ -4,7 +4,7 @@ import it.pagopa.pn.f24.config.F24Config;
 import it.pagopa.pn.f24.dto.F24File;
 import it.pagopa.pn.f24.middleware.dao.f24file.F24FileCacheDao;
 import it.pagopa.pn.f24.middleware.dao.f24file.dynamo.entity.F24FileCacheEntity;
-import it.pagopa.pn.f24.middleware.dao.f24file.dynamo.entity.F24RequestStatusEntity;
+import it.pagopa.pn.f24.middleware.dao.f24file.dynamo.entity.F24FileStatusEntity;
 import it.pagopa.pn.f24.middleware.dao.f24file.dynamo.mapper.F24FileCacheMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -68,12 +68,12 @@ public class F24FileCacheRepositoryImpl implements F24FileCacheDao {
     }
 
     @Override
-    public Mono<F24File> setFileKeyToF24File(F24File f24File) {
+    public Mono<F24File> setFileKey(F24File f24File) {
         Map<String, String> expressionNames = new HashMap<>();
         expressionNames.put("#status", COL_STATUS);
 
         Map<String, AttributeValue> expressionValues = new HashMap<>();
-        expressionValues.put(":status", AttributeValue.builder().s(F24RequestStatusEntity.TO_PROCESS.getValue()).build());
+        expressionValues.put(":status", AttributeValue.builder().s(F24FileStatusEntity.TO_PROCESS.getValue()).build());
 
         UpdateItemEnhancedRequest<F24FileCacheEntity> updateItemEnhancedRequest = UpdateItemEnhancedRequest
                 .builder(F24FileCacheEntity.class)
@@ -86,12 +86,12 @@ public class F24FileCacheRepositoryImpl implements F24FileCacheDao {
     }
 
     @Override
-    public Mono<F24File> setF24FileStatusDone(F24File f24File) {
+    public Mono<F24File> setStatusDone(F24File f24File) {
         Map<String, String> expressionNames = new HashMap<>();
         expressionNames.put("#status", COL_STATUS);
 
         Map<String, AttributeValue> expressionValues = new HashMap<>();
-        expressionValues.put(":status", AttributeValue.builder().s(F24RequestStatusEntity.PROCESSING.getValue()).build());
+        expressionValues.put(":status", AttributeValue.builder().s(F24FileStatusEntity.GENERATED.getValue()).build());
 
         UpdateItemEnhancedRequest<F24FileCacheEntity> updateItemEnhancedRequest = UpdateItemEnhancedRequest
                 .builder(F24FileCacheEntity.class)

@@ -1,8 +1,11 @@
 package it.pagopa.pn.f24.middleware.dao.f24file;
 
+import it.pagopa.pn.f24.dto.F24File;
 import it.pagopa.pn.f24.dto.F24Request;
 import it.pagopa.pn.f24.dto.PreparePdfLists;
 import reactor.core.publisher.Mono;
+
+import java.util.List;
 
 public interface F24FileRequestDao {
     Mono<F24Request> getItem(String pk);
@@ -21,5 +24,5 @@ public interface F24FileRequestDao {
 
     Mono<Void> updateRequestAndRelatedFiles(PreparePdfLists preparePdfLists);
 
-    Mono<F24Request> updateRequestFile(F24Request f24Request);
+    Mono<Void> updateTransactionalFileAndRequests(List<F24Request> f24Requests, F24File f24File);
 }

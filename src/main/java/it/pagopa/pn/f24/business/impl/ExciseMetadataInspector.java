@@ -32,4 +32,41 @@ public class ExciseMetadataInspector implements MetadataInspector {
         
         return applyCostCounter;
     }
+
+    @Override
+    public void addCostToDebit(F24Metadata f24Metadata, Integer cost) {
+        if (f24Metadata.getF24Excise() != null) {
+          F24Excise f24Excise = f24Metadata.getF24Excise();
+            for (Tax tax : f24Excise.getTreasury().getRecords()) {
+                if (tax.getApplyCost()) {
+                    tax.setDebit(MetadataInspector.convertDebitSum(tax.getDebit(), cost));
+                    return;
+                }
+            }
+            for (InpsRecord inpsRecord : f24Excise.getInps().getRecords()) {
+                if (inpsRecord.getApplyCost()) {
+                    inpsRecord.setDebit(MetadataInspector.convertDebitSum(inpsRecord.getDebit(), cost));
+                    return;
+                }
+            }
+            for (RegionRecord regionRecord : f24Excise.getRegion().getRecords()) {
+                if (regionRecord.getApplyCost()) {
+                    regionRecord.setDebit(MetadataInspector.convertDebitSum(regionRecord.getDebit(), cost));
+                    return;
+                }
+            }
+            for (LocalTaxRecord localTaxRecord : f24Excise.getLocalTax().getRecords()) {
+                if (localTaxRecord.getApplyCost()) {
+                    localTaxRecord.setDebit(MetadataInspector.convertDebitSum(localTaxRecord.getDebit(), cost));
+                    return;
+                }
+            }
+            for (ExciseTax exciseTax : f24Excise.getExcise().getRecords()) {
+                if (exciseTax.getApplyCost()) {
+                    exciseTax.setDebit(MetadataInspector.convertDebitSum(exciseTax.getDebit(), cost));
+                    return;
+                }
+            }
+        }
+    }
 }

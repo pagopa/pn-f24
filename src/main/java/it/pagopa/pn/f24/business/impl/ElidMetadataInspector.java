@@ -20,4 +20,17 @@ public class ElidMetadataInspector implements MetadataInspector {
 
         return applyCostCounter;
     }
+
+    @Override
+    public void addCostToDebit(F24Metadata f24Metadata, Integer cost) {
+        if (f24Metadata.getF24Elid() != null) {
+            F24Elid f24Elid = f24Metadata.getF24Elid();
+            for (TreasuryRecord treasury : f24Elid.getTreasury().getRecords()) {
+                if (treasury.getApplyCost()) {
+                    treasury.setDebit(MetadataInspector.convertDebitSum(treasury.getDebit(), cost));
+                    return;
+                }
+            }
+        }
+    }
 }

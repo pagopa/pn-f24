@@ -11,6 +11,7 @@ public class F24FileCacheMapper {
         F24File f24File = new F24File();
         f24File.setPk(f24FileCacheEntity.getPk());
         f24File.setCxId(f24FileCacheEntity.getCxId());
+        f24File.setSetId(f24FileCacheEntity.getSetId());
         f24File.setCost(f24FileCacheEntity.getCost());
         f24File.setPathTokens(f24FileCacheEntity.getPathTokens());
         f24File.setStatus(f24FileCacheEntity.getStatus() != null ? F24FileStatus.valueOf(f24FileCacheEntity.getStatus().getValue()) : null);

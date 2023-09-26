@@ -4,6 +4,7 @@ import it.pagopa.pn.api.dto.events.*;
 
 import it.pagopa.pn.f24.dto.F24MetadataValidationIssue;
 import it.pagopa.pn.f24.dto.F24Request;
+import it.pagopa.pn.f24.middleware.dao.f24file.dynamo.entity.F24FileCacheEntity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -73,9 +74,16 @@ public class PnF24AsyncEventBuilderHelper {
         return f24Files.entrySet().stream()
                 .map(entry ->
                     PnF24PdfSetReadyEventItem.builder()
-                            .pathTokens(entry.getKey())
+                            .pathTokens(extractPathTokensFromFilePk(entry.getKey()))
                             .uri(entry.getValue().getFileKey())
                             .build()
                 ).toList();
+    }
+
+    private static String extractPathTokensFromFilePk(String pk) {
+         //TODO Trovare modo migliore di gestire chiave
+         F24FileCacheEntity entity = new F24FileCacheEntity();
+         entity.setPk(pk);
+         return entity.getPathTokens();
     }
 }
