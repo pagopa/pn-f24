@@ -22,6 +22,5 @@ public class ValidateMetadataSetEvent implements GenericEvent<GenericEventHeader
     @EqualsAndHashCode
     public static class Payload {
         private String setId;
-        private String cxId;
     }
 }

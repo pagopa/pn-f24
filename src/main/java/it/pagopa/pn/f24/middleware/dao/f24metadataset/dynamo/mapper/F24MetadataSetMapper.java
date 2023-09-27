@@ -16,9 +16,9 @@ import java.util.Map;
 public class F24MetadataSetMapper {
     public static F24MetadataSet entityToDto(F24MetadataSetEntity f24MetadataSetEntity) {
         F24MetadataSet f24MetadataSet = new F24MetadataSet();
-        f24MetadataSet.setPk(f24MetadataSetEntity.getPk());
         f24MetadataSet.setSetId(f24MetadataSetEntity.getSetId());
-        f24MetadataSet.setCxId(f24MetadataSetEntity.getCxId());
+        f24MetadataSet.setCreatorCxId(f24MetadataSetEntity.getCreatorCxId());
+        f24MetadataSet.setValidatorCxId(f24MetadataSetEntity.getValidatorCxId());
         f24MetadataSet.setFileKeys(f24MetadataSetEntity.getFileKeys() != null ? convertEntityFileKeysToDto(f24MetadataSetEntity.getFileKeys()) : null);
         f24MetadataSet.setValidationEventSent(f24MetadataSetEntity.getValidationEventSent());
         f24MetadataSet.setHaveToSendValidationEvent(f24MetadataSetEntity.getHaveToSendValidationEvent());
@@ -59,7 +59,10 @@ public class F24MetadataSetMapper {
     }
 
     public static F24MetadataSetEntity dtoToEntity(F24MetadataSet f24MetadataSet) {
-        F24MetadataSetEntity f24MetadataSetEntity = new F24MetadataSetEntity(f24MetadataSet.getCxId(), f24MetadataSet.getSetId());
+        F24MetadataSetEntity f24MetadataSetEntity = new F24MetadataSetEntity();
+        f24MetadataSetEntity.setSetId(f24MetadataSet.getSetId());
+        f24MetadataSetEntity.setCreatorCxId(f24MetadataSet.getCreatorCxId());
+        f24MetadataSetEntity.setValidatorCxId(f24MetadataSet.getValidatorCxId());
         f24MetadataSetEntity.setFileKeys(f24MetadataSet.getFileKeys() != null ? convertDtoFileKeysToEntity(f24MetadataSet.getFileKeys()) : null);
         f24MetadataSetEntity.setValidationEventSent(f24MetadataSet.getValidationEventSent());
         f24MetadataSetEntity.setHaveToSendValidationEvent(f24MetadataSet.getHaveToSendValidationEvent());

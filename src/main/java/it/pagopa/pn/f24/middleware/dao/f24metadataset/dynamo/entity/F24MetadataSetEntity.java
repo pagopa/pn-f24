@@ -15,8 +15,9 @@ import java.util.Map;
 @ToString
 @DynamoDbBean
 public class F24MetadataSetEntity {
-    public static final String ITEMS_SEPARATOR = "#";
-    public static final String FIELD_PK = "pk";
+    public static final String FIELD_SET_ID = "setId";
+    public static final String FIELD_CREATOR_CX_ID = "creatorCxId";
+    public static final String FIELD_VALIDATOR_CX_ID = "validatorCxId";
     public static final String FIELD_STATUS = "status";
     public static final String FIELD_FILE_KEYS = "fileKeys";
     public static final String FIELD_SHA_256 = "sha256";
@@ -27,18 +28,15 @@ public class F24MetadataSetEntity {
     public static final String FIELD_TTL = "ttl";
     public static final String FIELD_VALIDATION_RESULT = "validationResult";
 
-    private static final int CX_ID_INDEX = 0;
-    private static final int SET_ID_INDEX = 1;
-
-    public F24MetadataSetEntity(String cxId, String setId) {
-        this.setPk(cxId, setId);
-    }
-
     @Getter(onMethod=@__({
             @DynamoDbPartitionKey,
-            @DynamoDbAttribute(FIELD_PK)
+            @DynamoDbAttribute(FIELD_SET_ID)
     }))
-    private String pk;
+    private String setId;
+    @Getter(onMethod=@__({@DynamoDbAttribute(FIELD_CREATOR_CX_ID)}))
+    private String creatorCxId;
+    @Getter(onMethod=@__({@DynamoDbAttribute(FIELD_VALIDATOR_CX_ID)}))
+    private String validatorCxId;
     @Getter(onMethod=@__({@DynamoDbAttribute(FIELD_STATUS), @DynamoDbConvertedBy(F24MetadataSetStatusEntityConverter.class)}))
     private F24MetadataSetStatusEntity status;
     @Getter(onMethod=@__({@DynamoDbAttribute(FIELD_FILE_KEYS)}))
@@ -57,17 +55,5 @@ public class F24MetadataSetEntity {
     private Instant updated;
     @Getter(onMethod = @__({@DynamoDbAttribute(FIELD_TTL)}))
     private Long ttl;
-
-    private void setPk(String cxId, String setId) {
-        this.pk = cxId + ITEMS_SEPARATOR + setId;
-    }
-
-    public String getCxId() {
-        return this.pk.split(ITEMS_SEPARATOR)[CX_ID_INDEX];
-    }
-
-    public String getSetId() {
-        return this.pk.split(ITEMS_SEPARATOR)[SET_ID_INDEX];
-    }
 
 }

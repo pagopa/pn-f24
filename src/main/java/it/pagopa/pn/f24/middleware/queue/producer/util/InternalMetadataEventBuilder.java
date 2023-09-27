@@ -8,19 +8,18 @@ import it.pagopa.pn.f24.middleware.queue.producer.events.ValidateMetadataSetEven
 import java.time.Instant;
 
 public class InternalMetadataEventBuilder {
-    private static final String VALIDATE_METADATA_EVENT_ID_DESCRIPTOR = "_validate_f24_metadata_";
+    private static final String VALIDATE_METADATA_EVENT_ID_DESCRIPTOR = "validate_f24_metadata_";
 
-    public static ValidateMetadataSetEvent buildValidateMetadataEvent(String setId, String cxId) {
+    public static ValidateMetadataSetEvent buildValidateMetadataEvent(String setId) {
         return ValidateMetadataSetEvent.builder()
-                .header(buildInternalEventHeader(setId, cxId))
+                .header(buildInternalEventHeader(setId))
                 .payload(ValidateMetadataSetEvent.Payload.builder()
                         .setId(setId)
-                        .cxId(cxId)
                         .build())
                 .build();
     }
-    private static GenericEventHeader buildInternalEventHeader(String setId, String cxId) {
-        String eventId = cxId + VALIDATE_METADATA_EVENT_ID_DESCRIPTOR + setId;
+    private static GenericEventHeader buildInternalEventHeader(String setId) {
+        String eventId = VALIDATE_METADATA_EVENT_ID_DESCRIPTOR + setId;
         return GenericEventHeader.builder()
                 .eventId(eventId)
                 .eventType(F24InternalEventType.VALIDATE_METADATA.getValue())

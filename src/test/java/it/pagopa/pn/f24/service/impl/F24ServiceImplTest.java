@@ -8,7 +8,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import it.pagopa.pn.api.dto.events.MomProducer;
-import it.pagopa.pn.api.dto.events.PnF24AsyncEvent;
+import it.pagopa.pn.api.dto.events.PnF24MetadataValidationEndEvent;
 import it.pagopa.pn.f24.dto.F24MetadataSet;
 import it.pagopa.pn.f24.exception.PnBadRequestException;
 import it.pagopa.pn.f24.middleware.dao.f24metadataset.F24MetadataSetDao;
@@ -28,7 +28,7 @@ import reactor.core.publisher.Mono;
 @ExtendWith(SpringExtension.class)
 class F24ServiceImplTest {
     @MockBean
-    private EventBridgeProducer<PnF24AsyncEvent> momProducerExternal;
+    private EventBridgeProducer<PnF24MetadataValidationEndEvent> momProducerExternal;
 
     @MockBean
     private F24Generator f24Generator;

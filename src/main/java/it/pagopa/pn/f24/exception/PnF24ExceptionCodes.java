@@ -17,7 +17,7 @@ public class PnF24ExceptionCodes {
     public static final String ERROR_CODE_F24_METADATA_NOT_FOUND = "PN_F24_METADATANOTFOUND";
     public static final String ERROR_CODE_F24_READ_FILE_ERROR = "PN_F24_READ_FILE_ERROR";
     public static final String ERROR_CODE_F24_METADATA_PARSING = "PN_F24_METADATA_PARSING_ERROR";
-    public static final String ERROR_MESSAGE_F24_METADATA_SET_NOT_FOUND = "Metadata Set with setId %s and cxId %s not found";
+    public static final String ERROR_MESSAGE_F24_METADATA_SET_NOT_FOUND = "Metadata Set with setId %s not found";
     public static final String ERROR_MESSAGE_F24_REQUEST_NOT_FOUND = "Request with requestId %s not found";
     public static final String ERROR_MESSAGE_F24_PATH_TOKENS_DIMENSION_NOT_ALLOWED = "pathTokens can have only %s elements";
     public static final String ERROR_MESSAGE_F24_SET_ID_INCONGRUENT = "setId given in request body is different from setId given in path";
