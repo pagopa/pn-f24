@@ -3,6 +3,7 @@ package it.pagopa.pn.f24.service.impl;
 
 import it.pagopa.pn.api.dto.events.MomProducer;
 import it.pagopa.pn.api.dto.events.PnF24MetadataValidationEndEvent;
+import it.pagopa.pn.f24.config.F24Config;
 import it.pagopa.pn.f24.dto.F24MetadataRef;
 import it.pagopa.pn.f24.dto.F24MetadataSet;
 import it.pagopa.pn.f24.dto.F24MetadataStatus;
@@ -46,17 +47,18 @@ public class F24ServiceImpl implements F24Service {
     private final EventBridgeProducer<PnF24MetadataValidationEndEvent> metadataValidationEndedEventProducer;
     private final MomProducer<ValidateMetadataSetEvent> validateMetadataSetEventProducer;
     private final F24MetadataSetDao f24MetadataSetDao;
-
     private final JsonService jsonService;
+    private final F24Config f24Config;
 
 
-    public F24ServiceImpl(F24Generator f24Generator, PnSafeStorageClientImpl pnSafeStorageClient, EventBridgeProducer<PnF24MetadataValidationEndEvent> metadataValidationEndedEventProducer, MomProducer<ValidateMetadataSetEvent> validateMetadataSetEventProducer, F24MetadataSetDao f24MetadataSetDao, JsonService jsonService) {
+    public F24ServiceImpl(F24Generator f24Generator, PnSafeStorageClientImpl pnSafeStorageClient, EventBridgeProducer<PnF24MetadataValidationEndEvent> metadataValidationEndedEventProducer, MomProducer<ValidateMetadataSetEvent> validateMetadataSetEventProducer, F24MetadataSetDao f24MetadataSetDao, JsonService jsonService, F24Config f24Config) {
         this.f24Generator = f24Generator;
         this.pnSafeStorageClient = pnSafeStorageClient;
         this.metadataValidationEndedEventProducer = metadataValidationEndedEventProducer;
         this.validateMetadataSetEventProducer = validateMetadataSetEventProducer;
         this.f24MetadataSetDao = f24MetadataSetDao;
         this.jsonService = jsonService;
+        this.f24Config = f24Config;
     }
 
     @Override
@@ -293,7 +295,9 @@ public class F24ServiceImpl implements F24Service {
         String setId = f24MetadataSet.getSetId();
         String cxId = f24MetadataSet.getCxId();
         log.debug("Sending validation ended event for metadata with setId : {} and cxId : {}", setId, cxId);
-        return Mono.fromRunnable(() -> metadataValidationEndedEventProducer.sendEvent(PnF24AsyncEventBuilderHelper.buildMetadataValidationEndEvent(cxId, setId, f24MetadataSet.getValidationResult())))
+
+        PnF24MetadataValidationEndEvent event = PnF24AsyncEventBuilderHelper.buildMetadataValidationEndEvent(cxId, setId, f24MetadataSet.getValidationResult(), f24Config.getDeliveryPushCxId());
+        return Mono.fromRunnable(() -> metadataValidationEndedEventProducer.sendEvent(event))
                 .doOnError(throwable -> log.warn("Error sending validation ended event", throwable))
                 .then(Mono.defer(() -> {
                     //Indifferente a questo punto, lo setto solo per coerenza. (HaveToSendValidationEvent)

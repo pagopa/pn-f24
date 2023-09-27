@@ -198,6 +198,14 @@ Parameters:
   F24InternalAgeAlarmARN:
     Type: String
 
+  PaperChannelCxId:
+    Type: String
+    Description: pn-paper-channel client id
+
+  DeliveryPushCxId:
+    Type: String
+    Description: pn-delivery-push client id
+
 Resources:
 
   # PN-F24 microservice
@@ -233,6 +241,8 @@ Resources:
         ContainerEnvEntry9: !Sub 'PN_F24_TOPICS_INTERNAL=${PnF24InternalQueueName}'
         ContainerEnvEntry10: !Sub 'PN_F24_TOPICS_FROM_SAFE_STORAGE=${SafeStorageToF24QueueName}'
         ContainerEnvEntry11: !Sub 'PN_F24_EVENTBUS_NAME=arn:aws:events:${AWS::Region}:${AWS::AccountId}:event-bus/${ProjectName}-CoreEventBus'
+        ContainerEnvEntry12: !Sub 'PN_F24_PAPER_CHANNEL_CX_ID=${PaperChannelCxId}'
+        ContainerEnvEntry13: !Sub 'PN_F24_DELIVERY_PUSH_CX_ID=${DeliveryPushCxId}'
         MicroServiceSecretPrefix: pn-f24-Secrets
         JavaToolOptions: '-Dreactor.netty.ioWorkerCount=120 -XX:MaxMetaspaceSize=512M'
         MappedPaths: '/f24-private/*'

@@ -10,6 +10,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class PnF24MetadataValidationEndedEventBridgeProducerImpl extends AbstractEventBridgeProducer<PnF24MetadataValidationEndEvent> {
     protected PnF24MetadataValidationEndedEventBridgeProducerImpl(AmazonEventBridgeAsync amazonEventBridge, F24Config f24Config, JsonService jsonService) {
-        super(amazonEventBridge, f24Config.getEventBus().getSource(), f24Config.getEventBus().getMetadataValidationEventDetailType(), f24Config.getEventBus().getName(), jsonService);
+        super(amazonEventBridge, f24Config.getEventBus().getSource(), f24Config.getEventBus().getOutcomeEventDetailType(), f24Config.getEventBus().getName(), jsonService);
     }
 }

@@ -1,6 +1,7 @@
 package it.pagopa.pn.f24.middleware.queue.consumer.service;
 
 import it.pagopa.pn.api.dto.events.PnF24MetadataValidationEndEvent;
+import it.pagopa.pn.f24.config.F24Config;
 import it.pagopa.pn.f24.service.MetadataValidator;
 import it.pagopa.pn.f24.dto.*;
 import it.pagopa.pn.f24.exception.PnF24ExceptionCodes;
@@ -28,11 +29,13 @@ public class ValidateMetadataEventService {
     private final SafeStorageService safeStorageService;
     private final EventBridgeProducer<PnF24MetadataValidationEndEvent> eventBridgeProducer;
     private final MetadataValidator metadataValidator;
-    public ValidateMetadataEventService(F24MetadataSetDao f24MetadataSetDao, SafeStorageService safeStorageService, EventBridgeProducer<PnF24MetadataValidationEndEvent> eventBridgeProducer, MetadataValidator metadataValidator) {
+    private final F24Config f24Config;
+    public ValidateMetadataEventService(F24MetadataSetDao f24MetadataSetDao, SafeStorageService safeStorageService, EventBridgeProducer<PnF24MetadataValidationEndEvent> eventBridgeProducer, MetadataValidator metadataValidator, F24Config f24Config) {
         this.f24MetadataSetDao = f24MetadataSetDao;
         this.safeStorageService = safeStorageService;
         this.eventBridgeProducer = eventBridgeProducer;
         this.metadataValidator = metadataValidator;
+        this.f24Config = f24Config;
     }
 
     public Mono<Void> handleMetadataValidation(ValidateMetadataSetEvent.Payload payload) {
@@ -118,7 +121,8 @@ public class ValidateMetadataEventService {
                     String setId = f24MetadataSet.getSetId();
                     if(refreshedF24MetadataSet.getHaveToSendValidationEvent()) {
                         log.debug("MetadataSet with setId {} and cxId {} has to send validation end event", setId, cxId);
-                        return Mono.fromRunnable(() -> eventBridgeProducer.sendEvent(PnF24AsyncEventBuilderHelper.buildMetadataValidationEndEvent(cxId, setId, f24MetadataValidationIssues)))
+                        PnF24MetadataValidationEndEvent event = PnF24AsyncEventBuilderHelper.buildMetadataValidationEndEvent(cxId, setId, f24MetadataValidationIssues, f24Config.getDeliveryPushCxId());
+                        return Mono.fromRunnable(() -> eventBridgeProducer.sendEvent(event))
                                 .doOnError(throwable -> log.warn("Error sending validation end event", throwable))
                                 .then(updateMetadataSetWithValidation(refreshedF24MetadataSet, f24MetadataValidationIssues, true));
                     } else {

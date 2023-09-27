@@ -11,11 +11,12 @@ import java.util.List;
 public class PnF24AsyncEventBuilderHelper {
     private static final String OK_STATUS = "OK";
     private static final String KO_STATUS = "KO";
-    public static PnF24MetadataValidationEndEvent buildMetadataValidationEndEvent(String cxId, String setId, List<F24MetadataValidationIssue> errors) {
+    public static PnF24MetadataValidationEndEvent buildMetadataValidationEndEvent(String cxId, String setId, List<F24MetadataValidationIssue> errors, String clientId) {
         return PnF24MetadataValidationEndEvent.builder()
                 .detail(
                         PnF24MetadataValidationEndEvent.Detail.builder()
                                 .cxId(cxId)
+                                .clientId(clientId)
                                 .metadataValidationEnd(buildMetadataValidationEndPayload(setId, errors))
                                 .build()
                 )
