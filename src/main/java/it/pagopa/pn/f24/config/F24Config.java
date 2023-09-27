@@ -9,12 +9,16 @@ import org.springframework.context.annotation.Import;
 import java.util.List;
 
 @Configuration
-@ConfigurationProperties( prefix = "pn.f24")
+@ConfigurationProperties(prefix = "pn.f24")
 @Data
 @Import(SharedAutoConfiguration.class)
 public class F24Config {
     private String safeStorageBaseUrl;
-    private String msToWaitForSafeStorage;
+    private Integer secIntervalForSafeStoragePolling;
+    private Integer safeStorageExecutionLimitMin;
+    private Integer retryAfterWhenErrorSafeStorage;
+    private Integer secToPollingTimeout;
+    private Integer retentionForF24FilesInDays;
     private String safeStorageCxId;
     private String safeStorageMetadataDocType;
     private String safeStorageF24DocType;

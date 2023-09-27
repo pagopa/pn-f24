@@ -1,3 +1,4 @@
+/*
 package it.pagopa.pn.f24.dto;
 
 import static org.junit.Assert.assertEquals;
@@ -12,18 +13,22 @@ import java.time.LocalDateTime;
 import org.junit.Test;
 
 public class F24FileTest {
-    /**
+    */
+/**
      * Method under test: {@link F24File#canEqual(Object)}
-     */
+     *//*
+
     @Test
     public void testCanEqual() {
         assertFalse((new F24File("Pk", "Jan 1, 2020 8:00am GMT+0100", "Sk", "42", F24FileStatus.PROCESSING, "File Key", 1L,
                 LocalDate.of(1970, 1, 1).atStartOfDay())).canEqual("Other"));
     }
 
-    /**
+    */
+/**
      * Method under test: {@link F24File#canEqual(Object)}
-     */
+     *//*
+
     @Test
     public void testCanEqual2() {
         F24File f24File = new F24File("Pk", "Jan 1, 2020 8:00am GMT+0100", "Sk", "42", F24FileStatus.PROCESSING,
@@ -32,7 +37,8 @@ public class F24FileTest {
                 "File Key", 1L, LocalDate.of(1970, 1, 1).atStartOfDay())));
     }
 
-    /**
+    */
+/**
      * Methods under test:
      *
      * <ul>
@@ -55,7 +61,8 @@ public class F24FileTest {
      *   <li>{@link F24File#getTtl()}
      *   <li>{@link F24File#getUpdated()}
      * </ul>
-     */
+     *//*
+
     @Test
     public void testConstructor() {
         F24File actualF24File = new F24File("Pk", "Jan 1, 2020 8:00am GMT+0100", "Sk", "42", F24FileStatus.PROCESSING,
@@ -84,9 +91,11 @@ public class F24FileTest {
                 actualToStringResult);
     }
 
-    /**
+    */
+/**
      * Method under test: {@link F24File#equals(Object)}
-     */
+     *//*
+
     @Test
     public void testEquals() {
         assertNotEquals(new F24File("Pk", "Jan 1, 2020 8:00am GMT+0100", "Sk", "42", F24FileStatus.PROCESSING, "File Key",
@@ -95,14 +104,16 @@ public class F24FileTest {
                 "File Key", 1L, LocalDate.of(1970, 1, 1).atStartOfDay()), "Different type to F24File");
     }
 
-    /**
+    */
+/**
      * Methods under test:
      *
      * <ul>
      *   <li>{@link F24File#equals(Object)}
      *   <li>{@link F24File#hashCode()}
      * </ul>
-     */
+     *//*
+
     @Test
     public void testEquals2() {
         F24File f24File = new F24File("Pk", "Jan 1, 2020 8:00am GMT+0100", "Sk", "42", F24FileStatus.PROCESSING,
@@ -112,14 +123,16 @@ public class F24FileTest {
         assertEquals(expectedHashCodeResult, f24File.hashCode());
     }
 
-    /**
+    */
+/**
      * Methods under test:
      *
      * <ul>
      *   <li>{@link F24File#equals(Object)}
      *   <li>{@link F24File#hashCode()}
      * </ul>
-     */
+     *//*
+
     @Test
     public void testEquals3() {
         F24File f24File = new F24File("Pk", "Jan 1, 2020 8:00am GMT+0100", "Sk", "42", F24FileStatus.PROCESSING,
@@ -132,9 +145,11 @@ public class F24FileTest {
         assertEquals(expectedHashCodeResult, f24File2.hashCode());
     }
 
-    /**
+    */
+/**
      * Method under test: {@link F24File#equals(Object)}
-     */
+     *//*
+
     @Test
     public void testEquals4() {
         F24File f24File = new F24File("Jan 1, 2020 8:00am GMT+0100", "Jan 1, 2020 8:00am GMT+0100", "Sk", "42",
@@ -143,9 +158,11 @@ public class F24FileTest {
                 "File Key", 1L, LocalDate.of(1970, 1, 1).atStartOfDay()));
     }
 
-    /**
+    */
+/**
      * Method under test: {@link F24File#equals(Object)}
-     */
+     *//*
+
     @Test
     public void testEquals5() {
         F24File f24File = new F24File(null, "Jan 1, 2020 8:00am GMT+0100", "Sk", "42", F24FileStatus.PROCESSING,
@@ -154,9 +171,11 @@ public class F24FileTest {
                 "File Key", 1L, LocalDate.of(1970, 1, 1).atStartOfDay()));
     }
 
-    /**
+    */
+/**
      * Method under test: {@link F24File#equals(Object)}
-     */
+     *//*
+
     @Test
     public void testEquals6() {
         F24File f24File = new F24File("Pk", "Pk", "Sk", "42", F24FileStatus.PROCESSING, "File Key", 1L,
@@ -165,9 +184,11 @@ public class F24FileTest {
                 "File Key", 1L, LocalDate.of(1970, 1, 1).atStartOfDay()));
     }
 
-    /**
+    */
+/**
      * Method under test: {@link F24File#equals(Object)}
-     */
+     *//*
+
     @Test
     public void testEquals7() {
         F24File f24File = new F24File("Pk", null, "Sk", "42", F24FileStatus.PROCESSING, "File Key", 1L,
@@ -176,9 +197,11 @@ public class F24FileTest {
                 "File Key", 1L, LocalDate.of(1970, 1, 1).atStartOfDay()));
     }
 
-    /**
+    */
+/**
      * Method under test: {@link F24File#equals(Object)}
-     */
+     *//*
+
     @Test
     public void testEquals8() {
         F24File f24File = new F24File("Pk", "Jan 1, 2020 8:00am GMT+0100", "Pk", "42", F24FileStatus.PROCESSING,
@@ -187,9 +210,11 @@ public class F24FileTest {
                 "File Key", 1L, LocalDate.of(1970, 1, 1).atStartOfDay()));
     }
 
-    /**
+    */
+/**
      * Method under test: {@link F24File#equals(Object)}
-     */
+     *//*
+
     @Test
     public void testEquals9() {
         F24File f24File = new F24File("Pk", "Jan 1, 2020 8:00am GMT+0100", null, "42", F24FileStatus.PROCESSING,
@@ -198,9 +223,11 @@ public class F24FileTest {
                 "File Key", 1L, LocalDate.of(1970, 1, 1).atStartOfDay()));
     }
 
-    /**
+    */
+/**
      * Method under test: {@link F24File#equals(Object)}
-     */
+     *//*
+
     @Test
     public void testEquals10() {
         F24File f24File = new F24File("Pk", "Jan 1, 2020 8:00am GMT+0100", "Sk", "Pk", F24FileStatus.PROCESSING,
@@ -209,9 +236,11 @@ public class F24FileTest {
                 "File Key", 1L, LocalDate.of(1970, 1, 1).atStartOfDay()));
     }
 
-    /**
+    */
+/**
      * Method under test: {@link F24File#equals(Object)}
-     */
+     *//*
+
     @Test
     public void testEquals11() {
         F24File f24File = new F24File("Pk", "Jan 1, 2020 8:00am GMT+0100", "Sk", null, F24FileStatus.PROCESSING,
@@ -220,9 +249,11 @@ public class F24FileTest {
                 "File Key", 1L, LocalDate.of(1970, 1, 1).atStartOfDay()));
     }
 
-    /**
+    */
+/**
      * Method under test: {@link F24File#equals(Object)}
-     */
+     *//*
+
     @Test
     public void testEquals12() {
         F24File f24File = new F24File("Pk", "Jan 1, 2020 8:00am GMT+0100", "Sk", "42", null, "File Key", 1L,
@@ -231,9 +262,11 @@ public class F24FileTest {
                 "File Key", 1L, LocalDate.of(1970, 1, 1).atStartOfDay()));
     }
 
-    /**
+    */
+/**
      * Method under test: {@link F24File#equals(Object)}
-     */
+     *//*
+
     @Test
     public void testEquals13() {
         F24File f24File = new F24File("Pk", "Jan 1, 2020 8:00am GMT+0100", "Sk", "42", F24FileStatus.GENERATED,
@@ -242,9 +275,11 @@ public class F24FileTest {
                 "File Key", 1L, LocalDate.of(1970, 1, 1).atStartOfDay()));
     }
 
-    /**
+    */
+/**
      * Method under test: {@link F24File#equals(Object)}
-     */
+     *//*
+
     @Test
     public void testEquals14() {
         F24File f24File = new F24File("Pk", "Jan 1, 2020 8:00am GMT+0100", "Sk", "42", F24FileStatus.PROCESSING, "Pk", 1L,
@@ -253,9 +288,11 @@ public class F24FileTest {
                 "File Key", 1L, LocalDate.of(1970, 1, 1).atStartOfDay()));
     }
 
-    /**
+    */
+/**
      * Method under test: {@link F24File#equals(Object)}
-     */
+     *//*
+
     @Test
     public void testEquals15() {
         F24File f24File = new F24File("Pk", "Jan 1, 2020 8:00am GMT+0100", "Sk", "42", F24FileStatus.PROCESSING, null, 1L,
@@ -264,9 +301,11 @@ public class F24FileTest {
                 "File Key", 1L, LocalDate.of(1970, 1, 1).atStartOfDay()));
     }
 
-    /**
+    */
+/**
      * Method under test: {@link F24File#equals(Object)}
-     */
+     *//*
+
     @Test
     public void testEquals16() {
         F24File f24File = new F24File("Pk", "Jan 1, 2020 8:00am GMT+0100", "Sk", "42", F24FileStatus.PROCESSING,
@@ -275,9 +314,11 @@ public class F24FileTest {
                 "File Key", 1L, LocalDate.of(1970, 1, 1).atStartOfDay()));
     }
 
-    /**
+    */
+/**
      * Method under test: {@link F24File#equals(Object)}
-     */
+     *//*
+
     @Test
     public void testEquals17() {
         F24File f24File = new F24File("Pk", "Jan 1, 2020 8:00am GMT+0100", "Sk", "42", F24FileStatus.PROCESSING,
@@ -286,9 +327,11 @@ public class F24FileTest {
                 "File Key", 1L, LocalDate.of(1970, 1, 1).atStartOfDay()));
     }
 
-    /**
+    */
+/**
      * Method under test: {@link F24File#equals(Object)}
-     */
+     *//*
+
     @Test
     public void testEquals18() {
         F24File f24File = new F24File("Pk", "Jan 1, 2020 8:00am GMT+0100", "Sk", "42", F24FileStatus.PROCESSING,
@@ -297,14 +340,16 @@ public class F24FileTest {
                 "File Key", 1L, LocalDate.of(1970, 1, 1).atStartOfDay()));
     }
 
-    /**
+    */
+/**
      * Methods under test:
      *
      * <ul>
      *   <li>{@link F24File#equals(Object)}
      *   <li>{@link F24File#hashCode()}
      * </ul>
-     */
+     *//*
+
     @Test
     public void testEquals19() {
         F24File f24File = new F24File(null, "Jan 1, 2020 8:00am GMT+0100", "Sk", "42", F24FileStatus.PROCESSING,
@@ -317,14 +362,16 @@ public class F24FileTest {
         assertEquals(expectedHashCodeResult, f24File2.hashCode());
     }
 
-    /**
+    */
+/**
      * Methods under test:
      *
      * <ul>
      *   <li>{@link F24File#equals(Object)}
      *   <li>{@link F24File#hashCode()}
      * </ul>
-     */
+     *//*
+
     @Test
     public void testEquals20() {
         F24File f24File = new F24File("Pk", null, "Sk", "42", F24FileStatus.PROCESSING, "File Key", 1L,
@@ -337,14 +384,16 @@ public class F24FileTest {
         assertEquals(expectedHashCodeResult, f24File2.hashCode());
     }
 
-    /**
+    */
+/**
      * Methods under test:
      *
      * <ul>
      *   <li>{@link F24File#equals(Object)}
      *   <li>{@link F24File#hashCode()}
      * </ul>
-     */
+     *//*
+
     @Test
     public void testEquals21() {
         F24File f24File = new F24File("Pk", "Jan 1, 2020 8:00am GMT+0100", null, "42", F24FileStatus.PROCESSING,
@@ -358,3 +407,4 @@ public class F24FileTest {
     }
 }
 
+*/

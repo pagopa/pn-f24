@@ -12,7 +12,47 @@ class StandardMetadataInspectorTest {
     @Test
     void testCountMetadataApplyCost() {
         StandardMetadataInspector standardMetadataInspector = new StandardMetadataInspector();
-        assertEquals(0, standardMetadataInspector.countMetadataApplyCost(new F24Metadata()));
+        F24Metadata f24Metadata = new F24Metadata();
+        F24Standard f24Standard = new F24Standard();
+
+        TreasurySection treasurySection = new TreasurySection();
+        Tax tax = new Tax();
+        tax.setApplyCost(true);
+        treasurySection.setRecords(List.of(tax));
+        f24Standard.setTreasury(treasurySection);
+
+        InpsSection inpsSection = new InpsSection();
+        InpsRecord inpsRecord = new InpsRecord();
+        inpsRecord.setApplyCost(true);
+        inpsSection.setRecords(List.of(inpsRecord));
+        f24Standard.setInps(inpsSection);
+
+        RegionSection regionSection = new RegionSection();
+        RegionRecord regionRecord = new RegionRecord();
+        regionRecord.setApplyCost(true);
+        regionSection.setRecords(List.of(regionRecord));
+        f24Standard.setRegion(regionSection);
+
+        LocalTaxSection localTaxSection = new LocalTaxSection();
+        LocalTaxRecord localTaxRecord = new LocalTaxRecord();
+        localTaxRecord.setApplyCost(true);
+        localTaxSection.setRecords(List.of(localTaxRecord));
+        f24Standard.setLocalTax(localTaxSection);
+
+        SocialSecuritySection socialSecuritySection = new SocialSecuritySection();
+        InailRecord inailRecord = new InailRecord();
+        inailRecord.setApplyCost(true);
+        socialSecuritySection.setRecords(List.of(inailRecord));
+        f24Standard.setSocialSecurity(socialSecuritySection);
+
+        SocialSecurityRecord socialSecurityRecord = new SocialSecurityRecord();
+        socialSecurityRecord.setApplyCost(true);
+        socialSecuritySection.setSocSecRecords(List.of(socialSecurityRecord));
+        f24Standard.setSocialSecurity(socialSecuritySection);
+
+        f24Metadata.setF24Standard(f24Standard);
+
+        assertEquals(6, standardMetadataInspector.countMetadataApplyCost(f24Metadata));
     }
 
 

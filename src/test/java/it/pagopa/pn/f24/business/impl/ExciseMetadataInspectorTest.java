@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import it.pagopa.pn.f24.generated.openapi.server.v1.dto.*;
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.mock.mockito.MockBean;
 
 class ExciseMetadataInspectorTest {
     /**
@@ -13,7 +14,49 @@ class ExciseMetadataInspectorTest {
     @Test
     void testCountMetadataApplyCost() {
         ExciseMetadataInspector exciseMetadataInspector = new ExciseMetadataInspector();
-        assertEquals(0, exciseMetadataInspector.countMetadataApplyCost(new F24Metadata()));
+        F24Metadata f24Metadata = new F24Metadata();
+        F24Excise f24Excise = F24Excise.builder().build();
+
+        TreasurySection treasurySection = new TreasurySection();
+        Tax tax = new Tax();
+        tax.setApplyCost(true);
+        treasurySection.setRecords(List.of(tax));
+        f24Excise.setTreasury(treasurySection);
+
+        InpsSection inpsSection = new InpsSection();
+        InpsRecord inpsRecord = new InpsRecord();
+        inpsRecord.setApplyCost(true);
+        inpsSection.setRecords(List.of(inpsRecord));
+        f24Excise.setInps(inpsSection);
+
+        RegionSection regionSection = new RegionSection();
+        RegionRecord regionRecord = new RegionRecord();
+        regionRecord.setApplyCost(true);
+        regionSection.setRecords(List.of(regionRecord));
+        f24Excise.setRegion(regionSection);
+
+        LocalTaxSection localTaxSection = new LocalTaxSection();
+        LocalTaxRecord localTaxRecord = new LocalTaxRecord();
+        localTaxRecord.setApplyCost(true);
+        localTaxSection.setRecords(List.of(localTaxRecord));
+        f24Excise.setLocalTax(localTaxSection);
+
+        ExciseSection exciseSection = new ExciseSection();
+        ExciseTax exciseTax = new ExciseTax();
+        exciseTax.setApplyCost(true);
+        exciseSection.setRecords(List.of(exciseTax));
+        f24Excise.setExcise(exciseSection);
+
+        f24Metadata.setF24Excise(f24Excise);
+        assertEquals(5, exciseMetadataInspector.countMetadataApplyCost(f24Metadata));
+    }
+
+    @Test
+    void testCountMetadataApplyCostNull() {
+        ExciseMetadataInspector exciseMetadataInspector = new ExciseMetadataInspector();
+        F24Metadata f24Metadata = new F24Metadata();
+
+        assertEquals(0, exciseMetadataInspector.countMetadataApplyCost(f24Metadata));
     }
 
     /**

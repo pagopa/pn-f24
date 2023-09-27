@@ -9,10 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import software.amazon.awssdk.enhanced.dynamodb.*;
-import software.amazon.awssdk.enhanced.dynamodb.model.GetItemEnhancedRequest;
-import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional;
-import software.amazon.awssdk.enhanced.dynamodb.model.QueryEnhancedRequest;
-import software.amazon.awssdk.enhanced.dynamodb.model.UpdateItemEnhancedRequest;
+import software.amazon.awssdk.enhanced.dynamodb.model.*;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 
 import java.util.HashMap;
@@ -32,7 +29,7 @@ public class F24FileCacheRepositoryImpl implements F24FileCacheDao {
 
     @Override
     public Mono<F24File> getItem(String cxId, String setId, Integer cost, String pathTokens) {
-        return getItem(setId, cxId, cost, pathTokens, false);
+        return getItem(cxId, setId, cost, pathTokens, false);
     }
 
     @Override
@@ -52,6 +49,20 @@ public class F24FileCacheRepositoryImpl implements F24FileCacheDao {
     public Mono<F24File> updateItem(F24File f24File) {
         return Mono.fromFuture(table.updateItem(createUpdateItemEnhancedRequest(F24FileCacheMapper.dtoToEntity(f24File))))
                 .map(F24FileCacheMapper::entityToDto);
+    }
+
+    @Override
+    public Mono<F24File> putItemIfAbsent(F24File f24File) {
+        PutItemEnhancedRequest<F24FileCacheEntity> putItemEnhancedRequest = PutItemEnhancedRequest.builder(F24FileCacheEntity.class)
+                .item(F24FileCacheMapper.dtoToEntity(f24File))
+                .conditionExpression(
+                        Expression.builder()
+                                .expression("attribute_not_exists(pk)")
+                                .build()
+                )
+                .build();
+        return Mono.fromFuture(table.putItem(putItemEnhancedRequest))
+                .thenReturn(f24File);
     }
 
     private UpdateItemEnhancedRequest<F24FileCacheEntity> createUpdateItemEnhancedRequest(F24FileCacheEntity entity) {

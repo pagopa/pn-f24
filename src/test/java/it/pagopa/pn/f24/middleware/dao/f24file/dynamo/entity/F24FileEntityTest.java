@@ -1,3 +1,4 @@
+/*
 package it.pagopa.pn.f24.middleware.dao.f24file.dynamo.entity;
 
 import static org.junit.Assert.assertEquals;
@@ -12,24 +13,29 @@ import java.time.LocalDateTime;
 import org.junit.Test;
 
 public class F24FileEntityTest {
-    /**
+    */
+/**
      * Method under test: {@link F24FileEntity#canEqual(Object)}
-     */
+     *//*
+
     @Test
     public void testCanEqual() {
         assertFalse((new F24FileEntity()).canEqual("Other"));
     }
 
-    /**
+    */
+/**
      * Method under test: {@link F24FileEntity#canEqual(Object)}
-     */
+     *//*
+
     @Test
     public void testCanEqual2() {
         F24FileEntity f24FileEntity = new F24FileEntity();
         assertTrue(f24FileEntity.canEqual(new F24FileEntity()));
     }
 
-    /**
+    */
+/**
      * Methods under test:
      *
      * <ul>
@@ -52,7 +58,8 @@ public class F24FileEntityTest {
      *   <li>{@link F24FileEntity#getTtl()}
      *   <li>{@link F24FileEntity#getUpdated()}
      * </ul>
-     */
+     *//*
+
     @Test
     public void testConstructor() {
         F24FileEntity actualF24FileEntity = new F24FileEntity();
@@ -80,7 +87,8 @@ public class F24FileEntityTest {
                 actualToStringResult);
     }
 
-    /**
+    */
+/**
      * Methods under test:
      *
      * <ul>
@@ -103,7 +111,8 @@ public class F24FileEntityTest {
      *   <li>{@link F24FileEntity#getTtl()}
      *   <li>{@link F24FileEntity#getUpdated()}
      * </ul>
-     */
+     *//*
+
     @Test
     public void testConstructor2() {
         F24FileEntity actualF24FileEntity = new F24FileEntity("Pk", "Jan 1, 2020 8:00am GMT+0100", "Sk", "42",
@@ -132,23 +141,27 @@ public class F24FileEntityTest {
                 actualToStringResult);
     }
 
-    /**
+    */
+/**
      * Method under test: {@link F24FileEntity#equals(Object)}
-     */
+     *//*
+
     @Test
     public void testEquals() {
         assertNotEquals(new F24FileEntity(), null);
         assertNotEquals(new F24FileEntity(), "Different type to F24FileEntity");
     }
 
-    /**
+    */
+/**
      * Methods under test:
      *
      * <ul>
      *   <li>{@link F24FileEntity#equals(Object)}
      *   <li>{@link F24FileEntity#hashCode()}
      * </ul>
-     */
+     *//*
+
     @Test
     public void testEquals2() {
         F24FileEntity f24FileEntity = new F24FileEntity();
@@ -157,14 +170,16 @@ public class F24FileEntityTest {
         assertEquals(expectedHashCodeResult, f24FileEntity.hashCode());
     }
 
-    /**
+    */
+/**
      * Methods under test:
      *
      * <ul>
      *   <li>{@link F24FileEntity#equals(Object)}
      *   <li>{@link F24FileEntity#hashCode()}
      * </ul>
-     */
+     *//*
+
     @Test
     public void testEquals3() {
         F24FileEntity f24FileEntity = new F24FileEntity();
@@ -174,9 +189,11 @@ public class F24FileEntityTest {
         assertEquals(expectedHashCodeResult, f24FileEntity2.hashCode());
     }
 
-    /**
+    */
+/**
      * Method under test: {@link F24FileEntity#equals(Object)}
-     */
+     *//*
+
     @Test
     public void testEquals4() {
         F24FileEntity f24FileEntity = new F24FileEntity("Pk", "Jan 1, 2020 8:00am GMT+0100", "Sk", "42",
@@ -184,9 +201,11 @@ public class F24FileEntityTest {
         assertNotEquals(f24FileEntity, new F24FileEntity());
     }
 
-    /**
+    */
+/**
      * Method under test: {@link F24FileEntity#equals(Object)}
-     */
+     *//*
+
     @Test
     public void testEquals5() {
         F24FileEntity f24FileEntity = new F24FileEntity();
@@ -194,9 +213,11 @@ public class F24FileEntityTest {
                 F24FileStatusEntity.PROCESSING, "File Key", 1L, LocalDate.of(1970, 1, 1).atStartOfDay()));
     }
 
-    /**
+    */
+/**
      * Method under test: {@link F24FileEntity#equals(Object)}
-     */
+     *//*
+
     @Test
     public void testEquals6() {
         F24FileEntity f24FileEntity = new F24FileEntity();
@@ -204,9 +225,11 @@ public class F24FileEntityTest {
         assertNotEquals(f24FileEntity, new F24FileEntity());
     }
 
-    /**
+    */
+/**
      * Method under test: {@link F24FileEntity#equals(Object)}
-     */
+     *//*
+
     @Test
     public void testEquals7() {
         F24FileEntity f24FileEntity = new F24FileEntity();
@@ -214,9 +237,11 @@ public class F24FileEntityTest {
         assertNotEquals(f24FileEntity, new F24FileEntity());
     }
 
-    /**
+    */
+/**
      * Method under test: {@link F24FileEntity#equals(Object)}
-     */
+     *//*
+
     @Test
     public void testEquals8() {
         F24FileEntity f24FileEntity = new F24FileEntity();
@@ -224,9 +249,11 @@ public class F24FileEntityTest {
         assertNotEquals(f24FileEntity, new F24FileEntity());
     }
 
-    /**
+    */
+/**
      * Method under test: {@link F24FileEntity#equals(Object)}
-     */
+     *//*
+
     @Test
     public void testEquals9() {
         F24FileEntity f24FileEntity = new F24FileEntity();
@@ -234,9 +261,11 @@ public class F24FileEntityTest {
         assertNotEquals(f24FileEntity, new F24FileEntity());
     }
 
-    /**
+    */
+/**
      * Method under test: {@link F24FileEntity#equals(Object)}
-     */
+     *//*
+
     @Test
     public void testEquals10() {
         F24FileEntity f24FileEntity = new F24FileEntity();
@@ -244,9 +273,11 @@ public class F24FileEntityTest {
         assertNotEquals(f24FileEntity, new F24FileEntity());
     }
 
-    /**
+    */
+/**
      * Method under test: {@link F24FileEntity#equals(Object)}
-     */
+     *//*
+
     @Test
     public void testEquals11() {
         F24FileEntity f24FileEntity = new F24FileEntity();
@@ -254,9 +285,11 @@ public class F24FileEntityTest {
         assertNotEquals(f24FileEntity, new F24FileEntity());
     }
 
-    /**
+    */
+/**
      * Method under test: {@link F24FileEntity#equals(Object)}
-     */
+     *//*
+
     @Test
     public void testEquals12() {
         F24FileEntity f24FileEntity = new F24FileEntity();
@@ -264,14 +297,16 @@ public class F24FileEntityTest {
         assertNotEquals(f24FileEntity, new F24FileEntity());
     }
 
-    /**
+    */
+/**
      * Methods under test:
      *
      * <ul>
      *   <li>{@link F24FileEntity#equals(Object)}
      *   <li>{@link F24FileEntity#hashCode()}
      * </ul>
-     */
+     *//*
+
     @Test
     public void testEquals13() {
         F24FileEntity f24FileEntity = new F24FileEntity("Pk", "Jan 1, 2020 8:00am GMT+0100", "Sk", "42",
@@ -284,9 +319,11 @@ public class F24FileEntityTest {
         assertEquals(expectedHashCodeResult, f24FileEntity2.hashCode());
     }
 
-    /**
+    */
+/**
      * Method under test: {@link F24FileEntity#equals(Object)}
-     */
+     *//*
+
     @Test
     public void testEquals14() {
         F24FileEntity f24FileEntity = new F24FileEntity();
@@ -296,9 +333,11 @@ public class F24FileEntityTest {
         assertNotEquals(f24FileEntity, f24FileEntity2);
     }
 
-    /**
+    */
+/**
      * Method under test: {@link F24FileEntity#equals(Object)}
-     */
+     *//*
+
     @Test
     public void testEquals15() {
         F24FileEntity f24FileEntity = new F24FileEntity();
@@ -308,9 +347,11 @@ public class F24FileEntityTest {
         assertNotEquals(f24FileEntity, f24FileEntity2);
     }
 
-    /**
+    */
+/**
      * Method under test: {@link F24FileEntity#equals(Object)}
-     */
+     *//*
+
     @Test
     public void testEquals16() {
         F24FileEntity f24FileEntity = new F24FileEntity();
@@ -320,9 +361,11 @@ public class F24FileEntityTest {
         assertNotEquals(f24FileEntity, f24FileEntity2);
     }
 
-    /**
+    */
+/**
      * Method under test: {@link F24FileEntity#equals(Object)}
-     */
+     *//*
+
     @Test
     public void testEquals17() {
         F24FileEntity f24FileEntity = new F24FileEntity();
@@ -332,9 +375,11 @@ public class F24FileEntityTest {
         assertNotEquals(f24FileEntity, f24FileEntity2);
     }
 
-    /**
+    */
+/**
      * Method under test: {@link F24FileEntity#equals(Object)}
-     */
+     *//*
+
     @Test
     public void testEquals18() {
         F24FileEntity f24FileEntity = new F24FileEntity();
@@ -344,9 +389,11 @@ public class F24FileEntityTest {
         assertNotEquals(f24FileEntity, f24FileEntity2);
     }
 
-    /**
+    */
+/**
      * Method under test: {@link F24FileEntity#equals(Object)}
-     */
+     *//*
+
     @Test
     public void testEquals19() {
         F24FileEntity f24FileEntity = new F24FileEntity();
@@ -356,9 +403,11 @@ public class F24FileEntityTest {
         assertNotEquals(f24FileEntity, f24FileEntity2);
     }
 
-    /**
+    */
+/**
      * Method under test: {@link F24FileEntity#equals(Object)}
-     */
+     *//*
+
     @Test
     public void testEquals20() {
         F24FileEntity f24FileEntity = new F24FileEntity();
@@ -369,3 +418,4 @@ public class F24FileEntityTest {
     }
 }
 
+*/

@@ -3,22 +3,21 @@ package it.pagopa.pn.f24.service.impl;
 
 import it.pagopa.pn.api.dto.events.MomProducer;
 import it.pagopa.pn.api.dto.events.PnF24AsyncEvent;
+import it.pagopa.pn.commons.exceptions.PnRuntimeException;
 import it.pagopa.pn.f24.business.F24ResponseConverter;
 import it.pagopa.pn.f24.business.MetadataInspector;
 import it.pagopa.pn.f24.business.MetadataInspectorFactory;
 import it.pagopa.pn.f24.dto.*;
 import it.pagopa.pn.f24.dto.safestorage.FileCreationWithContentRequest;
+import it.pagopa.pn.f24.dto.safestorage.FileDownloadInfoInt;
 import it.pagopa.pn.f24.dto.safestorage.FileDownloadResponseInt;
-import it.pagopa.pn.f24.exception.PnBadRequestException;
-import it.pagopa.pn.f24.exception.PnConflictException;
-import it.pagopa.pn.f24.exception.PnF24ExceptionCodes;
-import it.pagopa.pn.f24.exception.PnNotFoundException;
+import it.pagopa.pn.f24.exception.*;
+import it.pagopa.pn.f24.generated.openapi.msclient.safestorage.model.FileDownloadInfo;
 import it.pagopa.pn.f24.generated.openapi.server.v1.dto.*;
-import it.pagopa.pn.f24.middleware.dao.f24file.F24FileDao;
+import it.pagopa.pn.f24.middleware.dao.f24file.F24FileCacheDao;
 import it.pagopa.pn.f24.middleware.dao.f24metadataset.F24MetadataSetDao;
 import it.pagopa.pn.f24.middleware.eventbus.EventBridgeProducer;
 import it.pagopa.pn.f24.middleware.eventbus.util.PnF24AsyncEventBuilderHelper;
-import it.pagopa.pn.f24.middleware.msclient.safestorage.PnSafeStorageClientImpl;
 import it.pagopa.pn.f24.middleware.queue.producer.events.ValidateMetadataSetEvent;
 import it.pagopa.pn.f24.middleware.queue.producer.util.InternalMetadataEventBuilder;
 import it.pagopa.pn.f24.service.F24Generator;
@@ -29,16 +28,20 @@ import it.pagopa.pn.f24.util.Sha256Handler;
 import it.pagopa.pn.f24.util.Utility;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClientException;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import software.amazon.awssdk.services.dynamodb.model.ConditionalCheckFailedException;
+import reactor.core.scheduler.Schedulers;
+import it.pagopa.pn.f24.config.F24Config;
 
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.*;
 
 import static it.pagopa.pn.f24.util.Utility.getF24TypeFromMetadata;
@@ -57,22 +60,22 @@ public class F24ServiceImpl implements F24Service {
     private static final int MAX_PATH_TOKENS_DIMENSION = 4;
 
     private final F24Generator f24Generator;
-    //todo service
-    private final PnSafeStorageClientImpl pnSafeStorageClient;
+    private final SafeStorageService safeStorageService;
     private final EventBridgeProducer<PnF24AsyncEvent> eventBridgeProducer;
     private final MomProducer<ValidateMetadataSetEvent> validateMetadataSetEventProducer;
     private final F24MetadataSetDao f24MetadataSetDao;
+    private final F24FileCacheDao f24FileCacheDao;
+    private final F24Config f24Config;
 
-    private final F24FileDao f24FileDao;
 
-
-    public F24ServiceImpl(F24Generator f24Generator, PnSafeStorageClientImpl pnSafeStorageClient, EventBridgeProducer<PnF24AsyncEvent> eventBridgeProducer, MomProducer<ValidateMetadataSetEvent> validateMetadataSetEventProducer, F24MetadataSetDao f24MetadataSetDao) {
+    public F24ServiceImpl(F24Generator f24Generator, SafeStorageService safeStorageService, EventBridgeProducer<PnF24AsyncEvent> eventBridgeProducer, MomProducer<ValidateMetadataSetEvent> validateMetadataSetEventProducer, F24MetadataSetDao f24MetadataSetDao, F24FileCacheDao f24FileCacheDao, F24Config f24Config) {
         this.f24Generator = f24Generator;
-        this.pnSafeStorageClient = pnSafeStorageClient;
+        this.safeStorageService = safeStorageService;
         this.eventBridgeProducer = eventBridgeProducer;
         this.validateMetadataSetEventProducer = validateMetadataSetEventProducer;
         this.f24MetadataSetDao = f24MetadataSetDao;
-        this.f24FileDao = f24FileRepository;
+        this.f24FileCacheDao = f24FileCacheDao;
+        this.f24Config = f24Config;
     }
 
     @Override
@@ -81,15 +84,15 @@ public class F24ServiceImpl implements F24Service {
         return monoSaveF24Request
                 .doOnNext(saveF24Request -> validateSaveMetadataRequest(saveF24Request, setId))
                 .flatMap(
-                    saveF24Request -> this.f24MetadataSetDao.getItem(setId, xPagopaF24CxId)
-                        .map(f24Metadata -> handleExistingMetadata(f24Metadata, saveF24Request))
-                        .switchIfEmpty(Mono.defer(() -> handleNewMetadata(saveF24Request, xPagopaF24CxId)))
+                        saveF24Request -> this.f24MetadataSetDao.getItem(setId, xPagopaF24CxId)
+                                .map(f24Metadata -> handleExistingMetadata(f24Metadata, saveF24Request))
+                                .switchIfEmpty(Mono.defer(() -> handleNewMetadata(saveF24Request, xPagopaF24CxId)))
                 )
                 .doOnNext(unused -> log.info("Ended saveMetadata with success"));
     }
 
     private void validateSaveMetadataRequest(SaveF24Request saveF24Request, String pathSetId) {
-        if(!pathSetId.equalsIgnoreCase(saveF24Request.getSetId())) {
+        if (!pathSetId.equalsIgnoreCase(saveF24Request.getSetId())) {
             throw new PnBadRequestException(
                     "incongruent setId",
                     PnF24ExceptionCodes.ERROR_MESSAGE_F24_SET_ID_INCONGRUENT,
@@ -99,21 +102,21 @@ public class F24ServiceImpl implements F24Service {
 
         saveF24Request.getF24Items().forEach(
                 saveF24Item -> {
-                    if(!checkPathTokensMaxDimension(saveF24Item.getPathTokens())) {
+                    if (!checkPathTokensMaxDimension(saveF24Item.getPathTokens())) {
                         throw new PnBadRequestException(
-                            "max dimension of pathTokens",
-                            String.format(PnF24ExceptionCodes.ERROR_MESSAGE_F24_PATH_TOKENS_DIMENSION_NOT_ALLOWED, MAX_PATH_TOKENS_DIMENSION),
-                            PnF24ExceptionCodes.ERROR_CODE_F24_PATH_TOKENS_NOT_ALLOWED
+                                "max dimension of pathTokens",
+                                String.format(PnF24ExceptionCodes.ERROR_MESSAGE_F24_PATH_TOKENS_DIMENSION_NOT_ALLOWED, MAX_PATH_TOKENS_DIMENSION),
+                                PnF24ExceptionCodes.ERROR_CODE_F24_PATH_TOKENS_NOT_ALLOWED
                         );
                     }
                 }
         );
 
-        if(!checkPathTokensHaveSameDimension(saveF24Request.getF24Items())) {
+        if (!checkPathTokensHaveSameDimension(saveF24Request.getF24Items())) {
             throw new PnBadRequestException("pathTokens with different lengths are not allowed", "pathTokens with different lengths are not allowed", PnF24ExceptionCodes.ERROR_CODE_F24_PATH_TOKENS_NOT_ALLOWED);
         }
 
-        if(!checkPathTokensUniqueness(saveF24Request.getF24Items())) {
+        if (!checkPathTokensUniqueness(saveF24Request.getF24Items())) {
             throw new PnBadRequestException("pathTokens are not unique", "pathTokens are not unique", PnF24ExceptionCodes.ERROR_CODE_F24_PATH_TOKENS_NOT_ALLOWED);
         }
     }
@@ -129,7 +132,7 @@ public class F24ServiceImpl implements F24Service {
 
     private boolean checkPathTokensUniqueness(List<SaveF24Item> f24Items) {
         Set<String> pathTokensSet = new HashSet<>();
-        for(SaveF24Item f24Item : f24Items) {
+        for (SaveF24Item f24Item : f24Items) {
             String pathTokensInString = Utility.convertPathTokensList(f24Item.getPathTokens());
             pathTokensSet.add(pathTokensInString);
         }
@@ -167,13 +170,13 @@ public class F24ServiceImpl implements F24Service {
 
     private Mono<RequestAccepted> tryToSaveF24MetadataSet(SaveF24Request saveF24Request, String cxId) {
         return this.f24MetadataSetDao.putItemIfAbsent(this.createF24Metadata(saveF24Request, cxId))
-            .thenReturn(createRequestAcceptedDto())
-            .doOnError(throwable -> log.error("Error saving in f24Metadata Table", throwable))
-            .onErrorResume(ConditionalCheckFailedException.class, e -> {
-                log.debug("MetadataSet already saved with setId: {} cxId: {}", saveF24Request.getSetId(), cxId);
-                return this.f24MetadataSetDao.getItem(saveF24Request.getSetId(), cxId)
-                        .map(f24MetadataSet -> handleExistingMetadata(f24MetadataSet, saveF24Request));
-            });
+                .thenReturn(createRequestAcceptedDto())
+                .doOnError(throwable -> log.error("Error saving in f24Metadata Table", throwable))
+                .onErrorResume(ConditionalCheckFailedException.class, e -> {
+                    log.debug("MetadataSet already saved with setId: {} cxId: {}", saveF24Request.getSetId(), cxId);
+                    return this.f24MetadataSetDao.getItem(saveF24Request.getSetId(), cxId)
+                            .map(f24MetadataSet -> handleExistingMetadata(f24MetadataSet, saveF24Request));
+                });
     }
 
     private F24MetadataSet createF24Metadata(SaveF24Request saveF24Request, String cxId) {
@@ -225,11 +228,11 @@ public class F24ServiceImpl implements F24Service {
     private Mono<F24MetadataSet> getMetadataSet(String setId, String cxId) {
         return f24MetadataSetDao.getItem(setId, cxId)
                 .switchIfEmpty(Mono.error(
-                    new PnNotFoundException(
-                            "MetadataSet not found",
-                            String.format(PnF24ExceptionCodes.ERROR_MESSAGE_F24_METADATA_SET_NOT_FOUND, setId, cxId),
-                            PnF24ExceptionCodes.ERROR_CODE_F24_METADATA_NOT_FOUND
-                    )
+                        new PnNotFoundException(
+                                "MetadataSet not found",
+                                String.format(PnF24ExceptionCodes.ERROR_MESSAGE_F24_METADATA_SET_NOT_FOUND, setId, cxId),
+                                PnF24ExceptionCodes.ERROR_CODE_F24_METADATA_NOT_FOUND
+                        )
                 ));
     }
 
@@ -237,28 +240,30 @@ public class F24ServiceImpl implements F24Service {
         log.debug("metadata with setId {} and cxId {} is in state TO_VALIDATE", f24MetadataSet.getSetId(), f24MetadataSet.getCxId());
 
         return updateHaveToSendValidationEventAndRemoveTtl(f24MetadataSet)
-            .flatMap(this::checkIfValidationOnQueueHasEnded);
+                .flatMap(this::checkIfValidationOnQueueHasEnded);
     }
+
     private Mono<F24MetadataSet> updateHaveToSendValidationEventAndRemoveTtl(F24MetadataSet f24MetadataSet) {
         f24MetadataSet.setUpdated(Instant.now());
         f24MetadataSet.setHaveToSendValidationEvent(true);
         f24MetadataSet.setTtl(null);
         return f24MetadataSetDao.updateItem(f24MetadataSet);
     }
+
     private Mono<Void> checkIfValidationOnQueueHasEnded(F24MetadataSet f24MetadataSet) {
         String setId = f24MetadataSet.getSetId();
         String cxId = f24MetadataSet.getCxId();
         log.debug("checking if MetadataSet with setId {} and cxId {} has been validated on queue", setId, cxId);
 
         return f24MetadataSetDao.getItem(setId, cxId, true)
-            .flatMap(f24MetadataSetConsistent -> {
-                log.debug("MetadataSet obtained with consistent read has status {}", f24MetadataSetConsistent.getStatus().getValue());
-                if(f24MetadataSetConsistent.getStatus().equals(F24MetadataStatus.VALIDATION_ENDED)) {
-                    return sendValidationEndedEventAndUpdateMetadataSet(f24MetadataSetConsistent);
-                }
+                .flatMap(f24MetadataSetConsistent -> {
+                    log.debug("MetadataSet obtained with consistent read has status {}", f24MetadataSetConsistent.getStatus().getValue());
+                    if (f24MetadataSetConsistent.getStatus().equals(F24MetadataStatus.VALIDATION_ENDED)) {
+                        return sendValidationEndedEventAndUpdateMetadataSet(f24MetadataSetConsistent);
+                    }
 
-                return Mono.empty();
-            });
+                    return Mono.empty();
+                });
     }
 
     private Mono<Void> sendValidationEndedEventAndUpdateMetadataSet(F24MetadataSet f24MetadataSet) {
@@ -280,13 +285,21 @@ public class F24ServiceImpl implements F24Service {
 
     @Override
     public Mono<F24Response> generatePDF(String xPagopaF24CxId, String setId, List<String> pathTokens, Integer cost) {
-        String pathTokensInString = String.join(DEFAULT_SEPARATOR, pathTokens);
+        String pathTokensInString = Utility.convertPathTokensList(pathTokens);
+        return f24FileCacheDao.getItem(xPagopaF24CxId, setId, cost, pathTokensInString).flatMap(f ->
+        {
+            if (f.getStatus().equals(F24FileStatus.DONE)) {
+                return safeStorageService.getFile(f.getFileKey(), false).map(FileDownloadResponseInt::getDownload)
+                        .map(fileDownloadResponseInt -> {
+                            log.info("pdf found for setId: {} pathTokens: {}", setId, pathTokensInString);
+                            return F24ResponseConverter.fileDownloadInfoToF24Response(fileDownloadResponseInt);
+                        });
+            }
+            if (f.getUpdated().isBefore(Instant.now().minus(Duration.ofMinutes(f24Config.getSafeStorageExecutionLimitMin()))))
+                throw new PnF24RuntimeException("File generation exceeded time expectation", "", PnF24ExceptionCodes.ERROR_CODE_F24_FILE_GENERATION_IN_PROGRESS);
 
-        return f24FileDao.getItemByPathTokens(setId, xPagopaF24CxId, pathTokens, String.valueOf(cost)).flatMap(f ->
-                safeStorageService.getFile(f.getFileKey(), false).map(FileDownloadResponseInt::getDownload).map(fileDownloadResponseInt -> {
-                    log.info("pdf found for setId: {} pathTokens: {}", setId, pathTokensInString);
-                    return F24ResponseConverter.fileDownloadInfoToF24Response(fileDownloadResponseInt);
-                })).switchIfEmpty(Mono.defer(() -> generateFromMetadata(setId, xPagopaF24CxId, pathTokensInString, cost)));
+            return Mono.just(F24ResponseConverter.fileDownloadInfoToF24Response(buildRetryAfterResponse().getDownload()));
+        }).switchIfEmpty(Mono.defer(() -> generateFromMetadata(setId, xPagopaF24CxId, pathTokensInString, cost)));
     }
 
     private Mono<F24Response> generateFromMetadata(String setId, String xPagopaF24CxId, String pathTokensInString, Integer cost) {
@@ -309,14 +322,17 @@ public class F24ServiceImpl implements F24Service {
                 }
                 FileCreationWithContentRequest fileCreationRequest = generaPdf(f24Metadata);
                 return uploadF24FileAndPut(fileCreationRequest, cost, pathTokensInString, f24MetadataSet)
-                        .flatMap(f24File -> Mono.delay(Duration.ofSeconds(10))
-                                .flatMap(unused -> safeStorageService.getFile(f24File.getFileKey(), false))
-                                //     .map(FileDownloadResponse::getDownload)
-                                .map(fileDownloadInfo -> {
-                                    log.info("pdf generated for setId: {} pathTokens: {}", setId, pathTokensInString);
-                                    return F24ResponseConverter.fileDownloadInfoToF24Response(fileDownloadInfo.getDownload());
-                                }).publishOn(Schedulers.boundedElastic()));
-
+                        .flatMap(f24File -> pollingSafeStorage(f24File.getFileKey())
+                                .flatMap(fileDownloadResponseInt -> {
+                                    if (fileDownloadResponseInt.getDownload() != null && fileDownloadResponseInt.getDownload().getUrl() != null) {
+                                        log.info("Received download url :{}for file with pk :{}, setting status DONE", fileDownloadResponseInt.getDownload().getUrl(), f24File.getPk());
+                                        f24File.setStatus(F24FileStatus.DONE);
+                                        f24File.setUpdated(Instant.now());
+                                        return f24FileCacheDao.updateItem(f24File).thenReturn(F24ResponseConverter.fileDownloadInfoToF24Response(fileDownloadResponseInt.getDownload()));
+                                    }
+                                    log.info("Received retry after of :{}  for file with pk :{}", fileDownloadResponseInt.getDownload().getRetryAfter(), f24File.getPk());
+                                    return Mono.just(F24ResponseConverter.fileDownloadInfoToF24Response(fileDownloadResponseInt.getDownload()));
+                                }));
             });
         });
     }
@@ -343,15 +359,47 @@ public class F24ServiceImpl implements F24Service {
 
     private Mono<F24File> uploadF24FileAndPut(FileCreationWithContentRequest fileCreationWithContentRequest, Integer cost, String pathTokensInString, F24MetadataSet f24Metadataset) {
 
-        String finalCost = cost == null ? COST : cost.toString();
+        return safeStorageService.createAndUploadContent(fileCreationWithContentRequest).map(fileCreationResponse -> {
+            F24File f24File = new F24File();
+            f24File.setCxId(f24Metadataset.getCxId());
+            f24File.setSetId(f24Metadataset.getSetId());
+            f24File.setCost(cost);
+            f24File.setPathTokens(pathTokensInString);
+            f24File.setStatus(F24FileStatus.GENERATED);
+            f24File.setCreated(Instant.now());
+            if (f24Config.getRetentionForF24FilesInDays() != null && f24Config.getRetentionForF24FilesInDays() > 0) {
+                f24File.setTtl(Instant.now().plus(Duration.ofDays(f24Config.getRetentionForF24FilesInDays())).getEpochSecond());
+            }
+            f24File.setFileKey(fileCreationResponse.getKey());
+            return f24File;
+        }).flatMap(f24FileCacheDao::putItemIfAbsent);
+    }
 
-        return safeStorageService.createAndUploadContent(fileCreationWithContentRequest).flatMap(fileCreationResponse ->
+    public Mono<FileDownloadResponseInt> pollingSafeStorage(String fileKey) {
 
-                Mono.just(F24File.builder()
-                        .pk(f24Metadataset.getPk())
-                        .created(String.valueOf(Instant.now()))
-                        .sk(finalCost + "#" + pathTokensInString)
-                        .fileKey(fileCreationResponse.getKey())
-                        .status(F24FileStatus.GENERATED).requestId(UUID.randomUUID() + "_SYNC").build()));
+        return Flux.interval(Duration.ofSeconds(f24Config.getSecIntervalForSafeStoragePolling()))
+                .flatMap(i -> safeStorageService.getFile(fileKey, false)
+                        .onErrorResume(WebClientException.class, e -> Mono.empty()))
+                .doOnNext(response -> {
+                    if (response.getDownload() == null)
+                        log.info("response has download null");
+                    if (response.getDownload() != null)
+                        log.info("response has download not null");
+                })
+                .doOnError(e -> log.warn("error polling safeStorage: " + e))
+                .takeUntil(response -> response.getDownload() != null)
+                .take(Duration.ofSeconds(f24Config.getSecToPollingTimeout()))
+                .last()
+                .onErrorResume(NoSuchElementException.class, e -> Mono.just((buildRetryAfterResponse())))
+                .publishOn(Schedulers.boundedElastic());
+
+    }
+
+    private FileDownloadResponseInt buildRetryAfterResponse() {
+        FileDownloadResponseInt fileDownloadResponseInt = new FileDownloadResponseInt();
+        FileDownloadInfoInt fileDownloadInfoInt = new FileDownloadInfoInt();
+        fileDownloadInfoInt.setRetryAfter(BigDecimal.valueOf(f24Config.getRetryAfterWhenErrorSafeStorage()));
+        fileDownloadResponseInt.setDownload(fileDownloadInfoInt);
+        return fileDownloadResponseInt;
     }
 }

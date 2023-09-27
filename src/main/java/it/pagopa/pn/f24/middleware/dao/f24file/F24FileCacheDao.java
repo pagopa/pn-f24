@@ -10,5 +10,7 @@ public interface F24FileCacheDao {
 
     Mono<F24File> updateItem(F24File f24File);
 
+    Mono<F24File> putItemIfAbsent(F24File f24File);
+
     Mono<F24File> getItemByFileKey(String fileKey);
 }

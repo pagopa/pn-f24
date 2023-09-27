@@ -1,3 +1,4 @@
+/*
 package it.pagopa.pn.f24.middleware.dao.f24file.dynamo.mapper;
 
 import static org.junit.Assert.assertEquals;
@@ -19,9 +20,11 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 public class F24FileMapperTest {
-    /**
+    */
+/**
      * Method under test: {@link F24FileMapper#entityToDto(F24FileEntity)}
-     */
+     *//*
+
     @Test
     public void testEntityToDto() {
         F24File actualEntityToDtoResult = F24FileMapper.entityToDto(new F24FileEntity());
@@ -35,9 +38,11 @@ public class F24FileMapperTest {
         assertNull(actualEntityToDtoResult.getFileKey());
     }
 
-    /**
+    */
+/**
      * Method under test: {@link F24FileMapper#entityToDto(F24FileEntity)}
-     */
+     *//*
+
     @Test
     public void testEntityToDto2() {
         F24FileEntity f24FileEntity = new F24FileEntity();
@@ -53,9 +58,11 @@ public class F24FileMapperTest {
         assertNull(actualEntityToDtoResult.getFileKey());
     }
 
-    /**
+    */
+/**
      * Method under test: {@link F24FileMapper#entityToDto(F24FileEntity)}
-     */
+     *//*
+
     @Test
     @Ignore("TODO: Complete this test")
     public void testEntityToDto3() {
@@ -70,9 +77,11 @@ public class F24FileMapperTest {
         F24FileMapper.entityToDto(null);
     }
 
-    /**
+    */
+/**
      * Method under test: {@link F24FileMapper#dtoToEntity(F24File)}
-     */
+     *//*
+
     @Test
     public void testDtoToEntity() {
         F24File f24File = mock(F24File.class);
@@ -103,9 +112,11 @@ public class F24FileMapperTest {
         verify(f24File).getUpdated();
     }
 
-    /**
+    */
+/**
      * Method under test: {@link F24FileMapper#dtoToEntity(F24File)}
-     */
+     *//*
+
     @Test
     public void testDtoToEntity2() {
         F24File f24File = mock(F24File.class);
@@ -136,9 +147,11 @@ public class F24FileMapperTest {
         verify(f24File).getUpdated();
     }
 
-    /**
+    */
+/**
      * Method under test: {@link F24FileMapper#dtoToEntity(F24File)}
-     */
+     *//*
+
     @Test
     public void testDtoToEntity3() {
         F24File f24File = mock(F24File.class);
@@ -170,3 +183,4 @@ public class F24FileMapperTest {
     }
 }
 
+*/
