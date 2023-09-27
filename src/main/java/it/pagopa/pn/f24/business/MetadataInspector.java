@@ -1,11 +1,14 @@
 package it.pagopa.pn.f24.business;
 
 import it.pagopa.pn.f24.generated.openapi.server.v1.dto.F24Metadata;
+import it.pagopa.pn.f24.generated.openapi.server.v1.dto.F24Standard;
 
 public interface MetadataInspector {
     int countMetadataApplyCost(F24Metadata f24Metadata);
 
-    void addCostToDebit(F24Metadata f24Metadata, Integer cost);
+
+    void addCostToDebit(F24Metadata f24Metadata , Integer cost);
+
 
      static String convertDebitSum(String debit, int cost) {
         int debitInt = Integer.parseInt(debit);

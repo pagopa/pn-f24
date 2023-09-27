@@ -10,10 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import software.amazon.awssdk.enhanced.dynamodb.*;
-import software.amazon.awssdk.enhanced.dynamodb.model.GetItemEnhancedRequest;
-import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional;
-import software.amazon.awssdk.enhanced.dynamodb.model.QueryEnhancedRequest;
-import software.amazon.awssdk.enhanced.dynamodb.model.UpdateItemEnhancedRequest;
+import software.amazon.awssdk.enhanced.dynamodb.model.*;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 
 import java.util.HashMap;
@@ -32,16 +29,14 @@ public class F24FileCacheRepositoryImpl implements F24FileCacheDao {
         this.table = dynamoDbEnhancedClient.table(f24Config.getFileTableName(), TableSchema.fromBean(F24FileCacheEntity.class));
     }
 
-
-
     @Override
-    public Mono<F24File> getItem(String cxId, String setId, Integer cost, String pathTokens) {
-        return getItem(cxId, setId, cost, pathTokens, false);
+    public Mono<F24File> getItem(String setId, Integer cost, String pathTokens) {
+        return getItem(setId, cost, pathTokens, false);
     }
 
     @Override
-    public Mono<F24File> getItem(String cxId, String setId, Integer cost, String pathTokens, boolean isConsistentRead) {
-        F24FileCacheEntity f24FileCacheEntity = new F24FileCacheEntity(cxId, setId, cost, pathTokens);
+    public Mono<F24File> getItem(String setId, Integer cost, String pathTokens, boolean isConsistentRead) {
+        F24FileCacheEntity f24FileCacheEntity = new F24FileCacheEntity(setId, cost, pathTokens);
         return getItem(f24FileCacheEntity.getPk(), isConsistentRead);
     }
 
@@ -101,6 +96,20 @@ public class F24FileCacheRepositoryImpl implements F24FileCacheDao {
 
         return Mono.fromFuture(table.updateItem(updateItemEnhancedRequest))
                 .map(F24FileCacheMapper::entityToDto);
+    }
+
+    @Override
+    public Mono<F24File> putItemIfAbsent(F24File f24File) {
+        PutItemEnhancedRequest<F24FileCacheEntity> putItemEnhancedRequest = PutItemEnhancedRequest.builder(F24FileCacheEntity.class)
+                .item(F24FileCacheMapper.dtoToEntity(f24File))
+                .conditionExpression(
+                        Expression.builder()
+                                .expression("attribute_not_exists(pk)")
+                                .build()
+                )
+                .build();
+        return Mono.fromFuture(table.putItem(putItemEnhancedRequest))
+                .thenReturn(f24File);
     }
 
     private UpdateItemEnhancedRequest<F24FileCacheEntity> createUpdateItemEnhancedRequest(F24FileCacheEntity entity) {

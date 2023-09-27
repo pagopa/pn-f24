@@ -59,7 +59,7 @@ public class HandleEventUtils {
     }
 
     //TODO Aggiungere key in MDCUtils
-    private static void addSetIdToMdc(String setId) {
+    public static void addSetIdToMdc(String setId) {
         MDC.put("setId", setId);
     }
     //TODO Aggiungere key in MDCUtils
@@ -70,5 +70,4 @@ public class HandleEventUtils {
     public static void addCorrelationIdToMdc(String correlationId) {
         MDC.put(MDCUtils.MDC_PN_CTX_REQUEST_ID, correlationId);
     }
-
 }

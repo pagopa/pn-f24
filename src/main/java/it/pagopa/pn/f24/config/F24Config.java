@@ -9,12 +9,15 @@ import org.springframework.context.annotation.Import;
 import java.util.List;
 
 @Configuration
-@ConfigurationProperties( prefix = "pn.f24")
+@ConfigurationProperties(prefix = "pn.f24")
 @Data
 @Import(SharedAutoConfiguration.class)
 public class F24Config {
     private String safeStorageBaseUrl;
-    private String msToWaitForSafeStorage;
+    private Integer secIntervalForSafeStoragePolling;
+    private Integer safeStorageExecutionLimitMin;
+    private Integer retryAfterWhenErrorSafeStorage;
+    private Integer secToPollingTimeout;
     private String safeStorageCxId;
     private String safeStorageMetadataDocType;
     private String safeStorageF24DocType;
@@ -26,12 +29,13 @@ public class F24Config {
     private List<String> corsAllowedDomains;
     private Integer retentionForF24RequestsInDays;
     private Integer retentionForF24FilesInDays;
+    private String paperChannelCxId;
+    private String deliveryPushCxId;
 
     @Data
     public static class EventBus {
         private String name;
         private String source;
-        private String metadataValidationEventDetailType;
-        private String preparePdfEventDetailType;
+        private String outcomeEventDetailType;
     }
 }

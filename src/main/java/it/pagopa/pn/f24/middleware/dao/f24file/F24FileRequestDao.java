@@ -8,13 +8,9 @@ import reactor.core.publisher.Mono;
 import java.util.List;
 
 public interface F24FileRequestDao {
-    Mono<F24Request> getItem(String pk);
+    Mono<F24Request> getItem(String requestId);
 
-    Mono<F24Request> getItem(String pk, boolean isConsistentRead);
-
-    Mono<F24Request> getItem(String cxId, String requestId);
-
-    Mono<F24Request> getItem(String cxId, String requestId, boolean isConsistentRead);
+    Mono<F24Request> getItem(String requestId, boolean isConsistentRead);
 
     Mono<Void> putItemIfAbsent(F24Request f24Request);
 

@@ -40,19 +40,14 @@ public class F24FileRequestRepositoryImpl implements F24FileRequestDao {
     }
 
     @Override
-    public Mono<F24Request> getItem(String cxId, String requestId) {
-        return getItem(cxId, requestId, false);
+    public Mono<F24Request> getItem(String requestId) {
+        return getItem(requestId, false);
     }
 
     @Override
-    public Mono<F24Request> getItem(String cxId, String requestId, boolean isConsistentRead) {
-        F24FileRequestEntity f24FileRequestEntity = new F24FileRequestEntity(cxId, requestId);
+    public Mono<F24Request> getItem(String requestId, boolean isConsistentRead) {
+        F24FileRequestEntity f24FileRequestEntity = new F24FileRequestEntity(requestId);
         return getItem(f24FileRequestEntity.getPk(), isConsistentRead);
-    }
-
-    @Override
-    public Mono<F24Request> getItem(String pk) {
-        return getItem(pk, false);
     }
 
     @Override

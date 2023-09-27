@@ -14,7 +14,7 @@ public class ElidMetadataInspector implements MetadataInspector {
         }
 
         int applyCostCounter = 0;
-        if(f24Elid.getTreasury() != null && f24Elid.getTreasury().getRecords() != null) {
+        if (f24Elid.getTreasury() != null && f24Elid.getTreasury().getRecords() != null) {
             applyCostCounter += countElementsByPredicate(f24Elid.getTreasury().getRecords(), TreasuryRecord::getApplyCost);
         }
 

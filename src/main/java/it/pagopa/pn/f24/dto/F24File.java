@@ -9,7 +9,6 @@ import java.util.List;
 @Data
 public class F24File {
     private String pk;
-    private String cxId;
     private String setId;
     private Integer cost;
     private String pathTokens;

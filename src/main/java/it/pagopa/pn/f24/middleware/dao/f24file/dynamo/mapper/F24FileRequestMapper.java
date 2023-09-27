@@ -36,7 +36,8 @@ public class F24FileRequestMapper {
     }
 
     public static F24FileRequestEntity dtoToEntity(F24Request f24Request){
-        F24FileRequestEntity f24FileRequestEntity = new F24FileRequestEntity(f24Request.getCxId(), f24Request.getRequestId());
+        F24FileRequestEntity f24FileRequestEntity = new F24FileRequestEntity(f24Request.getRequestId());
+        f24FileRequestEntity.setCxId(f24Request.getCxId());
         f24FileRequestEntity.setFiles(convertDtoFilesToEntity(f24Request.getFiles()));
         f24FileRequestEntity.setSetId(f24Request.getSetId());
         f24FileRequestEntity.setCost(f24Request.getCost());
