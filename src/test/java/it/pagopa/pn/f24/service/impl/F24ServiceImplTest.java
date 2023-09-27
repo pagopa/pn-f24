@@ -6,7 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 import it.pagopa.pn.api.dto.events.MomProducer;
-import it.pagopa.pn.api.dto.events.PnF24AsyncEvent;
+import it.pagopa.pn.api.dto.events.PnF24MetadataValidationEndEvent;
 import it.pagopa.pn.f24.config.F24Config;
 import it.pagopa.pn.f24.dto.F24File;
 import it.pagopa.pn.f24.dto.F24FileStatus;
@@ -73,7 +73,7 @@ class F24ServiceImplTest {
     @MockBean
     private SafeStorageService safeStorageService;
     @MockBean
-    private EventBridgeProducer<PnF24AsyncEvent> eventBridgeProducer;
+    private EventBridgeProducer<PnF24MetadataValidationEndEvent> metadataValidationEndedEventProducer;
     @MockBean
     private MomProducer<ValidateMetadataSetEvent> validateMetadataSetEventProducer;
     @MockBean

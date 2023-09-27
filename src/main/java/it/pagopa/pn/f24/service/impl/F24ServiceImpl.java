@@ -2,8 +2,6 @@
 package it.pagopa.pn.f24.service.impl;
 
 import it.pagopa.pn.api.dto.events.MomProducer;
-import it.pagopa.pn.api.dto.events.PnF24AsyncEvent;
-import it.pagopa.pn.commons.exceptions.PnRuntimeException;
 import it.pagopa.pn.f24.business.F24ResponseConverter;
 import it.pagopa.pn.f24.business.MetadataInspector;
 import it.pagopa.pn.f24.business.MetadataInspectorFactory;
@@ -12,7 +10,6 @@ import it.pagopa.pn.f24.dto.safestorage.FileCreationWithContentRequest;
 import it.pagopa.pn.f24.dto.safestorage.FileDownloadInfoInt;
 import it.pagopa.pn.f24.dto.safestorage.FileDownloadResponseInt;
 import it.pagopa.pn.f24.exception.*;
-import it.pagopa.pn.f24.generated.openapi.msclient.safestorage.model.FileDownloadInfo;
 import it.pagopa.pn.f24.generated.openapi.server.v1.dto.*;
 import it.pagopa.pn.f24.middleware.dao.f24file.F24FileCacheDao;
 import it.pagopa.pn.api.dto.events.PnF24MetadataValidationEndEvent;
@@ -46,7 +43,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import software.amazon.awssdk.services.dynamodb.model.ConditionalCheckFailedException;
 import reactor.core.scheduler.Schedulers;
-import it.pagopa.pn.f24.config.F24Config;
 
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
@@ -64,11 +60,7 @@ import static it.pagopa.pn.f24.util.Utility.getF24TypeFromMetadata;
 public class F24ServiceImpl implements F24Service {
     private static final String REQUEST_ACCEPTED_STATUS = "Success!";
     private static final String REQUEST_ACCEPTED_DESCRIPTION = "Ok";
-    private static final String DEFAULT_SEPARATOR = "#";
-
     private static final String CONTENT_TYPE = "application/pdf";
-    private static final String COST = "NO_FEE";
-    private static final long SECONDS_TO_DELAY = 4;
     private static final int MAX_PATH_TOKENS_DIMENSION = 4;
 
     private final F24Generator f24Generator;
@@ -84,7 +76,6 @@ public class F24ServiceImpl implements F24Service {
     public F24ServiceImpl(F24Generator f24Generator, SafeStorageService safeStorageService, EventBridgeProducer<PnF24MetadataValidationEndEvent> metadataValidationEndedEventProducer, MomProducer<ValidateMetadataSetEvent> validateMetadataSetEventProducer, JsonService jsonService, F24MetadataSetDao f24MetadataSetDao, F24FileCacheDao f24FileCacheDao, F24Config f24Config) {
         this.f24Generator = f24Generator;
         this.safeStorageService = safeStorageService;
-        this.eventBridgeProducer = eventBridgeProducer;
         this.metadataValidationEndedEventProducer = metadataValidationEndedEventProducer;
         this.validateMetadataSetEventProducer = validateMetadataSetEventProducer;
         this.f24MetadataSetDao = f24MetadataSetDao;
@@ -257,12 +248,14 @@ public class F24ServiceImpl implements F24Service {
         return updateHaveToSendValidationEventAndRemoveTtl(f24MetadataSet)
                 .flatMap(this::checkIfValidationOnQueueHasEnded);
     }
+
     private Mono<F24MetadataSet> updateHaveToSendValidationEventAndRemoveTtl(F24MetadataSet f24MetadataSet) {
         f24MetadataSet.setUpdated(Instant.now());
         f24MetadataSet.setHaveToSendValidationEvent(true);
         f24MetadataSet.setTtl(null);
         return f24MetadataSetDao.updateItem(f24MetadataSet);
     }
+
     private Mono<Void> checkIfValidationOnQueueHasEnded(F24MetadataSet f24MetadataSet) {
         String setId = f24MetadataSet.getSetId();
         String cxId = f24MetadataSet.getCxId();
