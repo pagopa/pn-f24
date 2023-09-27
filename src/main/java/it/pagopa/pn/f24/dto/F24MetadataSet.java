@@ -8,9 +8,9 @@ import java.util.Map;
 
 @Data
 public class F24MetadataSet {
-    private String pk;
-    private String cxId;
     private String setId;
+    private String creatorCxId;
+    private String validatorCxId;
     private F24MetadataStatus status;
     private Map<String, F24MetadataRef> fileKeys;
     private String sha256;
