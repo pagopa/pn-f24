@@ -66,16 +66,6 @@ class UtilityTest {
     }
 
     /**
-     * Method under test: {@link Utility#objectToJsonString(Object)}
-     */
-    @Test
-    void testObjectToJsonString() {
-        assertEquals("\"Object\"", Utility.objectToJsonString("Object"));
-        assertEquals("\"42\"", Utility.objectToJsonString("42"));
-        assertEquals("42", Utility.objectToJsonString(42));
-    }
-
-    /**
      * Method under test: {@link Utility#getF24TypeFromMetadata(F24Metadata)}
      */
     @Test

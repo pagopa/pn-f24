@@ -6,7 +6,7 @@ import com.amazonaws.services.eventbridge.model.PutEventsRequest;
 import com.amazonaws.services.eventbridge.model.PutEventsRequestEntry;
 import com.amazonaws.services.eventbridge.model.PutEventsResult;
 import it.pagopa.pn.api.dto.events.GenericEventBridgeEvent;
-import it.pagopa.pn.f24.util.Utility;
+import it.pagopa.pn.f24.service.JsonService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -21,19 +21,21 @@ public abstract class AbstractEventBridgeProducer<T extends GenericEventBridgeEv
     private final String eventBusName;
     private final String eventBusDetailType;
     private final String eventBusSource;
+    private final JsonService jsonService;
 
-    protected AbstractEventBridgeProducer(AmazonEventBridgeAsync amazonEventBridge, String eventBusSource, String detailType, String name) {
+    protected AbstractEventBridgeProducer(AmazonEventBridgeAsync amazonEventBridge, String eventBusSource, String detailType, String name, JsonService jsonService) {
         this.amazonEventBridge = amazonEventBridge;
         this.eventBusSource = eventBusSource;
         this.eventBusName = name;
         this.eventBusDetailType = detailType;
+        this.jsonService = jsonService;
     }
 
     private PutEventsRequest putEventsRequestBuilder(T event) {
         PutEventsRequest putEventsRequest = new PutEventsRequest();
         List<PutEventsRequestEntry> entries = new ArrayList<>();
         PutEventsRequestEntry entryObj = new PutEventsRequestEntry();
-        entryObj.setDetail(Utility.objectToJsonString(event.getDetail()));
+        entryObj.setDetail(jsonService.stringifyObject(event.getDetail()));
         entryObj.setDetailType(eventBusDetailType);
         entryObj.setEventBusName(eventBusName);
         entryObj.setSource(eventBusSource);

@@ -1,7 +1,8 @@
 package it.pagopa.pn.f24.middleware.eventbus.util;
 
-import it.pagopa.pn.api.dto.events.*;
-
+import it.pagopa.pn.api.dto.events.PnF24MetadataValidationEndEvent;
+import it.pagopa.pn.api.dto.events.PnF24MetadataValidationEndEventPayload;
+import it.pagopa.pn.api.dto.events.PnF24MetadataValidationIssue;
 import it.pagopa.pn.f24.dto.F24MetadataValidationIssue;
 import it.pagopa.pn.f24.dto.F24Request;
 import it.pagopa.pn.f24.middleware.dao.f24file.dynamo.entity.F24FileCacheEntity;
@@ -13,11 +14,10 @@ import java.util.Map;
 public class PnF24AsyncEventBuilderHelper {
     private static final String OK_STATUS = "OK";
     private static final String KO_STATUS = "KO";
-
-    public static PnF24AsyncEvent buildMetadataValidationEndEvent(String cxId, String setId, List<F24MetadataValidationIssue> errors) {
-        return PnF24AsyncEvent.builder()
+    public static PnF24MetadataValidationEndEvent buildMetadataValidationEndEvent(String cxId, String setId, List<F24MetadataValidationIssue> errors) {
+        return PnF24MetadataValidationEndEvent.builder()
                 .detail(
-                        PnF24AsyncEvent.Detail.builder()
+                        PnF24MetadataValidationEndEvent.Detail.builder()
                                 .cxId(cxId)
                                 .metadataValidationEnd(buildMetadataValidationEndPayload(setId, errors))
                                 .build()

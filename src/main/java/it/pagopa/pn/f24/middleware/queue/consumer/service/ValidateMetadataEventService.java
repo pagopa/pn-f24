@@ -1,7 +1,7 @@
 package it.pagopa.pn.f24.middleware.queue.consumer.service;
 
-import it.pagopa.pn.api.dto.events.PnF24AsyncEvent;
-import it.pagopa.pn.f24.business.MetadataValidator;
+import it.pagopa.pn.api.dto.events.PnF24MetadataValidationEndEvent;
+import it.pagopa.pn.f24.service.MetadataValidator;
 import it.pagopa.pn.f24.dto.*;
 import it.pagopa.pn.f24.exception.PnF24ExceptionCodes;
 import it.pagopa.pn.f24.exception.PnNotFoundException;
@@ -26,11 +26,13 @@ import java.util.Map;
 public class ValidateMetadataEventService {
     private final F24MetadataSetDao f24MetadataSetDao;
     private final SafeStorageService safeStorageService;
-    private final EventBridgeProducer<PnF24AsyncEvent> eventBridgeProducer;
-    public ValidateMetadataEventService(F24MetadataSetDao f24MetadataSetDao, SafeStorageService safeStorageService, EventBridgeProducer<PnF24AsyncEvent> eventBridgeProducer) {
+    private final EventBridgeProducer<PnF24MetadataValidationEndEvent> eventBridgeProducer;
+    private final MetadataValidator metadataValidator;
+    public ValidateMetadataEventService(F24MetadataSetDao f24MetadataSetDao, SafeStorageService safeStorageService, EventBridgeProducer<PnF24MetadataValidationEndEvent> eventBridgeProducer, MetadataValidator metadataValidator) {
         this.f24MetadataSetDao = f24MetadataSetDao;
         this.safeStorageService = safeStorageService;
         this.eventBridgeProducer = eventBridgeProducer;
+        this.metadataValidator = metadataValidator;
     }
 
     public Mono<Void> handleMetadataValidation(ValidateMetadataSetEvent.Payload payload) {
@@ -102,8 +104,7 @@ public class ValidateMetadataEventService {
 
         metadataToValidateList.forEach(
                 metadataToValidate -> {
-                    MetadataValidator metadataValidator = new MetadataValidator(metadataToValidate);
-                    validationIssues.addAll(metadataValidator.validateMetadata());
+                    validationIssues.addAll(metadataValidator.validateMetadata(metadataToValidate));
                 }
         );
 
