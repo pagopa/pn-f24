@@ -1,7 +1,7 @@
 package it.pagopa.pn.f24.middleware.queue.consumer.service;
 
 import it.pagopa.pn.api.dto.events.MomProducer;
-import it.pagopa.pn.api.dto.events.PnF24AsyncEvent;
+import it.pagopa.pn.api.dto.events.PnF24PdfSetReadyEvent;
 import it.pagopa.pn.f24.config.F24Config;
 import it.pagopa.pn.f24.dto.*;
 import it.pagopa.pn.f24.exception.PnF24ExceptionCodes;
@@ -40,11 +40,11 @@ public class PreparePdfEventService {
 
     private final MomProducer<GeneratePdfEvent> generatePdfEventProducer;
 
-    private final EventBridgeProducer<PnF24AsyncEvent> pdfSetReadyEventProducer;
+    private final EventBridgeProducer<PnF24PdfSetReadyEvent> pdfSetReadyEventProducer;
 
     private final F24Config f24Config;
 
-    public PreparePdfEventService(F24FileCacheDao f24FileCacheDao, F24MetadataSetDao f24MetadataSetDao, F24FileRequestDao f24FileRequestDao, MomProducer<GeneratePdfEvent> generatePdfEventProducer, EventBridgeProducer<PnF24AsyncEvent> pdfSetReadyEventProducer, F24Config f24Config) {
+    public PreparePdfEventService(F24FileCacheDao f24FileCacheDao, F24MetadataSetDao f24MetadataSetDao, F24FileRequestDao f24FileRequestDao, MomProducer<GeneratePdfEvent> generatePdfEventProducer, EventBridgeProducer<PnF24PdfSetReadyEvent> pdfSetReadyEventProducer, F24Config f24Config) {
         this.f24FileCacheDao = f24FileCacheDao;
         this.f24MetadataSetDao = f24MetadataSetDao;
         this.f24FileRequestDao = f24FileRequestDao;

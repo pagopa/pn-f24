@@ -1,8 +1,6 @@
 package it.pagopa.pn.f24.middleware.eventbus.util;
 
-import it.pagopa.pn.api.dto.events.PnF24MetadataValidationEndEvent;
-import it.pagopa.pn.api.dto.events.PnF24MetadataValidationEndEventPayload;
-import it.pagopa.pn.api.dto.events.PnF24MetadataValidationIssue;
+import it.pagopa.pn.api.dto.events.*;
 import it.pagopa.pn.f24.dto.F24MetadataValidationIssue;
 import it.pagopa.pn.f24.dto.F24Request;
 import it.pagopa.pn.f24.middleware.dao.f24file.dynamo.entity.F24FileCacheEntity;
@@ -50,11 +48,11 @@ public class PnF24AsyncEventBuilderHelper {
                 .toList();
     }
 
-    public static PnF24AsyncEvent buildPdfSetReadyEvent(F24Request f24Request) {
+    public static PnF24PdfSetReadyEvent buildPdfSetReadyEvent(F24Request f24Request) {
         //All files in the list should share cxId, requestId and setId.
-        return PnF24AsyncEvent.builder()
+        return PnF24PdfSetReadyEvent.builder()
                 .detail(
-                        PnF24AsyncEvent.Detail.builder()
+                        PnF24PdfSetReadyEvent.Detail.builder()
                                 .cxId(f24Request.getCxId())
                                 .pdfSetReady(buildPdfSetReadyPayload(f24Request))
                                 .build()

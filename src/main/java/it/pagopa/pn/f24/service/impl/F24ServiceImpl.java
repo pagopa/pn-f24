@@ -3,9 +3,7 @@ package it.pagopa.pn.f24.service.impl;
 
 import it.pagopa.pn.api.dto.events.MomProducer;
 import it.pagopa.pn.api.dto.events.PnF24MetadataValidationEndEvent;
-import it.pagopa.pn.f24.dto.F24MetadataRef;
-import it.pagopa.pn.f24.dto.F24MetadataSet;
-import it.pagopa.pn.f24.dto.F24MetadataStatus;
+import it.pagopa.pn.f24.dto.*;
 import it.pagopa.pn.f24.config.F24Config;
 import it.pagopa.pn.f24.exception.PnBadRequestException;
 import it.pagopa.pn.f24.exception.PnConflictException;
@@ -59,7 +57,7 @@ public class F24ServiceImpl implements F24Service {
     private final JsonService jsonService;
 
 
-    public F24ServiceImpl(F24Generator f24Generator, PnSafeStorageClientImpl pnSafeStorageClient, EventBridgeProducer<PnF24MetadataValidationEndEvent> metadataValidationEndedEventProducer, MomProducer<ValidateMetadataSetEvent> validateMetadataSetEventProducer, F24MetadataSetDao f24MetadataSetDao, JsonService jsonService, F24FileRequestDao f24FileRequestDao, F24Config f24Config) {
+    public F24ServiceImpl(F24Generator f24Generator, PnSafeStorageClientImpl pnSafeStorageClient, EventBridgeProducer<PnF24MetadataValidationEndEvent> metadataValidationEndedEventProducer, MomProducer<ValidateMetadataSetEvent> validateMetadataSetEventProducer, MomProducer<PreparePdfEvent> preparePdfEventProducer, F24MetadataSetDao f24MetadataSetDao, JsonService jsonService, F24FileRequestDao f24FileRequestDao, F24Config f24Config) {
         this.f24Generator = f24Generator;
         this.pnSafeStorageClient = pnSafeStorageClient;
         this.metadataValidationEndedEventProducer = metadataValidationEndedEventProducer;

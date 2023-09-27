@@ -1,6 +1,6 @@
 package it.pagopa.pn.f24.middleware.queue.consumer.service;
 
-import it.pagopa.pn.api.dto.events.PnF24AsyncEvent;
+import it.pagopa.pn.api.dto.events.PnF24PdfSetReadyEvent;
 import it.pagopa.pn.f24.config.F24Config;
 import it.pagopa.pn.f24.dto.*;
 import it.pagopa.pn.f24.exception.PnF24ExceptionCodes;
@@ -32,7 +32,7 @@ public class SafeStorageEventService {
     private final F24FileCacheDao f24FileCacheDao;
     private final F24FileRequestDao f24RequestDao;
     private final F24Config f24Config;
-    private final EventBridgeProducer<PnF24AsyncEvent> pdfSetReadyProducer;
+    private final EventBridgeProducer<PnF24PdfSetReadyEvent> pdfSetReadyProducer;
 
 
     public Mono<Void> handleSafeStorageResponse(FileDownloadResponse response) {
