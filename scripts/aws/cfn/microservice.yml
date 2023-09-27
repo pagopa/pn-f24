@@ -7,10 +7,6 @@ Parameters:
     Description: 'Usually pn can be pnXYZ where XYZ are the feature number, useful to create
       experimental environments without crash official development environment'
 
-  ApiDnsName:
-    Type: String
-    Description: 'The DNS name used for B2B rest API.'
-
   CorsAllowedDomains:
     Type: String
     Description: 'Comma separated list of domains allowed to make cross origin request'
@@ -59,10 +55,6 @@ Parameters:
     Type: String
     Description: 'Base URL of the load balancer where the service is going to be reachable'
 
-  NetworkLoadBalancerLink:
-    Type: String
-    Description: 'network load balancer link for API-GW'
-
   AlarmSNSTopicArn:
     Type: String
     Description: ARN of alarm topic
@@ -70,33 +62,6 @@ Parameters:
   Version:
     Type: String
     Description: 'keep track of used projects commitIds'
-
-  IsLollipopActive:
-    Type: String
-    Description: 'lollipop authorization activation flag'
-    AllowedValues: [true, false]
-    Default: "false"
-
-  LollipopExpectedLcOriginalUrl:
-    Type: String
-    Description: 'expected lollipop consumer original url'
-
-  LollipopEnableConsumerLogging:
-    Type: String
-    Description: 'enable lollipop consumer logging'
-
-  LogsKinesisSourceStreamArn:
-    Type: String
-    Description: 'Kinesis stream that receive logs'
-
-  LogsBucketName:
-    Type: String
-    Description: 'Logs bucket name'
-
-  LogsKinesisFilterPattern:
-    Type: String
-    Default: ""
-    Description: 'Log kinesis filter pattern'
 
   AlbSecurityGroup:
     Type: String
@@ -106,17 +71,6 @@ Parameters:
   EcsLogGroup:
     Type: String
     Description: 'Ecs log group name'
-
-  # OpenApi Bucket params
-  MicroserviceBucketName:
-    Type: String
-    Default: ''
-    Description: 'Name of the bucket where the microservice files are copied during deploy'
-
-  MicroserviceBucketBaseKey:
-    Type: String
-    Default: ''
-    Description: 'Base key of the microservice in the s3 bucket'
 
   # Heath Check parameters
   HealthCheckInterval:
@@ -238,8 +192,11 @@ Parameters:
     Type: String
     Description: SafeStorage-to-f24 queue age alarm ARN
 
-Conditions:
-    SendLogToKinesis: !Not [ !Equals [ !Ref LogsKinesisSourceStreamArn, '' ] ]
+  PnF24InternalDLQAlarmARN:
+    Type: String
+
+  F24InternalAgeAlarmARN:
+    Type: String
 
 Resources:
 
@@ -272,13 +229,10 @@ Resources:
         ContainerEnvEntry4: !Sub 'PN_F24_METADATA_SET_TABLE_NAME=${F24MetadataSetTableName}'
         ContainerEnvEntry5: !Sub 'PN_F24_FILE_TABLE_NAME=${F24FileTableName}'
         ContainerEnvEntry6: !Sub 'SPRING_CLOUD_FUNCTIONROUTER_QUEUES_LIST=${PnF24InternalQueueName},${SafeStorageToF24QueueName}'
-        ContainerEnvEntry7: !Sub 'LOLLIPOP_ACTIVE=${IsLollipopActive}'
         ContainerEnvEntry8: !Sub 'PN_SAFESTORAGE_BASE_URL=${SandboxSafeStorageBaseUrl}'
         ContainerEnvEntry9: !Sub 'PN_F24_TOPICS_INTERNAL=${PnF24InternalQueueName}'
         ContainerEnvEntry10: !Sub 'PN_F24_TOPICS_FROM_SAFE_STORAGE=${SafeStorageToF24QueueName}'
-        ContainerEnvEntry11: !Sub 'PN_F24_EVENT_BUS_NAME=arn:aws:events:${AWS::Region}:${AWS::AccountId}:event-bus/${ProjectName}-CoreEventBus'
-        ContainerEnvEntry18: !Sub 'LOLLIPOP_EXPECTED_LC_ORIGINAL_URL=${LollipopExpectedLcOriginalUrl}'
-        ContainerEnvEntry19: !Sub 'LOLLIPOP_ENABLE_CONSUMER_LOGGING=${LollipopEnableConsumerLogging}'
+        ContainerEnvEntry11: !Sub 'PN_F24_EVENTBUS_NAME=arn:aws:events:${AWS::Region}:${AWS::AccountId}:event-bus/${ProjectName}-CoreEventBus'
         MicroServiceSecretPrefix: pn-f24-Secrets
         JavaToolOptions: '-Dreactor.netty.ioWorkerCount=120 -XX:MaxMetaspaceSize=512M'
         MappedPaths: '/f24-private/*'
@@ -288,7 +242,7 @@ Resources:
         EcsDefaultSecurityGroup: !Ref EcsDefaultSecurityGroup
         LoadBalancerListenerArn: !Ref ApplicationLoadBalancerListenerArn
         LoadbalancerRulePriority: !Ref MicroserviceNumber
-        TaskRoleManagedPolicyArn: !Ref DeliveryMicroserviceTaskManagedPolicy
+        TaskRoleManagedPolicyArn: !Ref F24MicroserviceTaskManagedPolicy
         AlbSecurityGroup: !Ref AlbSecurityGroup
         EcsLogGroup: !Ref EcsLogGroup
         LogAlarmStrategyV1: !Ref LogAlarmStrategy
@@ -324,26 +278,11 @@ Resources:
             Resource:
               - !Sub "${F24MetadataSetTableArn}"
               - !Sub "${F24FileTableArn}"
-
-  # Expose PN-f24 microservice public API with API-GW for B2B usage
-  F24MicroservicePublicAPI:
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/api-gw-expose-service-openapi.yaml"
-      Parameters:
-        MicroServiceUniqueName: !Sub '${ProjectName}-f24'
-        IntendedUsage: B2B
-        DnsName: !Ref ApiDnsName
-        ProjectName: !Ref ProjectName
-        ServiceApiPath: 'f24'
-        NetworkLoadBalancerLink: !Ref NetworkLoadBalancerLink
-        ApplicationLoadBalancerDomain: !Ref ApplicationLoadBalancerDomain
-        AlarmSNSTopicArn: !Ref AlarmSNSTopicArn
-        CloudwatchLogKinesisStreamArn: !Ref LogsKinesisSourceStreamArn
-        OpenApiBucketName: !Ref MicroserviceBucketName
-        #TODO Come si chiama lo yaml nel bucket?
-        OpenApiBucketKey: !Sub ${MicroserviceBucketBaseKey}/docs/openapi/aws/api-internal-f24.yaml
-
+          - Effect: Allow
+            Action:
+              - events:PutEvents
+            Resource:
+              - !Sub arn:aws:events:${AWS::Region}:${AWS::AccountId}:event-bus/${ProjectName}-CoreEventBus
 
   # Dashboard
   F24MicroserviceCloudWatchDashboard:
@@ -355,23 +294,18 @@ Resources:
         DynamoDBTableNames: !Join
           - ','
           - - !Ref F24MetadataSetTableName
-          - - !Ref F24FileTableName
-        RestApiStageArns: !Join
-          - ','
-          - - !GetAtt F24MicroservicePublicAPI.Outputs.RestApiStageArn
-        RestApiNames: !Join
-          - ','
-          - - !GetAtt F24MicroservicePublicAPI.Outputs.RestApiName
+            - !Ref F24FileTableName
         AlarmArns: !Join
           - ','
           - - !GetAtt F24Microservice.Outputs.FatalLogsMetricAlarmArn
-            - !GetAtt F24MicroservicePublicAPI.Outputs.RestApiErrorAlarmArn
-            - !GetAtt F24MicroservicePublicAPI.Outputs.RestApiLatencyAlarmArn
+            - !Ref SafeStorageToF24QueueAgeAlarmARN
+            - !Ref SafeStorageToF24QueueAlarmARN
+            - !Ref PnF24InternalDLQAlarmARN
+            - !Ref F24InternalAgeAlarmARN
         QueueArns: !Join
           - ','
           - - !Ref PnF24InternalQueueARN
             - !Ref SafeStorageToF24QueueARN
-            - !Ref PnF24ExternalQueueARN
         LogGroupsNames: !Join
           - ','
           - - !Sub '/aws/ecs/${ProjectName}-f24'
