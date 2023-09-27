@@ -94,7 +94,7 @@ class F24ServiceImplTest {
         fileDownloadResponseInt.setDownload(fileDownloadInfoInt);
 
 
-        when(f24FileCacheDao.getItem(anyString(), anyString(), anyInt(), anyString()))
+        when(f24FileCacheDao.getItem(anyString(), anyInt(), anyString()))
                 .thenReturn(Mono.just(f24File));
         when(safeStorageService.getFile(anyString(), eq(false)))
                 .thenReturn(Mono.just(fileDownloadResponseInt));
@@ -126,7 +126,7 @@ class F24ServiceImplTest {
         fileDownloadResponseInt.setDownload(fileDownloadInfoInt);
 
 
-        when(f24FileCacheDao.getItem(anyString(), anyString(), anyInt(), anyString()))
+        when(f24FileCacheDao.getItem(anyString(), anyInt(), anyString()))
                 .thenReturn(Mono.just(f24File));
         when(safeStorageService.getFile(anyString(), eq(false)))
                 .thenReturn(Mono.just(fileDownloadResponseInt));
@@ -153,7 +153,7 @@ class F24ServiceImplTest {
         fileDownloadInfoInt.setUrl("url");
         fileDownloadResponseInt.setDownload(fileDownloadInfoInt);
 
-        when(f24FileCacheDao.getItem(anyString(), anyString(), anyInt(), anyString()))
+        when(f24FileCacheDao.getItem(anyString(), anyInt(), anyString()))
                 .thenReturn(Mono.just(f24File));
         when(safeStorageService.getFile(anyString(), eq(false)))
                 .thenReturn(Mono.just(fileDownloadResponseInt));
@@ -175,7 +175,7 @@ class F24ServiceImplTest {
         f24MetadataRef.setFileKey("key");
         f24MetadataRef.setApplyCost(true);
         f24MetadataSet.setFileKeys(Map.of("key", f24MetadataRef));
-        f24MetadataSet.setPk("pk");
+        f24MetadataSet.setSetId("pk");
 
         //mock for SafeStorageService.createAndUploadContent
         FileCreationResponseInt fileCreationResponseInt = new FileCreationResponseInt();
@@ -194,9 +194,9 @@ class F24ServiceImplTest {
         F24File f24File = new F24File();
         f24File.setFileKey("key");
 
-        when(f24FileCacheDao.getItem(anyString(), anyString(), anyInt(), anyString()))
+        when(f24FileCacheDao.getItem(anyString(), anyInt(), anyString()))
                 .thenReturn(Mono.empty());
-        when(f24MetadataSetDao.getItem(anyString(), anyString()))
+        when(f24MetadataSetDao.getItem(anyString()))
                 .thenReturn(Mono.just(f24MetadataSet));
         when(metadataDownloader.downloadMetadata(any()))
                 .thenReturn(Mono.just(f24Metadata));
@@ -229,11 +229,11 @@ class F24ServiceImplTest {
         f24MetadataRef.setFileKey("key");
         f24MetadataRef.setApplyCost(true);
         f24MetadataSet.setFileKeys(Map.of("key", f24MetadataRef));
-        f24MetadataSet.setPk("pk");
+        f24MetadataSet.setSetId("pk");
 
-        when(f24FileCacheDao.getItem(anyString(), anyString(), anyInt(), anyString()))
+        when(f24FileCacheDao.getItem(anyString(), anyInt(), anyString()))
                 .thenReturn(Mono.empty());
-        when(f24MetadataSetDao.getItem(anyString(), anyString()))
+        when(f24MetadataSetDao.getItem(anyString()))
                 .thenReturn(Mono.just(f24MetadataSet));
         // Assert
         StepVerifier.create(f24ServiceImpl.generatePDF("xPagopaF24CxId", "setId", pathTokens, 100))
@@ -267,9 +267,9 @@ class F24ServiceImplTest {
         F24Metadata f24Metadata = new F24Metadata();
         f24Metadata.setF24Standard(new F24Standard());
 
-        when(f24FileCacheDao.getItem(anyString(), anyString(), anyInt(), anyString()))
+        when(f24FileCacheDao.getItem(anyString(), anyInt(), anyString()))
                 .thenReturn(Mono.empty());
-        when(f24MetadataSetDao.getItem(anyString(), anyString()))
+        when(f24MetadataSetDao.getItem(anyString()))
                 .thenReturn(Mono.just(f24MetadataSet));
         when(metadataDownloader.downloadMetadata(any()))
                 .thenReturn(Mono.just(f24Metadata));
@@ -307,9 +307,9 @@ class F24ServiceImplTest {
         F24Metadata f24Metadata = new F24Metadata();
         f24Metadata.setF24Standard(new F24Standard());
 
-        when(f24FileCacheDao.getItem(anyString(), anyString(), any(), anyString()))
+        when(f24FileCacheDao.getItem(anyString(), any(), anyString()))
                 .thenReturn(Mono.empty());
-        when(f24MetadataSetDao.getItem(anyString(), anyString()))
+        when(f24MetadataSetDao.getItem(anyString()))
                 .thenReturn(Mono.just(f24MetadataSet));
         when(metadataDownloader.downloadMetadata(any()))
                 .thenReturn(Mono.just(f24Metadata));

@@ -1,15 +1,9 @@
 package it.pagopa.pn.f24.middleware.dao.f24metadataset.dynamo.mapper;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import it.pagopa.pn.f24.dto.F24MetadataRef;
 import it.pagopa.pn.f24.dto.F24MetadataSet;
 import it.pagopa.pn.f24.dto.F24MetadataStatus;
 import it.pagopa.pn.f24.dto.F24MetadataValidationIssue;
@@ -35,7 +29,8 @@ class F24MetadataSetMapperTest {
     @Test
     void testEntityToDto() {
 
-        F24MetadataSetEntity f24MetadataSetEntity = new F24MetadataSetEntity("cxId","SetId");
+        F24MetadataSetEntity f24MetadataSetEntity = new F24MetadataSetEntity();
+        f24MetadataSetEntity.setSetId("setId");
         f24MetadataSetEntity.setFileKeys(Map.of("key",new F24MetadataRefEntity()));
         F24MetadataValidationEntity f24MetadataValidationEntity = new F24MetadataValidationEntity();
         f24MetadataValidationEntity.setCode("123");
@@ -62,7 +57,7 @@ class F24MetadataSetMapperTest {
         f24MetadataSet.setFileKeys(new HashMap<>());
         f24MetadataSet.setHaveToSendValidationEvent(true);
         f24MetadataSet.setSetId("SetId");
-        f24MetadataSet.setCxId("cxId");
+        f24MetadataSet.setCreatorCxId("cxId");
         f24MetadataSet.setSha256("Sha256");
         f24MetadataSet.setStatus(F24MetadataStatus.VALIDATION_ENDED);
         f24MetadataSet.setTtl(1L);

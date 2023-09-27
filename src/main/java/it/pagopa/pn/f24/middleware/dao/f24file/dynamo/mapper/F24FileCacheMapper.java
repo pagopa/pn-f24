@@ -10,7 +10,6 @@ public class F24FileCacheMapper {
     public static F24File entityToDto(F24FileCacheEntity f24FileCacheEntity){
         F24File f24File = new F24File();
         f24File.setPk(f24FileCacheEntity.getPk());
-        f24File.setCxId(f24FileCacheEntity.getCxId());
         f24File.setCost(f24FileCacheEntity.getCost());
         f24File.setPathTokens(f24FileCacheEntity.getPathTokens());
         f24File.setStatus(f24FileCacheEntity.getStatus() != null ? F24FileStatus.valueOf(f24FileCacheEntity.getStatus().getValue()) : null);
@@ -23,7 +22,7 @@ public class F24FileCacheMapper {
     }
 
     public static F24FileCacheEntity dtoToEntity(F24File f24File){
-        F24FileCacheEntity f24FileCacheEntity = new F24FileCacheEntity(f24File.getCxId(), f24File.getSetId(), f24File.getCost(), f24File.getPathTokens());
+        F24FileCacheEntity f24FileCacheEntity = new F24FileCacheEntity(f24File.getSetId(), f24File.getCost(), f24File.getPathTokens());
         f24FileCacheEntity.setStatus(f24File.getStatus() != null ? F24FileStatusEntity.valueOf(f24File.getStatus().getValue()) : null);
         f24FileCacheEntity.setFileKey(f24File.getFileKey());
         f24FileCacheEntity.setRequestIds(f24File.getRequestIds());

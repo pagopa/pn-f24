@@ -292,7 +292,7 @@ public class F24ServiceImpl implements F24Service {
     @Override
     public Mono<F24Response> generatePDF(String xPagopaF24CxId, String setId, List<String> pathTokens, Integer cost) {
         String pathTokensInString = Utility.convertPathTokensList(pathTokens);
-        return f24FileCacheDao.getItem(xPagopaF24CxId, setId, cost, pathTokensInString)
+        return f24FileCacheDao.getItem(setId, cost, pathTokensInString)
                 .flatMap(f24File -> {
                     if (f24File.getStatus().equals(F24FileStatus.DONE)) {
                         return safeStorageService.getFile(f24File.getFileKey(), false).map(FileDownloadResponseInt::getDownload)
@@ -307,16 +307,16 @@ public class F24ServiceImpl implements F24Service {
 
                     return Mono.just(F24ResponseConverter.fileDownloadInfoToF24Response(buildRetryAfterResponse().getDownload()));
                 })
-                .switchIfEmpty(Mono.defer(() -> generateFromMetadata(setId, xPagopaF24CxId, pathTokensInString, cost)));
+                .switchIfEmpty(Mono.defer(() -> generateFromMetadata(setId, pathTokensInString, cost)));
     }
 
     private boolean fileHasNotBeenUpdatedRecently(F24File f24File) {
         return f24File.getUpdated().isBefore(Instant.now().minus(Duration.ofMinutes(f24Config.getSafeStorageExecutionLimitMin())));
     }
 
-    private Mono<F24Response> generateFromMetadata(String setId, String xPagopaF24CxId, String pathTokensInString, Integer cost) {
+    private Mono<F24Response> generateFromMetadata(String setId, String pathTokensInString, Integer cost) {
         log.info("pdf not found, starting generation for: setId: {} pathTokens: {}", setId, pathTokensInString);
-        return getMetadataSet(setId, xPagopaF24CxId).flatMap(f24MetadataSet -> {
+        return getMetadataSet(setId).flatMap(f24MetadataSet -> {
             F24MetadataRef f24MetadataRef = f24MetadataSet.getFileKeys().get(pathTokensInString);
             if (f24MetadataRef == null) {
                 throw new PnNotFoundException("Metadata not found", "", PnF24ExceptionCodes.ERROR_CODE_F24_METADATA_NOT_FOUND);
@@ -364,7 +364,6 @@ public class F24ServiceImpl implements F24Service {
 
     private F24File buildNewF24File(FileCreationResponseInt fileCreationResponse, Integer cost, String pathTokensInString, F24MetadataSet f24Metadataset) {
         F24File f24File = new F24File();
-        f24File.setCxId(f24Metadataset.getCxId());
         f24File.setSetId(f24Metadataset.getSetId());
         f24File.setCost(cost);
         f24File.setPathTokens(pathTokensInString);
@@ -378,7 +377,7 @@ public class F24ServiceImpl implements F24Service {
     }
 
     public Mono<FileDownloadResponseInt> pollingSafeStorage(String fileKey) {
-
+        log.debug("Starting polling for fileKey: {}", fileKey);
         return Flux.interval(Duration.ofSeconds(f24Config.getSecIntervalForSafeStoragePolling()))
                 .flatMap(i -> safeStorageService.getFile(fileKey, false)
                         .onErrorResume(WebClientException.class, e -> Mono.empty()))

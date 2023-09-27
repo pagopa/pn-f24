@@ -18,14 +18,13 @@ public class F24FileCacheEntity extends BaseEntity {
     public static final String COL_REQUEST_IDS = "requestIds";
     public static final String COL_TTL = "ttl";
     public static final String GSI_FILE_KEY = "fileKey-index";
-    private static final int CX_ID_INDEX = 1;
-    private static final int SET_ID_INDEX = 2;
-    private static final int COST_INDEX = 3;
-    private static final int PATH_TOKENS_INDEX = 4;
+    private static final int SET_ID_INDEX = 1;
+    private static final int COST_INDEX = 2;
+    private static final int PATH_TOKENS_INDEX = 3;
     public static final String NO_COST = "NO_COST";
 
-    public F24FileCacheEntity(String cxId, String setId, Integer cost, String pathTokens) {
-        this.setPk(cxId, setId, cost, pathTokens);
+    public F24FileCacheEntity(String setId, Integer cost, String pathTokens) {
+        this.setPk(setId, cost, pathTokens);
     }
 
     @Getter(onMethod = @__({
@@ -50,13 +49,9 @@ public class F24FileCacheEntity extends BaseEntity {
     }))
     private Long ttl;
 
-    public void setPk(String cxId, String setId, Integer cost, String pathTokens) {
+    public void setPk(String setId, Integer cost, String pathTokens) {
         String evaluatedCost = cost != null ? cost.toString() : NO_COST;
-        this.setPk(PK_PREFIX + cxId + ITEMS_SEPARATOR + setId + ITEMS_SEPARATOR + evaluatedCost + ITEMS_SEPARATOR + pathTokens);
-    }
-    @DynamoDbIgnore
-    public String getCxId() {
-        return this.getPk().split(ITEMS_SEPARATOR)[CX_ID_INDEX];
+        this.setPk(PK_PREFIX + setId + ITEMS_SEPARATOR + evaluatedCost + ITEMS_SEPARATOR + pathTokens);
     }
     @DynamoDbIgnore
     public String getSetId() {
