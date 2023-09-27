@@ -28,6 +28,8 @@ public class F24Config {
     private String safeStorageQueueName;
     private EventBus eventBus;
     private List<String> corsAllowedDomains;
+    private String paperChannelCxId;
+    private String deliveryPushCxId;
 
     @Data
     public static class EventBus {

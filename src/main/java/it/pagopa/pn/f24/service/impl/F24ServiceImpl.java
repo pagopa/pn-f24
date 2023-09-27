@@ -15,6 +15,18 @@ import it.pagopa.pn.f24.exception.*;
 import it.pagopa.pn.f24.generated.openapi.msclient.safestorage.model.FileDownloadInfo;
 import it.pagopa.pn.f24.generated.openapi.server.v1.dto.*;
 import it.pagopa.pn.f24.middleware.dao.f24file.F24FileCacheDao;
+import it.pagopa.pn.api.dto.events.PnF24MetadataValidationEndEvent;
+import it.pagopa.pn.f24.config.F24Config;
+import it.pagopa.pn.f24.dto.F24MetadataRef;
+import it.pagopa.pn.f24.dto.F24MetadataSet;
+import it.pagopa.pn.f24.dto.F24MetadataStatus;
+import it.pagopa.pn.f24.exception.PnBadRequestException;
+import it.pagopa.pn.f24.exception.PnConflictException;
+import it.pagopa.pn.f24.exception.PnF24ExceptionCodes;
+import it.pagopa.pn.f24.exception.PnNotFoundException;
+import it.pagopa.pn.f24.generated.openapi.server.v1.dto.RequestAccepted;
+import it.pagopa.pn.f24.generated.openapi.server.v1.dto.SaveF24Item;
+import it.pagopa.pn.f24.generated.openapi.server.v1.dto.SaveF24Request;
 import it.pagopa.pn.f24.middleware.dao.f24metadataset.F24MetadataSetDao;
 import it.pagopa.pn.f24.middleware.eventbus.EventBridgeProducer;
 import it.pagopa.pn.f24.middleware.eventbus.util.PnF24AsyncEventBuilderHelper;
@@ -22,6 +34,7 @@ import it.pagopa.pn.f24.middleware.queue.producer.events.ValidateMetadataSetEven
 import it.pagopa.pn.f24.middleware.queue.producer.util.InternalMetadataEventBuilder;
 import it.pagopa.pn.f24.service.F24Generator;
 import it.pagopa.pn.f24.service.F24Service;
+import it.pagopa.pn.f24.service.JsonService;
 import it.pagopa.pn.f24.service.F24Utils;
 import it.pagopa.pn.f24.service.SafeStorageService;
 import it.pagopa.pn.f24.util.Sha256Handler;
@@ -45,7 +58,6 @@ import java.util.Map;
 import java.util.*;
 
 import static it.pagopa.pn.f24.util.Utility.getF24TypeFromMetadata;
-import static it.pagopa.pn.f24.util.Utility.objectToJsonString;
 
 @Service
 @Slf4j
@@ -60,22 +72,25 @@ public class F24ServiceImpl implements F24Service {
     private static final int MAX_PATH_TOKENS_DIMENSION = 4;
 
     private final F24Generator f24Generator;
+    private final EventBridgeProducer<PnF24MetadataValidationEndEvent> metadataValidationEndedEventProducer;
     private final SafeStorageService safeStorageService;
-    private final EventBridgeProducer<PnF24AsyncEvent> eventBridgeProducer;
     private final MomProducer<ValidateMetadataSetEvent> validateMetadataSetEventProducer;
     private final F24MetadataSetDao f24MetadataSetDao;
-    private final F24FileCacheDao f24FileCacheDao;
+    private final JsonService jsonService;
     private final F24Config f24Config;
+    private final F24FileCacheDao f24FileCacheDao;
 
 
-    public F24ServiceImpl(F24Generator f24Generator, SafeStorageService safeStorageService, EventBridgeProducer<PnF24AsyncEvent> eventBridgeProducer, MomProducer<ValidateMetadataSetEvent> validateMetadataSetEventProducer, F24MetadataSetDao f24MetadataSetDao, F24FileCacheDao f24FileCacheDao, F24Config f24Config) {
+    public F24ServiceImpl(F24Generator f24Generator, SafeStorageService safeStorageService, EventBridgeProducer<PnF24MetadataValidationEndEvent> metadataValidationEndedEventProducer, MomProducer<ValidateMetadataSetEvent> validateMetadataSetEventProducer, JsonService jsonService, F24MetadataSetDao f24MetadataSetDao, F24FileCacheDao f24FileCacheDao, F24Config f24Config) {
         this.f24Generator = f24Generator;
         this.safeStorageService = safeStorageService;
         this.eventBridgeProducer = eventBridgeProducer;
+        this.metadataValidationEndedEventProducer = metadataValidationEndedEventProducer;
         this.validateMetadataSetEventProducer = validateMetadataSetEventProducer;
         this.f24MetadataSetDao = f24MetadataSetDao;
-        this.f24FileCacheDao = f24FileCacheDao;
+        this.jsonService = jsonService;
         this.f24Config = f24Config;
+        this.f24FileCacheDao = f24FileCacheDao;
     }
 
     @Override
@@ -150,7 +165,7 @@ public class F24ServiceImpl implements F24Service {
     }
 
     private String createChecksumFromSaveF24Items(List<SaveF24Item> saveF24Items) {
-        String saveF24ItemsInJson = objectToJsonString(saveF24Items);
+        String saveF24ItemsInJson = jsonService.stringifyObject(saveF24Items);
         return Sha256Handler.computeSha256(saveF24ItemsInJson);
     }
 
@@ -202,7 +217,7 @@ public class F24ServiceImpl implements F24Service {
                     temp.setApplyCost(saveF24Item.getApplyCost());
                     temp.setSha256(saveF24Item.getSha256());
                     temp.setFileKey(saveF24Item.getFileKey());
-                    String pathTokensKey = String.join(".", saveF24Item.getPathTokens());
+                    String pathTokensKey = Utility.convertPathTokensList(saveF24Item.getPathTokens());
                     f24MetadataItemMap.put(pathTokensKey, temp);
                 }
         );
@@ -242,14 +257,12 @@ public class F24ServiceImpl implements F24Service {
         return updateHaveToSendValidationEventAndRemoveTtl(f24MetadataSet)
                 .flatMap(this::checkIfValidationOnQueueHasEnded);
     }
-
     private Mono<F24MetadataSet> updateHaveToSendValidationEventAndRemoveTtl(F24MetadataSet f24MetadataSet) {
         f24MetadataSet.setUpdated(Instant.now());
         f24MetadataSet.setHaveToSendValidationEvent(true);
         f24MetadataSet.setTtl(null);
         return f24MetadataSetDao.updateItem(f24MetadataSet);
     }
-
     private Mono<Void> checkIfValidationOnQueueHasEnded(F24MetadataSet f24MetadataSet) {
         String setId = f24MetadataSet.getSetId();
         String cxId = f24MetadataSet.getCxId();
@@ -270,7 +283,9 @@ public class F24ServiceImpl implements F24Service {
         String setId = f24MetadataSet.getSetId();
         String cxId = f24MetadataSet.getCxId();
         log.debug("Sending validation ended event for metadata with setId : {} and cxId : {}", setId, cxId);
-        return Mono.fromRunnable(() -> eventBridgeProducer.sendEvent(PnF24AsyncEventBuilderHelper.buildMetadataValidationEndEvent(cxId, setId, f24MetadataSet.getValidationResult())))
+
+        PnF24MetadataValidationEndEvent event = PnF24AsyncEventBuilderHelper.buildMetadataValidationEndEvent(cxId, setId, f24MetadataSet.getValidationResult(), f24Config.getDeliveryPushCxId());
+        return Mono.fromRunnable(() -> metadataValidationEndedEventProducer.sendEvent(event))
                 .doOnError(throwable -> log.warn("Error sending validation ended event", throwable))
                 .then(Mono.defer(() -> {
                     //Indifferente a questo punto, lo setto solo per coerenza. (HaveToSendValidationEvent)
