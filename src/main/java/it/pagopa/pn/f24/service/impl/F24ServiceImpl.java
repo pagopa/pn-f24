@@ -6,6 +6,7 @@ import it.pagopa.pn.f24.business.F24ResponseConverter;
 import it.pagopa.pn.f24.business.MetadataInspector;
 import it.pagopa.pn.f24.business.MetadataInspectorFactory;
 import it.pagopa.pn.f24.dto.*;
+import it.pagopa.pn.f24.dto.safestorage.FileCreationResponseInt;
 import it.pagopa.pn.f24.dto.safestorage.FileCreationWithContentRequest;
 import it.pagopa.pn.f24.dto.safestorage.FileDownloadInfoInt;
 import it.pagopa.pn.f24.dto.safestorage.FileDownloadResponseInt;
@@ -29,11 +30,7 @@ import it.pagopa.pn.f24.middleware.eventbus.EventBridgeProducer;
 import it.pagopa.pn.f24.middleware.eventbus.util.PnF24AsyncEventBuilderHelper;
 import it.pagopa.pn.f24.middleware.queue.producer.events.ValidateMetadataSetEvent;
 import it.pagopa.pn.f24.middleware.queue.producer.util.InternalMetadataEventBuilder;
-import it.pagopa.pn.f24.service.F24Generator;
-import it.pagopa.pn.f24.service.F24Service;
-import it.pagopa.pn.f24.service.JsonService;
-import it.pagopa.pn.f24.service.F24Utils;
-import it.pagopa.pn.f24.service.SafeStorageService;
+import it.pagopa.pn.f24.service.*;
 import it.pagopa.pn.f24.util.Sha256Handler;
 import it.pagopa.pn.f24.util.Utility;
 import lombok.extern.slf4j.Slf4j;
@@ -45,7 +42,6 @@ import software.amazon.awssdk.services.dynamodb.model.ConditionalCheckFailedExce
 import reactor.core.scheduler.Schedulers;
 
 import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.HashMap;
@@ -72,8 +68,10 @@ public class F24ServiceImpl implements F24Service {
     private final F24Config f24Config;
     private final F24FileCacheDao f24FileCacheDao;
 
+    private final MetadataDownloader metadataDownloader;
 
-    public F24ServiceImpl(F24Generator f24Generator, SafeStorageService safeStorageService, EventBridgeProducer<PnF24MetadataValidationEndEvent> metadataValidationEndedEventProducer, MomProducer<ValidateMetadataSetEvent> validateMetadataSetEventProducer, JsonService jsonService, F24MetadataSetDao f24MetadataSetDao, F24FileCacheDao f24FileCacheDao, F24Config f24Config) {
+
+    public F24ServiceImpl(F24Generator f24Generator, SafeStorageService safeStorageService, EventBridgeProducer<PnF24MetadataValidationEndEvent> metadataValidationEndedEventProducer, MomProducer<ValidateMetadataSetEvent> validateMetadataSetEventProducer, JsonService jsonService, F24MetadataSetDao f24MetadataSetDao, F24FileCacheDao f24FileCacheDao, F24Config f24Config, MetadataDownloader metadataDownloader) {
         this.f24Generator = f24Generator;
         this.safeStorageService = safeStorageService;
         this.metadataValidationEndedEventProducer = metadataValidationEndedEventProducer;
@@ -82,6 +80,7 @@ public class F24ServiceImpl implements F24Service {
         this.jsonService = jsonService;
         this.f24Config = f24Config;
         this.f24FileCacheDao = f24FileCacheDao;
+        this.metadataDownloader = metadataDownloader;
     }
 
     @Override
@@ -294,20 +293,26 @@ public class F24ServiceImpl implements F24Service {
     @Override
     public Mono<F24Response> generatePDF(String xPagopaF24CxId, String setId, List<String> pathTokens, Integer cost) {
         String pathTokensInString = Utility.convertPathTokensList(pathTokens);
-        return f24FileCacheDao.getItem(xPagopaF24CxId, setId, cost, pathTokensInString).flatMap(f ->
-        {
-            if (f.getStatus().equals(F24FileStatus.DONE)) {
-                return safeStorageService.getFile(f.getFileKey(), false).map(FileDownloadResponseInt::getDownload)
-                        .map(fileDownloadResponseInt -> {
-                            log.info("pdf found for setId: {} pathTokens: {}", setId, pathTokensInString);
-                            return F24ResponseConverter.fileDownloadInfoToF24Response(fileDownloadResponseInt);
-                        });
-            }
-            if (f.getUpdated().isBefore(Instant.now().minus(Duration.ofMinutes(f24Config.getSafeStorageExecutionLimitMin()))))
-                throw new PnF24RuntimeException("File generation exceeded time expectation", "", PnF24ExceptionCodes.ERROR_CODE_F24_FILE_GENERATION_IN_PROGRESS);
+        return f24FileCacheDao.getItem(xPagopaF24CxId, setId, cost, pathTokensInString)
+                .flatMap(f24File -> {
+                    if (f24File.getStatus().equals(F24FileStatus.DONE)) {
+                        return safeStorageService.getFile(f24File.getFileKey(), false).map(FileDownloadResponseInt::getDownload)
+                                .map(fileDownloadResponseInt -> {
+                                    log.info("pdf found for setId: {} pathTokens: {}", setId, pathTokensInString);
+                                    return F24ResponseConverter.fileDownloadInfoToF24Response(fileDownloadResponseInt);
+                                });
+                    }
+                    if(fileHasNotBeenUpdatedRecently(f24File)) {
+                        throw new PnF24RuntimeException("File generation exceeded time expectation", "", PnF24ExceptionCodes.ERROR_CODE_F24_FILE_GENERATION_IN_PROGRESS);
+                    }
 
-            return Mono.just(F24ResponseConverter.fileDownloadInfoToF24Response(buildRetryAfterResponse().getDownload()));
-        }).switchIfEmpty(Mono.defer(() -> generateFromMetadata(setId, xPagopaF24CxId, pathTokensInString, cost)));
+                    return Mono.just(F24ResponseConverter.fileDownloadInfoToF24Response(buildRetryAfterResponse().getDownload()));
+                })
+                .switchIfEmpty(Mono.defer(() -> generateFromMetadata(setId, xPagopaF24CxId, pathTokensInString, cost)));
+    }
+
+    private boolean fileHasNotBeenUpdatedRecently(F24File f24File) {
+        return f24File.getUpdated().isBefore(Instant.now().minus(Duration.ofMinutes(f24Config.getSafeStorageExecutionLimitMin())));
     }
 
     private Mono<F24Response> generateFromMetadata(String setId, String xPagopaF24CxId, String pathTokensInString, Integer cost) {
@@ -317,70 +322,60 @@ public class F24ServiceImpl implements F24Service {
             if (f24MetadataRef == null) {
                 throw new PnNotFoundException("Metadata not found", "", PnF24ExceptionCodes.ERROR_CODE_F24_METADATA_NOT_FOUND);
             }
-            return downloadPOC(f24MetadataRef).flatMap(f24Metadata -> {
-                if (f24MetadataRef.isApplyCost() && cost != null && cost != 0) {
+            return metadataDownloader.downloadMetadata(f24MetadataRef.getFileKey()).flatMap(f24Metadata -> {
+                processMetadataCost(f24Metadata, cost, f24MetadataRef.isApplyCost());
 
-                    MetadataInspector inspector = MetadataInspectorFactory.getInspector(getF24TypeFromMetadata(f24Metadata));
-                    inspector.addCostToDebit(f24Metadata, cost);
+                byte[] pdfContent = f24Generator.generate(f24Metadata);
+                log.info("generated pdf for f24 with metadata: {} ", f24Metadata);
+                FileCreationWithContentRequest fileCreationRequest = buildFileCreationRequest(pdfContent);
 
-                } else if (!f24MetadataRef.isApplyCost() && cost != null) {
-                    return Mono.error(new PnBadRequestException("apply cost inconsistent", "applyCost is required when cost is populated", PnF24ExceptionCodes.ERROR_CODE_F24_METADATA_VALIDATION_INCONSISTENT_APPLY_COST));
-                } else if (f24MetadataRef.isApplyCost() && cost == null) {
-                    return Mono.error(new PnBadRequestException("apply cost inconsistent", "cost is required when applyCost is true", PnF24ExceptionCodes.ERROR_CODE_F24_METADATA_VALIDATION_INCONSISTENT_APPLY_COST));
-                }
-                FileCreationWithContentRequest fileCreationRequest = generaPdf(f24Metadata);
                 return uploadF24FileAndPut(fileCreationRequest, cost, pathTokensInString, f24MetadataSet)
                         .flatMap(f24File -> pollingSafeStorage(f24File.getFileKey())
-                                .flatMap(fileDownloadResponseInt -> {
-                                    if (fileDownloadResponseInt.getDownload() != null && fileDownloadResponseInt.getDownload().getUrl() != null) {
-                                        log.info("Received download url :{}for file with pk :{}, setting status DONE", fileDownloadResponseInt.getDownload().getUrl(), f24File.getPk());
-                                        f24File.setStatus(F24FileStatus.DONE);
-                                        f24File.setUpdated(Instant.now());
-                                        return f24FileCacheDao.updateItem(f24File).thenReturn(F24ResponseConverter.fileDownloadInfoToF24Response(fileDownloadResponseInt.getDownload()));
-                                    }
-                                    log.info("Received retry after of :{}  for file with pk :{}", fileDownloadResponseInt.getDownload().getRetryAfter(), f24File.getPk());
-                                    return Mono.just(F24ResponseConverter.fileDownloadInfoToF24Response(fileDownloadResponseInt.getDownload()));
-                                }));
+                                .flatMap(fileDownloadResponseInt -> handleSafeStorageResponse(fileDownloadResponseInt, f24File))
+                        );
             });
         });
     }
 
-    private Mono<F24Metadata> downloadPOC(F24MetadataRef f24MetadataRef) {
-        return safeStorageService.getFile(f24MetadataRef.getFileKey(), false).flatMap(fileDownloadResponse -> {
-            assert fileDownloadResponse.getDownload() != null;
-            return safeStorageService.downloadPieceOfContent(f24MetadataRef.getFileKey(), fileDownloadResponse.getDownload().getUrl(), -1)
-                    .map(bytes -> {
-                        String fileContent = new String(bytes, StandardCharsets.UTF_8);
-                        return F24Utils.validateF24Metadata(fileContent);
-                    });
-        }).doOnError(throwable -> log.error("error downloading poc for filekey: {}", f24MetadataRef.getFileKey(), throwable));
+    private void processMetadataCost(F24Metadata f24Metadata, Integer cost, boolean applyCost) {
+        if (applyCost && cost != null && cost != 0) {
+            MetadataInspector inspector = MetadataInspectorFactory.getInspector(getF24TypeFromMetadata(f24Metadata));
+            inspector.addCostToDebit(f24Metadata, cost);
+        } else if (!applyCost && cost != null) {
+            throw new PnBadRequestException("apply cost inconsistent", "applyCost is required when cost is populated", PnF24ExceptionCodes.ERROR_CODE_F24_METADATA_VALIDATION_INCONSISTENT_APPLY_COST);
+        } else if (applyCost && cost == null) {
+            throw new PnBadRequestException("apply cost inconsistent", "cost is required when applyCost is true", PnF24ExceptionCodes.ERROR_CODE_F24_METADATA_VALIDATION_INCONSISTENT_APPLY_COST);
+        }
     }
 
-    private FileCreationWithContentRequest generaPdf(F24Metadata f24Meta) {
-        byte[] generatedPdf = f24Generator.generate(f24Meta);
+    private FileCreationWithContentRequest buildFileCreationRequest(byte[] generatedPdf) {
         FileCreationWithContentRequest fileCreationWithContentRequest = new FileCreationWithContentRequest();
         fileCreationWithContentRequest.setContent(generatedPdf);
         fileCreationWithContentRequest.setContentType(CONTENT_TYPE);
-        log.info("generated pdf for f24 with metadata: {} ", f24Meta);
+        fileCreationWithContentRequest.setStatus("SAVED");
         return fileCreationWithContentRequest;
     }
 
     private Mono<F24File> uploadF24FileAndPut(FileCreationWithContentRequest fileCreationWithContentRequest, Integer cost, String pathTokensInString, F24MetadataSet f24Metadataset) {
 
-        return safeStorageService.createAndUploadContent(fileCreationWithContentRequest).map(fileCreationResponse -> {
-            F24File f24File = new F24File();
-            f24File.setCxId(f24Metadataset.getCxId());
-            f24File.setSetId(f24Metadataset.getSetId());
-            f24File.setCost(cost);
-            f24File.setPathTokens(pathTokensInString);
-            f24File.setStatus(F24FileStatus.GENERATED);
-            f24File.setCreated(Instant.now());
-            if (f24Config.getRetentionForF24FilesInDays() != null && f24Config.getRetentionForF24FilesInDays() > 0) {
-                f24File.setTtl(Instant.now().plus(Duration.ofDays(f24Config.getRetentionForF24FilesInDays())).getEpochSecond());
-            }
-            f24File.setFileKey(fileCreationResponse.getKey());
-            return f24File;
-        }).flatMap(f24FileCacheDao::putItemIfAbsent);
+        return safeStorageService.createAndUploadContent(fileCreationWithContentRequest)
+                .map(fileCreationResponse -> buildNewF24File(fileCreationResponse, cost, pathTokensInString, f24Metadataset))
+                .flatMap(f24FileCacheDao::putItemIfAbsent);
+    }
+
+    private F24File buildNewF24File(FileCreationResponseInt fileCreationResponse, Integer cost, String pathTokensInString, F24MetadataSet f24Metadataset) {
+        F24File f24File = new F24File();
+        f24File.setCxId(f24Metadataset.getCxId());
+        f24File.setSetId(f24Metadataset.getSetId());
+        f24File.setCost(cost);
+        f24File.setPathTokens(pathTokensInString);
+        f24File.setStatus(F24FileStatus.GENERATED);
+        f24File.setCreated(Instant.now());
+        if (f24Config.getRetentionForF24FilesInDays() != null && f24Config.getRetentionForF24FilesInDays() > 0) {
+            f24File.setTtl(Instant.now().plus(Duration.ofDays(f24Config.getRetentionForF24FilesInDays())).getEpochSecond());
+        }
+        f24File.setFileKey(fileCreationResponse.getKey());
+        return f24File;
     }
 
     public Mono<FileDownloadResponseInt> pollingSafeStorage(String fileKey) {
@@ -409,5 +404,17 @@ public class F24ServiceImpl implements F24Service {
         fileDownloadInfoInt.setRetryAfter(BigDecimal.valueOf(f24Config.getRetryAfterWhenErrorSafeStorage()));
         fileDownloadResponseInt.setDownload(fileDownloadInfoInt);
         return fileDownloadResponseInt;
+    }
+
+    private Mono<F24Response> handleSafeStorageResponse(FileDownloadResponseInt fileDownloadResponseInt, F24File f24File) {
+        if (fileDownloadResponseInt.getDownload() != null && fileDownloadResponseInt.getDownload().getUrl() != null) {
+            log.info("Received download url :{}for file with pk :{}, setting status DONE", fileDownloadResponseInt.getDownload().getUrl(), f24File.getPk());
+            f24File.setStatus(F24FileStatus.DONE);
+            f24File.setUpdated(Instant.now());
+            return f24FileCacheDao.updateItem(f24File).thenReturn(F24ResponseConverter.fileDownloadInfoToF24Response(fileDownloadResponseInt.getDownload()));
+        }
+        log.info("Received retry after of :{}  for file with pk :{}", fileDownloadResponseInt.getDownload().getRetryAfter(), f24File.getPk());
+        return Mono.just(F24ResponseConverter.fileDownloadInfoToF24Response(fileDownloadResponseInt.getDownload()));
+
     }
 }

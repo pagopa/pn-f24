@@ -2,7 +2,6 @@
 
 package it.pagopa.pn.f24.service.impl;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 import it.pagopa.pn.api.dto.events.MomProducer;
@@ -25,12 +24,11 @@ import it.pagopa.pn.f24.middleware.eventbus.EventBridgeProducer;
 import it.pagopa.pn.f24.middleware.msclient.safestorage.PnSafeStorageClientImpl;
 import it.pagopa.pn.f24.middleware.queue.producer.events.ValidateMetadataSetEvent;
 import it.pagopa.pn.f24.service.F24Generator;
-import it.pagopa.pn.f24.service.F24Utils;
+import it.pagopa.pn.f24.service.JsonService;
+import it.pagopa.pn.f24.service.MetadataDownloader;
 import it.pagopa.pn.f24.service.SafeStorageService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -38,8 +36,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.testcontainers.shaded.com.fasterxml.jackson.core.JsonProcessingException;
-import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
-import org.testcontainers.shaded.com.google.common.primitives.Bytes;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -57,15 +53,12 @@ import java.util.Objects;
 @TestPropertySource("classpath:/application-test.properties")
 @EnableConfigurationProperties(value = F24Config.class)
 class F24ServiceImplTest {
-
-    @MockBean
-    private F24Generator f24Generator;
-
-    @MockBean
-    private F24MetadataSetDao f24MetadataSetDao;
-
     @Autowired
     private F24ServiceImpl f24ServiceImpl;
+    @MockBean
+    private F24Generator f24Generator;
+    @MockBean
+    private F24MetadataSetDao f24MetadataSetDao;
     @MockBean
     private PnSafeStorageClientImpl pnSafeStorageClientImpl;
     @MockBean
@@ -77,39 +70,10 @@ class F24ServiceImplTest {
     @MockBean
     private MomProducer<ValidateMetadataSetEvent> validateMetadataSetEventProducer;
     @MockBean
-    F24Utils f24Utils;
+    private JsonService jsonService;
+    @MockBean
+    private MetadataDownloader metadataDownloader;
 
-
-    /**
-     * Method under test: {@link F24ServiceImpl#validate(String, String)}
-     *//*
-     */
-
-
-/*
-    @Test
-    void testValidate() {
-        when(f24MetadataSetDao.getItem(any(), any())).thenThrow(new PnBadRequestException(
-                "An error occurred", "The characteristics of someone or something", "An error occurred"));
-        assertThrows(PnBadRequestException.class, () -> f24ServiceImpl.validate("42", "42"));
-        verify(f24MetadataSetDao).getItem(any(), any());
-    }
-
-
-/**
-     * Method under test: {@link F24ServiceImpl#validate(String, String)}
-     *//*
-
-
-
-    @Test
-    void testValidate2() {
-        when(f24MetadataSetDao.getItem(any(), any()))
-                .thenReturn((Mono<F24MetadataSet>) mock(Mono.class));
-        f24ServiceImpl.validate("42", "42");
-        verify(f24MetadataSetDao).getItem(any(), any());
-    }
-*/
     @Test
     public void generatePDFFromCache() {
 
@@ -142,7 +106,7 @@ class F24ServiceImplTest {
     }
 
     @Test
-    public void generatePDFFromCacheRuntimeException() {
+    public void generatePdfFromCacheFailWithRuntimeException() {
 
         //Mock for f24FileDao.getItem
         //todo check
@@ -173,7 +137,7 @@ class F24ServiceImplTest {
     }
 
     @Test
-    public void generatePDFFromCacheRetryAfter() {
+    public void generatePdfFromCacheWithRetryAfter() {
 
         //Mock for f24FileDao.getItem
         F24File f24File = new F24File();
@@ -201,7 +165,7 @@ class F24ServiceImplTest {
     }
 
     @Test
-    public void generatePDFFromMetadata() throws JsonProcessingException {
+    public void generatePdfWhenFileIsNotInCache() throws JsonProcessingException {
 
         List<String> pathTokens = List.of("key");
 
@@ -224,12 +188,8 @@ class F24ServiceImplTest {
         fileDownloadResponseInt.setDownload(fileDownloadInfoInt);
 
         //mock for F24Generator.generate
-        F24Standard f24Standard = new F24Standard();
-        ObjectMapper objectMapper = new ObjectMapper();
-
         F24Metadata f24Metadata = new F24Metadata();
-        f24Metadata.setF24Standard(f24Standard);
-        String util = objectMapper.writeValueAsString(f24Metadata);
+        f24Metadata.setF24Standard(new F24Standard());
 
         F24File f24File = new F24File();
         f24File.setFileKey("key");
@@ -238,8 +198,8 @@ class F24ServiceImplTest {
                 .thenReturn(Mono.empty());
         when(f24MetadataSetDao.getItem(anyString(), anyString()))
                 .thenReturn(Mono.just(f24MetadataSet));
-        when(safeStorageService.downloadPieceOfContent(anyString(), anyString(), anyLong()))
-                .thenReturn(Mono.just(util.getBytes()));
+        when(metadataDownloader.downloadMetadata(any()))
+                .thenReturn(Mono.just(f24Metadata));
         when(f24Generator.generate(any(F24Metadata.class)))
                 .thenReturn(new byte[0]);
         when(safeStorageService.createAndUploadContent(any()))
@@ -253,14 +213,13 @@ class F24ServiceImplTest {
 
         // Assert
         StepVerifier.create(f24ServiceImpl.generatePDF("xPagopaF24CxId", "setId", pathTokens, 10))
-                .expectNextCount(0)
                 .expectNextMatches(f24Response -> Objects.equals(f24Response.getUrl(), "url"))
                 .expectComplete()
                 .verify();
     }
 
     @Test
-    public void generatePDFFromMetadataError() {
+    public void generatePdfErrorWhenGivenPathTokensDoesntExistInMetadataSet() {
 
         List<String> pathTokens = List.of("Notkey");
 
@@ -284,7 +243,7 @@ class F24ServiceImplTest {
     }
 
     @Test
-    public void ApplyCostFalseWithCost() throws JsonProcessingException {
+    public void generatePdfFailOnMetadataWithoutApplyCostWhenRequestCostIsNotNull() throws JsonProcessingException {
 
         List<String> pathTokens = List.of("key");
 
@@ -306,17 +265,14 @@ class F24ServiceImplTest {
         fileDownloadResponseInt.setDownload(fileDownloadInfoInt);
 
         F24Metadata f24Metadata = new F24Metadata();
-        F24Standard f24Standard = new F24Standard();
-        ObjectMapper objectMapper = new ObjectMapper();
-        f24Metadata.setF24Standard(f24Standard);
-        String util = objectMapper.writeValueAsString(f24Metadata);
+        f24Metadata.setF24Standard(new F24Standard());
 
         when(f24FileCacheDao.getItem(anyString(), anyString(), anyInt(), anyString()))
                 .thenReturn(Mono.empty());
         when(f24MetadataSetDao.getItem(anyString(), anyString()))
                 .thenReturn(Mono.just(f24MetadataSet));
-        when(safeStorageService.downloadPieceOfContent(anyString(), anyString(), anyLong()))
-                .thenReturn(Mono.just(util.getBytes()));
+        when(metadataDownloader.downloadMetadata(any()))
+                .thenReturn(Mono.just(f24Metadata));
         when(f24Generator.generate(any(F24Metadata.class)))
                 .thenReturn(new byte[0]);
         when(safeStorageService.createAndUploadContent(any()))
@@ -331,7 +287,7 @@ class F24ServiceImplTest {
     }
 
     @Test
-    public void ApplyCostTrueWithCostNull() throws JsonProcessingException {
+    public void generatePdfFailOnMetadataWithApplyCostWhenRequestCostIsNull() {
 
         List<String> pathTokens = List.of("key");
 
@@ -349,17 +305,14 @@ class F24ServiceImplTest {
         fileDownloadResponseInt.setDownload(fileDownloadInfoInt);
 
         F24Metadata f24Metadata = new F24Metadata();
-        F24Standard f24Standard = new F24Standard();
-        ObjectMapper objectMapper = new ObjectMapper();
-        f24Metadata.setF24Standard(f24Standard);
-        String util = objectMapper.writeValueAsString(f24Metadata);
+        f24Metadata.setF24Standard(new F24Standard());
 
         when(f24FileCacheDao.getItem(anyString(), anyString(), any(), anyString()))
                 .thenReturn(Mono.empty());
         when(f24MetadataSetDao.getItem(anyString(), anyString()))
                 .thenReturn(Mono.just(f24MetadataSet));
-        when(safeStorageService.downloadPieceOfContent(anyString(), anyString(), anyLong()))
-                .thenReturn(Mono.just(util.getBytes()));
+        when(metadataDownloader.downloadMetadata(any()))
+                .thenReturn(Mono.just(f24Metadata));
         when(f24Generator.generate(any(F24Metadata.class)))
                 .thenReturn(new byte[0]);
         when(safeStorageService.getFile(anyString(), eq(false)))
