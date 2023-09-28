@@ -24,7 +24,7 @@ public class F24FileRequestEntity extends BaseEntity {
 
 
     public F24FileRequestEntity(String requestId) {
-        this.setPk(requestId);
+        this.setPk(PK_PREFIX + requestId);
     }
 
     @Getter(onMethod = @__({@DynamoDbAttribute(COL_FILES)}))
@@ -50,10 +50,6 @@ public class F24FileRequestEntity extends BaseEntity {
 
     @Getter(onMethod = @__({@DynamoDbAttribute(COL_TTL)}))
     private Long ttl;
-
-    public void setPk(String requestId) {
-        super.setPk(PK_PREFIX + requestId);
-    }
 
     @DynamoDbIgnore
     public String getRequestId() { return this.getPk().split(ITEMS_SEPARATOR)[REQUEST_ID_INDEX]; }

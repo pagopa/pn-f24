@@ -238,6 +238,7 @@ public class PreparePdfEventService {
     private Mono<Void> updateF24RequestAndF24File(PreparePdfLists preparePdfLists) {
         preparePdfLists.getF24Request().setFiles(buildF24RequestFiles(preparePdfLists));
         preparePdfLists.getF24Request().setRecordVersion(preparePdfLists.getF24Request().getRecordVersion() + 1);
+        preparePdfLists.getF24Request().setUpdated(Instant.now());
         return f24FileRequestDao.updateRequestAndRelatedFiles(preparePdfLists)
                 .doOnError(t -> log.warn("Error updating Request and Files", t));
     }
@@ -245,13 +246,9 @@ public class PreparePdfEventService {
     private Map<String, F24Request.FileRef> buildF24RequestFiles(PreparePdfLists preparePdfLists) {
         Map<String, F24Request.FileRef> requestFiles = new HashMap<>();
 
-        preparePdfLists.getFilesNotReady().forEach((F24File f24File) -> {
-            requestFiles.put(f24File.getPk(), new F24Request.FileRef(""));
-        });
+        preparePdfLists.getFilesNotReady().forEach((F24File f24File) -> requestFiles.put(f24File.getPk(), new F24Request.FileRef("")));
 
-        preparePdfLists.getFilesReady().forEach((F24File f24File) -> {
-            requestFiles.put(f24File.getPk(), new F24Request.FileRef(f24File.getFileKey()));
-        });
+        preparePdfLists.getFilesReady().forEach((F24File f24File) -> requestFiles.put(f24File.getPk(), new F24Request.FileRef(f24File.getFileKey())));
 
         preparePdfLists.getFilesToCreate().forEach((PreparePdfLists.F24FileToCreate f24FileToCreate) -> {
             F24File f24File = f24FileToCreate.getFile();

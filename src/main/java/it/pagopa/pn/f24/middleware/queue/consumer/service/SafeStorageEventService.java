@@ -141,7 +141,7 @@ public class SafeStorageEventService {
 
     private void removeRequestIdsFromF24FileAndSetStatusDone(List<F24Request> f24Requests, F24File f24File) {
         //Rimuovo dal file i requestId che sono associati.
-        List<String> requestIdsToRemove = f24Requests.stream().map(F24Request::getPk).toList();
+        List<String> requestIdsToRemove = f24Requests.stream().map(F24Request::getRequestId).toList();
         f24File.getRequestIds().removeAll(requestIdsToRemove);
 
         f24File.setStatus(F24FileStatus.DONE);
@@ -149,7 +149,7 @@ public class SafeStorageEventService {
 
     private Mono<Void> checkIfRequestsAreCompleted(List<F24Request> f24Requests) {
         return Flux.fromIterable(f24Requests)
-                .flatMap(f24Request -> f24RequestDao.getItem(f24Request.getPk(), true))
+                .flatMap(f24Request -> f24RequestDao.getItem(f24Request.getRequestId(), true))
                 .flatMap(consistentF24Request -> {
                     if(allRequestFilesHaveFileKey(consistentF24Request.getFiles())) {
                         return sendPdfSetReadyEvent(consistentF24Request);
