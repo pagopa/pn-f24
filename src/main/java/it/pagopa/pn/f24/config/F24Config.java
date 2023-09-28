@@ -14,10 +14,10 @@ import java.util.List;
 @Import(SharedAutoConfiguration.class)
 public class F24Config {
     private String safeStorageBaseUrl;
-    private Integer secIntervalForSafeStoragePolling;
+    private Integer pollingIntervalSec;
     private Integer safeStorageExecutionLimitMin;
     private Integer retryAfterWhenErrorSafeStorage;
-    private Integer secToPollingTimeout;
+    private Integer pollingTimeoutSec;
     private Integer retentionForF24FilesInDays;
     private String safeStorageCxId;
     private String safeStorageMetadataDocType;
