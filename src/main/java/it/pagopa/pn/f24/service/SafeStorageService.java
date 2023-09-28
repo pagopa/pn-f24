@@ -9,4 +9,5 @@ public interface SafeStorageService {
     Mono<FileDownloadResponseInt> getFile(String fileKey, Boolean metadataOnly) ;
     Mono<FileCreationResponseInt> createAndUploadContent(FileCreationWithContentRequest fileCreationRequest);
     Mono<byte[]> downloadPieceOfContent(String fileKey, String url, long maxSize);
+    Mono<FileDownloadResponseInt> getFilePollingSafeStorage(String fileKey, Boolean metadataOnly, Integer pollingTimeoutSec, Integer pollingIntervalSec);
 }

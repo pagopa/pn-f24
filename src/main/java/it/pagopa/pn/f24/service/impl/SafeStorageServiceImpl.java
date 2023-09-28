@@ -13,7 +13,13 @@ import it.pagopa.pn.f24.util.Sha256Handler;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClientException;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
+
+import java.time.Duration;
+import java.util.NoSuchElementException;
 
 import static it.pagopa.pn.f24.exception.PnF24ExceptionCodes.ERROR_CODE_F24_READ_FILE_ERROR;
 import static it.pagopa.pn.f24.exception.PnF24ExceptionCodes.ERROR_CODE_F24_UPLOADFILEERROR;
@@ -101,5 +107,30 @@ public class SafeStorageServiceImpl implements SafeStorageService {
                     MDC.remove(MDCUtils.MDC_PN_CTX_SAFESTORAGE_FILEKEY);
                     return Mono.error(new PnInternalException("Cannot update metadata", ERROR_CODE_F24_READ_FILE_ERROR, err));
                 });
+    }
+
+    /**
+     * Polling per il download di un file da SafeStorage:
+     * se il tempo di timeout viene consumato senza restituire una risposta positiva, viene lanciato un NoSuchElementException
+     * @param pollingTimeoutSec secondi di timeout del polling obbligatori (!= null)
+     * @param pollingIntervalSec secondi di intervallo tra un polling e l'altro obbligatori (!= null)
+     */
+    public Mono<FileDownloadResponseInt> getFilePollingSafeStorage(String fileKey, Boolean metadataOnly, Integer pollingTimeoutSec, Integer pollingIntervalSec) {
+
+        return Flux.interval(Duration.ofSeconds(pollingIntervalSec))
+                .flatMap(i -> getFile(fileKey, false)
+                        .onErrorResume(WebClientException.class, e -> Mono.empty()))
+                .doOnNext(response -> {
+                    if (response.getDownload() == null)
+                        log.info("response has download null");
+                    if (response.getDownload() != null)
+                        log.info("response has download not null");
+                })
+                .doOnError(e -> log.warn("error polling safeStorage: " + e))
+                .takeUntil(response -> response.getDownload() != null)
+                .take(Duration.ofSeconds(pollingTimeoutSec))
+                .last()
+                .publishOn(Schedulers.boundedElastic());
+
     }
 }

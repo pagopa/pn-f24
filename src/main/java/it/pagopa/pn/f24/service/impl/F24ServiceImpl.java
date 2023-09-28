@@ -314,7 +314,7 @@ public class F24ServiceImpl implements F24Service {
                                 });
                     }
                     if(fileHasNotBeenUpdatedRecently(f24File)) {
-                        throw new PnF24RuntimeException("File generation exceeded time expectation", "", PnF24ExceptionCodes.ERROR_CODE_F24_FILE_GENERATION_IN_PROGRESS);
+                        throw new PnF24RuntimeException("error retrieving file", "File generation exceeded time expectation", PnF24ExceptionCodes.ERROR_CODE_F24_FILE_GENERATION_IN_PROGRESS);
                     }
 
                     return Mono.just(F24ResponseConverter.fileDownloadInfoToF24Response(buildRetryAfterResponse().getDownload()));
@@ -341,7 +341,8 @@ public class F24ServiceImpl implements F24Service {
                 FileCreationWithContentRequest fileCreationRequest = buildFileCreationRequest(pdfContent);
 
                 return uploadF24FileAndPut(fileCreationRequest, cost, pathTokensInString, f24MetadataSet)
-                        .flatMap(f24File -> pollingSafeStorage(f24File.getFileKey())
+                        .flatMap(f24File -> safeStorageService.getFilePollingSafeStorage(f24File.getFileKey(), false, f24Config.getPollingTimeoutSec(), f24Config.getPollingIntervalSec())
+                                .onErrorResume(NoSuchElementException.class, e -> Mono.just((buildRetryAfterResponse())))
                                 .flatMap(fileDownloadResponseInt -> handleSafeStorageResponse(fileDownloadResponseInt, f24File))
                         );
             });
@@ -388,25 +389,6 @@ public class F24ServiceImpl implements F24Service {
         return f24File;
     }
 
-    public Mono<FileDownloadResponseInt> pollingSafeStorage(String fileKey) {
-        log.debug("Starting polling for fileKey: {}", fileKey);
-        return Flux.interval(Duration.ofSeconds(f24Config.getSecIntervalForSafeStoragePolling()))
-                .flatMap(i -> safeStorageService.getFile(fileKey, false)
-                        .onErrorResume(WebClientException.class, e -> Mono.empty()))
-                .doOnNext(response -> {
-                    if (response.getDownload() == null)
-                        log.info("response has download null");
-                    if (response.getDownload() != null)
-                        log.info("response has download not null");
-                })
-                .doOnError(e -> log.warn("error polling safeStorage: " + e))
-                .takeUntil(response -> response.getDownload() != null)
-                .take(Duration.ofSeconds(f24Config.getSecToPollingTimeout()))
-                .last()
-                .onErrorResume(NoSuchElementException.class, e -> Mono.just((buildRetryAfterResponse())))
-                .publishOn(Schedulers.boundedElastic());
-
-    }
 
     private FileDownloadResponseInt buildRetryAfterResponse() {
         FileDownloadResponseInt fileDownloadResponseInt = new FileDownloadResponseInt();

@@ -1,32 +1,31 @@
-package it.pagopa.pn.f24.middleware.dao.f24metadataset.dynamo.mapper;
+package it.pagopa.pn.f24.middleware.dao.f24file.dynamo.mapper;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import it.pagopa.pn.f24.middleware.dao.f24metadataset.dynamo.entity.F24MetadataSetStatusEntity;
+import it.pagopa.pn.f24.middleware.dao.f24file.dynamo.entity.F24FileStatusEntity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import software.amazon.awssdk.enhanced.dynamodb.AttributeValueType;
 import software.amazon.awssdk.enhanced.dynamodb.EnhancedType;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 
-class F24MetadataSetStatusEntityConverterTest {
-    private F24MetadataSetStatusEntityConverter converter;
+public class F24FileStatusEntityConverterTest {
+
+    private F24FileStatusEntityConverter converter;
 
     @BeforeEach
     public void setup() {
-        converter = new F24MetadataSetStatusEntityConverter();
+        converter = new F24FileStatusEntityConverter();
     }
-
     @Test
     void testTransformFrom() {
-        AttributeValue actualTransformFromResult = converter.transformFrom(F24MetadataSetStatusEntity.VALIDATION_ENDED);
+        AttributeValue actualTransformFromResult = converter.transformFrom(F24FileStatusEntity.PROCESSING);
         assertNull(actualTransformFromResult.b());
         assertEquals(AttributeValue.Type.S, actualTransformFromResult.type());
-        assertEquals("VALIDATION_ENDED", actualTransformFromResult.s());
+        assertEquals("PROCESSING", actualTransformFromResult.s());
         assertNull(actualTransformFromResult.nul());
         assertNull(actualTransformFromResult.n());
         assertFalse(actualTransformFromResult.hasSs());
@@ -37,9 +36,6 @@ class F24MetadataSetStatusEntityConverterTest {
         assertNull(actualTransformFromResult.bool());
     }
 
-    /**
-     * Method under test: {@link F24MetadataSetStatusEntityConverter#transformFrom(F24MetadataSetStatusEntity)}
-     */
     @Test
     void testTransformFrom2() {
         AttributeValue actualTransformFromResult = converter.transformFrom(null);
@@ -55,16 +51,12 @@ class F24MetadataSetStatusEntityConverterTest {
         assertFalse(actualTransformFromResult.hasBs());
         assertNull(actualTransformFromResult.bool());
     }
-
-    /**
-     * Method under test: {@link F24MetadataSetStatusEntityConverter#transformFrom(F24MetadataSetStatusEntity)}
-     */
     @Test
     void testTransformFrom3() {
-        AttributeValue actualTransformFromResult = converter.transformFrom(F24MetadataSetStatusEntity.TO_VALIDATE);
+        AttributeValue actualTransformFromResult = converter.transformFrom(F24FileStatusEntity.PROCESSING);
         assertNull(actualTransformFromResult.b());
         assertEquals(AttributeValue.Type.S, actualTransformFromResult.type());
-        assertEquals("TO_VALIDATE", actualTransformFromResult.s());
+        assertEquals("PROCESSING", actualTransformFromResult.s());
         assertNull(actualTransformFromResult.nul());
         assertNull(actualTransformFromResult.n());
         assertFalse(actualTransformFromResult.hasSs());
@@ -75,43 +67,30 @@ class F24MetadataSetStatusEntityConverterTest {
         assertNull(actualTransformFromResult.bool());
     }
 
-    /**
-     * Method under test: {@link F24MetadataSetStatusEntityConverter#transformTo(AttributeValue)}
-     */
     @Test
     void testTransformTo() {
-        F24MetadataSetStatusEntity f24MetadataSetStatusEntity = converter.transformTo(
-                AttributeValue.builder().s("VALIDATION_ENDED").build()
+        F24FileStatusEntity f24FileStatusEntity = converter.transformTo(
+                AttributeValue.builder().s("PROCESSING").build()
         );
-        assertEquals(f24MetadataSetStatusEntity, F24MetadataSetStatusEntity.VALIDATION_ENDED);
+        assertEquals(f24FileStatusEntity, F24FileStatusEntity.PROCESSING);
     }
 
-    /**
-     * Method under test: {@link F24MetadataSetStatusEntityConverter#transformTo(AttributeValue)}
-     */
     @Test
     void testTransformTo2() {
         assertNull(converter.transformTo(AttributeValue.builder().s(null).build()));
     }
 
-    /**
-     * Method under test: {@link F24MetadataSetStatusEntityConverter#type()}
-     */
     @Test
     void testType() {
-        EnhancedType<F24MetadataSetStatusEntity> actualTypeResult = converter.type();
+        EnhancedType<F24FileStatusEntity> actualTypeResult = converter.type();
         assertFalse(actualTypeResult.isWildcard());
         assertTrue(actualTypeResult.rawClassParameters().isEmpty());
-        Class<F24MetadataSetStatusEntity> expectedRawClassResult = F24MetadataSetStatusEntity.class;
+        Class<F24FileStatusEntity> expectedRawClassResult = F24FileStatusEntity.class;
         assertSame(expectedRawClassResult, actualTypeResult.rawClass());
     }
 
-    /**
-     * Method under test: {@link F24MetadataSetStatusEntityConverter#attributeValueType()}
-     */
     @Test
     void testAttributeValueType() {
         assertEquals(AttributeValueType.S, converter.attributeValueType());
     }
 }
-
