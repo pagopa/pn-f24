@@ -304,7 +304,7 @@ public class F24ServiceImpl implements F24Service {
                                 });
                     }
                     if(fileHasNotBeenUpdatedRecently(f24File)) {
-                        throw new PnF24RuntimeException("File generation exceeded time expectation", "", PnF24ExceptionCodes.ERROR_CODE_F24_FILE_GENERATION_IN_PROGRESS);
+                        throw new PnF24RuntimeException("error retrieving file", "File generation exceeded time expectation", PnF24ExceptionCodes.ERROR_CODE_F24_FILE_GENERATION_IN_PROGRESS);
                     }
 
                     return Mono.just(F24ResponseConverter.fileDownloadInfoToF24Response(buildRetryAfterResponse().getDownload()));

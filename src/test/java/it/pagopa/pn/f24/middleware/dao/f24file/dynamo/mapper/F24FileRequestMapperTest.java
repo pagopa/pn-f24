@@ -24,7 +24,7 @@ public class F24FileRequestMapperTest {
 
     @Test
     public void testEntityToDto() {
-        F24FileRequestEntity f24FileRequestEntity = new F24FileRequestEntity("42", "42");
+        F24FileRequestEntity f24FileRequestEntity = new F24FileRequestEntity( "42");
         f24FileRequestEntity.setFiles(new HashMap<>());
         F24Request actualEntityToDtoResult = F24FileRequestMapper.entityToDto(f24FileRequestEntity);
         assertNull(actualEntityToDtoResult.getCost());
@@ -32,7 +32,7 @@ public class F24FileRequestMapperTest {
         assertNull(actualEntityToDtoResult.getStatus());
         assertNull(actualEntityToDtoResult.getSetId());
         assertEquals("42", actualEntityToDtoResult.getRequestId());
-        assertEquals("REQUEST#42#42", actualEntityToDtoResult.getPk());
+        assertEquals("REQUEST#42", actualEntityToDtoResult.getPk());
         assertNull(actualEntityToDtoResult.getPathTokens());
         assertTrue(actualEntityToDtoResult.getFiles().isEmpty());
         assertEquals("42", actualEntityToDtoResult.getCxId());
@@ -43,7 +43,7 @@ public class F24FileRequestMapperTest {
         HashMap<String, FileKeyEntity> files = new HashMap<>();
         files.put("#", new FileKeyEntity("#"));
 
-        F24FileRequestEntity f24FileRequestEntity = new F24FileRequestEntity("42", "42");
+        F24FileRequestEntity f24FileRequestEntity = new F24FileRequestEntity( "42");
         f24FileRequestEntity.setFiles(files);
         F24Request actualEntityToDtoResult = F24FileRequestMapper.entityToDto(f24FileRequestEntity);
         assertNull(actualEntityToDtoResult.getCost());
@@ -51,7 +51,7 @@ public class F24FileRequestMapperTest {
         assertNull(actualEntityToDtoResult.getStatus());
         assertNull(actualEntityToDtoResult.getSetId());
         assertEquals("42", actualEntityToDtoResult.getRequestId());
-        assertEquals("REQUEST#42#42", actualEntityToDtoResult.getPk());
+        assertEquals("REQUEST#42", actualEntityToDtoResult.getPk());
         assertNull(actualEntityToDtoResult.getPathTokens());
         Map<String, F24Request.FileKey> files2 = actualEntityToDtoResult.getFiles();
         assertEquals(1, files2.size());

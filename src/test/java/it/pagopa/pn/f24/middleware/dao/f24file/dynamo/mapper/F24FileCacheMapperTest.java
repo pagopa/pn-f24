@@ -32,7 +32,6 @@ public class F24FileCacheMapperTest {
         assertEquals("CACHE#null#null#NO_COST#null", actualEntityToDtoResult.getPk());
         assertEquals("null", actualEntityToDtoResult.getPathTokens());
         assertNull(actualEntityToDtoResult.getFileKey());
-        assertEquals("null", actualEntityToDtoResult.getCxId());
         assertNull(actualEntityToDtoResult.getCreated());
     }
 
@@ -41,7 +40,6 @@ public class F24FileCacheMapperTest {
         F24File f24File = new F24File();
         f24File.setCost(1);
         f24File.setCreated(LocalDate.of(1970, 1, 1).atStartOfDay().atZone(ZoneOffset.UTC).toInstant());
-        f24File.setCxId("42");
         f24File.setFileKey("File Key");
         f24File.setPathTokens("ABC123");
         f24File.setPk("Pk");
