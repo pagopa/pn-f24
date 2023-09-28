@@ -39,11 +39,8 @@ import it.pagopa.pn.f24.util.Sha256Handler;
 import it.pagopa.pn.f24.util.Utility;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClientException;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import software.amazon.awssdk.services.dynamodb.model.ConditionalCheckFailedException;
-import reactor.core.scheduler.Schedulers;
 
 import java.math.BigDecimal;
 import java.time.Duration;
@@ -252,7 +249,7 @@ public class F24ServiceImpl implements F24Service {
     }
 
     private Mono<Void> handleMetadataToValidate(F24MetadataSet f24MetadataSet, String cxId) {
-        log.debug("metadata with setId {} is in state TO_VALIDATE", f24MetadataSet.getSetId());
+        log.debug("MetadataSet with setId {} is in state TO_VALIDATE", f24MetadataSet.getSetId());
 
         return updateHaveToSendValidationEventAndRemoveTtl(f24MetadataSet, cxId)
                 .flatMap(this::checkIfValidationOnQueueHasEnded);
@@ -267,7 +264,7 @@ public class F24ServiceImpl implements F24Service {
 
     private Mono<Void> checkIfValidationOnQueueHasEnded(F24MetadataSet f24MetadataSet) {
         String setId = f24MetadataSet.getSetId();
-        log.debug("checking if MetadataSet with setId {} has been validated on queue", setId);
+        log.debug("Checking if validation on queue of MetadataSet with setId {} has ended", setId);
 
         return f24MetadataSetDao.getItem(setId, true)
                 .flatMap(f24MetadataSetConsistent -> {
@@ -327,24 +324,25 @@ public class F24ServiceImpl implements F24Service {
     }
 
     private Mono<F24Response> generateFromMetadata(String setId, String pathTokensInString, Integer cost) {
-        log.info("pdf not found, starting generation for: setId: {} pathTokens: {}", setId, pathTokensInString);
+        log.info("pdf not found, starting generation for setId: {} pathTokens: {}", setId, pathTokensInString);
         return getMetadataSet(setId).flatMap(f24MetadataSet -> {
             F24MetadataRef f24MetadataRef = f24MetadataSet.getFileKeys().get(pathTokensInString);
             if (f24MetadataRef == null) {
                 throw new PnNotFoundException("Metadata not found", "", PnF24ExceptionCodes.ERROR_CODE_F24_METADATA_NOT_FOUND);
             }
-            return metadataDownloader.downloadMetadata(f24MetadataRef.getFileKey()).flatMap(f24Metadata -> {
-                processMetadataCost(f24Metadata, cost, f24MetadataRef.isApplyCost());
+            return metadataDownloader.downloadMetadata(f24MetadataRef.getFileKey())
+                    .flatMap(f24Metadata -> {
+                        processMetadataCost(f24Metadata, cost, f24MetadataRef.isApplyCost());
 
-                byte[] pdfContent = f24Generator.generate(f24Metadata);
-                log.info("generated pdf for f24 with metadata: {} ", f24Metadata);
-                FileCreationWithContentRequest fileCreationRequest = buildFileCreationRequest(pdfContent);
+                        byte[] pdfContent = f24Generator.generate(f24Metadata);
+                        log.info("generated f24 pdf for  metadata with setId: {} pathTokens: {} ", setId, pathTokensInString);
+                        FileCreationWithContentRequest fileCreationRequest = buildFileCreationRequest(pdfContent);
 
-                return uploadF24FileAndPut(fileCreationRequest, cost, pathTokensInString, f24MetadataSet)
-                        .flatMap(f24File -> safeStorageService.getFilePollingSafeStorage(f24File.getFileKey(), false, f24Config.getPollingTimeoutSec(), f24Config.getPollingIntervalSec())
-                                .onErrorResume(NoSuchElementException.class, e -> Mono.just((buildRetryAfterResponse())))
-                                .flatMap(fileDownloadResponseInt -> handleSafeStorageResponse(fileDownloadResponseInt, f24File))
-                        );
+                        return uploadF24FileAndPut(fileCreationRequest, cost, pathTokensInString, f24MetadataSet)
+                                .flatMap(f24File -> safeStorageService.getFilePolling(f24File.getFileKey(), false, f24Config.getPollingTimeoutSec(), f24Config.getPollingIntervalSec())
+                                        .onErrorResume(NoSuchElementException.class, e -> Mono.just((buildRetryAfterResponse())))
+                                        .flatMap(fileDownloadResponseInt -> handleSafeStorageResponse(fileDownloadResponseInt, f24File))
+                                );
             });
         });
     }
@@ -369,7 +367,7 @@ public class F24ServiceImpl implements F24Service {
     }
 
     private Mono<F24File> uploadF24FileAndPut(FileCreationWithContentRequest fileCreationWithContentRequest, Integer cost, String pathTokensInString, F24MetadataSet f24Metadataset) {
-
+        log.debug("Uploading f24File for metadata with setId: {} and pathTokens: {}", f24Metadataset, pathTokensInString);
         return safeStorageService.createAndUploadContent(fileCreationWithContentRequest)
                 .map(fileCreationResponse -> buildNewF24File(fileCreationResponse, cost, pathTokensInString, f24Metadataset))
                 .flatMap(f24FileCacheDao::putItemIfAbsent);
@@ -393,7 +391,7 @@ public class F24ServiceImpl implements F24Service {
     private FileDownloadResponseInt buildRetryAfterResponse() {
         FileDownloadResponseInt fileDownloadResponseInt = new FileDownloadResponseInt();
         FileDownloadInfoInt fileDownloadInfoInt = new FileDownloadInfoInt();
-        fileDownloadInfoInt.setRetryAfter(BigDecimal.valueOf(f24Config.getRetryAfterWhenErrorSafeStorage()));
+        fileDownloadInfoInt.setRetryAfter(BigDecimal.valueOf(f24Config.getDefaultRetryAfterMilliSec()));
         fileDownloadResponseInt.setDownload(fileDownloadInfoInt);
         return fileDownloadResponseInt;
     }
