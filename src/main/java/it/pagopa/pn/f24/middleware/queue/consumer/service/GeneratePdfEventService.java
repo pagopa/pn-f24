@@ -41,8 +41,8 @@ public class GeneratePdfEventService {
     public Mono<Void> generatePdf(GeneratePdfEvent.Payload payload) {
 
         log.info(
-                "generate f24 pdf file for metadata with cxId: {}, setId: {} and fileKey:{} ",
-                payload.getCxId(), payload.getSetId(), payload.getMetadataFileKey()
+                "generate f24 pdf file for metadata with setId: {} and fileKey:{} ",
+                payload.getSetId(), payload.getMetadataFileKey()
         );
         final String processName = "PREPARE PDF HANDLER";
         log.logStartingProcess(processName);

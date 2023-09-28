@@ -98,15 +98,15 @@ public class SafeStorageEventService {
     }
 
 
-    private Mono<F24Request> getF24Request(String pk) {
-        return f24RequestDao.getItem(pk)
+    private Mono<F24Request> getF24Request(String requestId) {
+        return f24RequestDao.getItem(requestId)
                 .switchIfEmpty(Mono.defer(
                         () -> {
-                            log.warn("F24Request with pk {} not found", pk);
+                            log.warn("F24Request with requestId {} not found", requestId);
                             return Mono.error(
                                     new PnNotFoundException(
                                             "F24Request not found",
-                                            String.format(PnF24ExceptionCodes.ERROR_MESSAGE_F24_REQUEST_NOT_FOUND, pk),
+                                            String.format(PnF24ExceptionCodes.ERROR_MESSAGE_F24_REQUEST_NOT_FOUND, requestId),
                                             PnF24ExceptionCodes.ERROR_CODE_F24_METADATA_NOT_FOUND
                                     )
                             );
@@ -151,7 +151,7 @@ public class SafeStorageEventService {
         return Flux.fromIterable(f24Requests)
                 .flatMap(f24Request -> f24RequestDao.getItem(f24Request.getPk(), true))
                 .flatMap(consistentF24Request -> {
-                    if(allFilesHaveFileKey(consistentF24Request.getFiles())) {
+                    if(allRequestFilesHaveFileKey(consistentF24Request.getFiles())) {
                         return sendPdfSetReadyEvent(consistentF24Request);
                     }
 
@@ -161,7 +161,7 @@ public class SafeStorageEventService {
                 .then();
     }
 
-    private boolean allFilesHaveFileKey(Map<String, F24Request.FileRef> files) {
+    private boolean allRequestFilesHaveFileKey(Map<String, F24Request.FileRef> files) {
         return files.values()
                 .stream()
                 .noneMatch(fileRef -> StringUtils.isEmpty(fileRef.getFileKey()));

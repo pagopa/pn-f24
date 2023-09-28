@@ -47,12 +47,7 @@ public class F24FileRequestRepositoryImpl implements F24FileRequestDao {
     @Override
     public Mono<F24Request> getItem(String requestId, boolean isConsistentRead) {
         F24FileRequestEntity f24FileRequestEntity = new F24FileRequestEntity(requestId);
-        return getItem(f24FileRequestEntity.getPk(), isConsistentRead);
-    }
-
-    @Override
-    public Mono<F24Request> getItem(String pk, boolean isConsistentRead) {
-        Key partitionKey = Key.builder().partitionValue(pk).build();
+        Key partitionKey = Key.builder().partitionValue(f24FileRequestEntity.getPk()).build();
 
         GetItemEnhancedRequest getItemEnhancedRequest = GetItemEnhancedRequest.builder()
                 .key(partitionKey)

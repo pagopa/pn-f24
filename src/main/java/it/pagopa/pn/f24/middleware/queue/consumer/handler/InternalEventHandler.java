@@ -48,7 +48,7 @@ public class InternalEventHandler {
             log.debug("Handle validate metadata message with content {}", message);
             try {
                 PreparePdfEvent.Payload payload = message.getPayload();
-                HandleEventUtils.addCxIdAndRequestIdToMdc(payload.getCxId(), payload.getRequestId());
+                HandleEventUtils.addRequestIdToMdc(payload.getRequestId());
                 preparePdfEventService.preparePdf(payload)
                         .block();
             } catch (Exception ex) {
@@ -64,7 +64,7 @@ public class InternalEventHandler {
             log.debug("Handle validate metadata message with content {}", message);
             try {
                 GeneratePdfEvent.Payload payload = message.getPayload();
-                HandleEventUtils.addSetIdAndCxIdToMdc(payload.getSetId(), payload.getCxId());
+                HandleEventUtils.addSetIdToMdc(payload.getSetId());
                 generatePdfEventService.generatePdf(payload)
                         .block();
             } catch (Exception ex) {

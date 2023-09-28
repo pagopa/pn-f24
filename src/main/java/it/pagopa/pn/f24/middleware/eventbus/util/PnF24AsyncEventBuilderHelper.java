@@ -54,7 +54,7 @@ public class PnF24AsyncEventBuilderHelper {
         return PnF24PdfSetReadyEvent.builder()
                 .detail(
                         PnF24PdfSetReadyEvent.Detail.builder()
-                                .cxId(f24Request.getCxId())
+                                .clientId(f24Request.getCxId())
                                 .pdfSetReady(buildPdfSetReadyPayload(f24Request))
                                 .build()
                 )

@@ -19,9 +19,11 @@ import it.pagopa.pn.f24.exception.PnF24RuntimeException;
 import it.pagopa.pn.f24.exception.PnNotFoundException;
 import it.pagopa.pn.f24.generated.openapi.server.v1.dto.*;
 import it.pagopa.pn.f24.middleware.dao.f24file.F24FileCacheDao;
+import it.pagopa.pn.f24.middleware.dao.f24file.F24FileRequestDao;
 import it.pagopa.pn.f24.middleware.dao.f24metadataset.F24MetadataSetDao;
 import it.pagopa.pn.f24.middleware.eventbus.EventBridgeProducer;
 import it.pagopa.pn.f24.middleware.msclient.safestorage.PnSafeStorageClientImpl;
+import it.pagopa.pn.f24.middleware.queue.producer.events.PreparePdfEvent;
 import it.pagopa.pn.f24.middleware.queue.producer.events.ValidateMetadataSetEvent;
 import it.pagopa.pn.f24.service.F24Generator;
 import it.pagopa.pn.f24.service.JsonService;
@@ -70,9 +72,13 @@ class F24ServiceImplTest {
     @MockBean
     private MomProducer<ValidateMetadataSetEvent> validateMetadataSetEventProducer;
     @MockBean
+    private MomProducer<PreparePdfEvent> preparePdfEventProducer;
+    @MockBean
     private JsonService jsonService;
     @MockBean
     private MetadataDownloader metadataDownloader;
+    @MockBean
+    private F24FileRequestDao f24FileRequestDao;
 
     @Test
     public void generatePDFFromCache() {
@@ -116,7 +122,7 @@ class F24ServiceImplTest {
         f24File.setPk("fileMetadata");
         f24File.setCreated(Instant.now());
         // f24File.setRequestId("fileKey");
-        f24File.setStatus(F24FileStatus.PROCESSING);
+        f24File.setStatus(F24FileStatus.TO_PROCESS);
         f24File.setUpdated(Instant.now().minus(Duration.ofMinutes(10)));
 
         //mock for SafeStorageService.getFile
@@ -137,14 +143,14 @@ class F24ServiceImplTest {
     }
 
     @Test
-    public void generatePdfFromCacheWithRetryAfter() {
+    public void generatePdfFromCacheSuccessWithRetryAfter() {
 
         //Mock for f24FileDao.getItem
         F24File f24File = new F24File();
         f24File.setFileKey("fileKey");
         f24File.setPk("fileMetadata");
         f24File.setCreated(Instant.now());
-        f24File.setStatus(F24FileStatus.PROCESSING);
+        f24File.setStatus(F24FileStatus.TO_PROCESS);
         f24File.setUpdated(Instant.now());
 
         //mock for SafeStorageService.getFile
@@ -165,7 +171,7 @@ class F24ServiceImplTest {
     }
 
     @Test
-    public void generatePdfWhenFileIsNotInCache() throws JsonProcessingException {
+    public void generatePdfSuccessWhenFileIsNotInCache() {
 
         List<String> pathTokens = List.of("key");
 
@@ -219,7 +225,7 @@ class F24ServiceImplTest {
     }
 
     @Test
-    public void generatePdfErrorWhenGivenPathTokensDoesntExistInMetadataSet() {
+    public void generatePdfErrorWhenGivenPathTokensDoesNotExistInMetadataSet() {
 
         List<String> pathTokens = List.of("Notkey");
 

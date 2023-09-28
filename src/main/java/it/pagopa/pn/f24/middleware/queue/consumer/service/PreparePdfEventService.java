@@ -55,20 +55,19 @@ public class PreparePdfEventService {
 
     public Mono<Void> preparePdf(PreparePdfEvent.Payload payload) {
 
-        String cxId = payload.getCxId();
         String requestId = payload.getRequestId();
-        log.info("prepare pdf for request {} with cxId {}", requestId, cxId);
+        log.info("prepare pdf for request {}", requestId);
         final String processName = "PREPARE PDF HANDLER";
         log.logStartingProcess(processName);
 
-        return getF24Request(cxId, requestId)
+        return getF24Request(requestId)
                 .flatMap(this::handlePreparePdf)
                 .doOnNext(unused -> log.logEndingProcess(processName))
                 .doOnError(throwable -> log.logEndingProcess(processName, false, throwable.getMessage()));
     }
 
-    private Mono<F24Request> getF24Request(String cxId, String requestId) {
-        return f24FileRequestDao.getItem(cxId, requestId)
+    private Mono<F24Request> getF24Request(String requestId) {
+        return f24FileRequestDao.getItem(requestId)
                 .switchIfEmpty(
                     Mono.defer(
                         () -> {
@@ -97,13 +96,13 @@ public class PreparePdfEventService {
     }
 
     private Mono<Map<String, F24MetadataRef>> searchMetadataToProcess(F24Request f24Request) {
-        return getMetadataSet(f24Request.getSetId(), f24Request.getCxId())
+        return getMetadataSet(f24Request.getSetId())
                 .map(f24MetadataSet -> {
                     Map<String, F24MetadataRef> fileKeys = filterFileKeysByPathTokens(f24MetadataSet.getFileKeys(), f24Request.getPathTokens());
                     if(fileKeys.isEmpty()) {
                         throw new PnNotFoundException(
                                 "Metadata not found",
-                                String.format(PnF24ExceptionCodes.ERROR_MESSAGE_F24_METADATA_NOT_FOUND, f24Request.getPathTokens(), f24MetadataSet.getSetId(), f24MetadataSet.getCxId()),
+                                String.format(PnF24ExceptionCodes.ERROR_MESSAGE_F24_METADATA_NOT_FOUND, f24Request.getPathTokens(), f24MetadataSet.getSetId()),
                                 PnF24ExceptionCodes.ERROR_CODE_F24_METADATA_NOT_FOUND
                         );
                     }
@@ -113,13 +112,13 @@ public class PreparePdfEventService {
 
     }
 
-    private Mono<F24MetadataSet> getMetadataSet(String setId, String cxId) {
-        return f24MetadataSetDao.getItem(setId, cxId)
+    private Mono<F24MetadataSet> getMetadataSet(String setId) {
+        return f24MetadataSetDao.getItem(setId)
                 .doOnError(t -> log.info("Error",t))
                 .switchIfEmpty(Mono.error(
                         new PnNotFoundException(
                                 "MetadataSet not found",
-                                String.format(PnF24ExceptionCodes.ERROR_MESSAGE_F24_METADATA_SET_NOT_FOUND, setId, cxId),
+                                String.format(PnF24ExceptionCodes.ERROR_MESSAGE_F24_METADATA_SET_NOT_FOUND, setId),
                                 PnF24ExceptionCodes.ERROR_CODE_F24_METADATA_NOT_FOUND
                         )
                 ));
@@ -140,7 +139,7 @@ public class PreparePdfEventService {
                     Integer cost = f24MetadataRef.isApplyCost() ? f24Request.getCost() : null;
                     String pathTokensInString = entry.getKey();
 
-                    return f24FileCacheDao.getItem(f24Request.getSetId(), f24Request.getCxId(), cost, pathTokensInString)
+                    return f24FileCacheDao.getItem(f24Request.getSetId(), cost, pathTokensInString)
                             .map(f24File -> handleFileAlreadyInCache(f24File, f24Request))
                             .switchIfEmpty(Mono.just(createNewF24FileForRequestId(f24Request, cost, pathTokensInString)))
                             .flatMap(f24File -> {
@@ -169,7 +168,7 @@ public class PreparePdfEventService {
         Li considero tutti come file in elaborazione, quindi gli aggiungo la requestId.
         */
         log.debug("File with pk: {} in status : {}. Adding requestId {} to the file", f24File.getPk(), f24File.getStatus(), f24Request.getRequestId());
-        addRequestIdToFile(f24File, f24Request.getPk());
+        addRequestIdToFile(f24File, f24Request.getRequestId());
         return f24File;
     }
 
@@ -189,12 +188,11 @@ public class PreparePdfEventService {
 
         F24File f24File = new F24File();
         //TODO trovare un sistema migliore per generare la PK.
-        f24File.setPk(new F24FileCacheEntity(cxId, setId, cost, pathTokensInString).getPk());
-        f24File.setCxId(cxId);
+        f24File.setPk(new F24FileCacheEntity(setId, cost, pathTokensInString).getPk());
         f24File.setSetId(setId);
         f24File.setCost(cost);
         f24File.setPathTokens(pathTokensInString);
-        f24File.setRequestIds(List.of(f24Request.getPk()));
+        f24File.setRequestIds(List.of(f24Request.getRequestId()));
         if(f24Config.getRetentionForF24FilesInDays() != null && f24Config.getRetentionForF24FilesInDays() > 0) {
             f24File.setTtl(Instant.now().plus(Duration.ofDays(f24Config.getRetentionForF24FilesInDays())).getEpochSecond());
         }

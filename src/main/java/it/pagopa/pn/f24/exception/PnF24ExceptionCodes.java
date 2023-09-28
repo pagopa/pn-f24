@@ -26,7 +26,7 @@ public class PnF24ExceptionCodes {
     public static final String ERROR_MESSAGE_F24_REQUEST_NOT_FOUND = "Request with requestId %s not found";
     public static final String ERROR_MESSAGE_F24_PATH_TOKENS_DIMENSION_NOT_ALLOWED = "pathTokens can have only %s elements";
     public static final String ERROR_MESSAGE_F24_SET_ID_INCONGRUENT = "setId given in request body is different from setId given in path";
-    public static final String ERROR_MESSAGE_F24_METADATA_NOT_FOUND = "Metadata with pathTokens %s not found in Set with setId %s and cxId %s";
+    public static final String ERROR_MESSAGE_F24_METADATA_NOT_FOUND = "Metadata with pathTokens %s not found in Set with setId %s";
     public static final String ERROR_MESSAGE_F24_FILE_NOT_FOUND = "F24 File with pk %s not found";
 
 }

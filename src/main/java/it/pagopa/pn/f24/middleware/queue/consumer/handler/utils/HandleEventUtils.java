@@ -63,7 +63,7 @@ public class HandleEventUtils {
         MDC.put("setId", setId);
     }
     //TODO Aggiungere key in MDCUtils
-    private static void addRequestIdToMdc(String requestId) {
+    public static void addRequestIdToMdc(String requestId) {
         MDC.put("requestId", requestId);
     }
 

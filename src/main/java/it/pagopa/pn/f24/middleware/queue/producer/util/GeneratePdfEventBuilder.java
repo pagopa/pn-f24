@@ -20,7 +20,6 @@ public class GeneratePdfEventBuilder {
                 .payload(
                         GeneratePdfEvent.Payload.builder()
                                 .filePk(f24File.getPk())
-                                .cxId(f24File.getCxId())
                                 .setId(f24File.getSetId())
                                 .metadataFileKey(metadataFileKey)
                                 .build()

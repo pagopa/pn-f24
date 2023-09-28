@@ -8,20 +8,19 @@ import it.pagopa.pn.f24.middleware.queue.producer.events.PreparePdfEvent;
 import java.time.Instant;
 
 public class PreparePdfEventBuilder {
-    private static final String PREPARE_PDF_EVENT_ID_DESCRIPTOR = "_prepare_pdf_metadata_";
+    private static final String PREPARE_PDF_EVENT_ID_DESCRIPTOR = "prepare_pdf_request_";
 
-    public static PreparePdfEvent buildPreparePdfEvent(String cxId, String requestId) {
+    public static PreparePdfEvent buildPreparePdfEvent(String requestId) {
         return PreparePdfEvent.builder()
-                .header(buildInternalEventHeader(cxId, requestId))
+                .header(buildInternalEventHeader(requestId))
                 .payload(PreparePdfEvent.Payload.builder()
-                        .cxId(cxId)
                         .requestId(requestId)
                         .build())
                 .build();
     }
 
-    private static GenericEventHeader buildInternalEventHeader(String cxId, String requestId) {
-        String eventId = cxId + PREPARE_PDF_EVENT_ID_DESCRIPTOR + requestId;
+    private static GenericEventHeader buildInternalEventHeader(String requestId) {
+        String eventId = PREPARE_PDF_EVENT_ID_DESCRIPTOR + requestId;
         return GenericEventHeader.builder()
                 .eventId(eventId)
                 .eventType(F24InternalEventType.PREPARE_PDF.getValue())

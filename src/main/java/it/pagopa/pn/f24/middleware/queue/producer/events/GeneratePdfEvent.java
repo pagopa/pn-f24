@@ -22,7 +22,6 @@ public class GeneratePdfEvent implements GenericEvent<GenericEventHeader, Genera
     @EqualsAndHashCode
     public static class Payload {
         private String filePk;
-        private String cxId;
         private String setId;
         private String metadataFileKey;
     }

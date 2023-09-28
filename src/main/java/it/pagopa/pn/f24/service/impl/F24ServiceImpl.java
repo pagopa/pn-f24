@@ -14,7 +14,6 @@ import it.pagopa.pn.f24.exception.*;
 import it.pagopa.pn.f24.generated.openapi.server.v1.dto.*;
 import it.pagopa.pn.f24.middleware.dao.f24file.F24FileCacheDao;
 import it.pagopa.pn.api.dto.events.PnF24MetadataValidationEndEvent;
-import it.pagopa.pn.f24.dto.*;
 import it.pagopa.pn.f24.config.F24Config;
 import it.pagopa.pn.f24.exception.PnBadRequestException;
 import it.pagopa.pn.f24.exception.PnConflictException;
@@ -118,7 +117,7 @@ public class F24ServiceImpl implements F24Service {
 
         saveF24Request.getF24Items().forEach(
                 saveF24Item -> {
-                    if (!checkPathTokensMaxDimension(saveF24Item.getPathTokens())) {
+                    if (!checkPathTokensAllowedDimension(saveF24Item.getPathTokens())) {
                         throw new PnBadRequestException(
                                 "max dimension of pathTokens",
                                 String.format(PnF24ExceptionCodes.ERROR_MESSAGE_F24_PATH_TOKENS_DIMENSION_NOT_ALLOWED, MAX_PATH_TOKENS_DIMENSION),
@@ -137,7 +136,7 @@ public class F24ServiceImpl implements F24Service {
         }
     }
 
-    private boolean checkPathTokensMaxDimension(List<String> pathTokens) {
+    private boolean checkPathTokensAllowedDimension(List<String> pathTokens) {
         return pathTokens.size() < MAX_PATH_TOKENS_DIMENSION;
     }
 
@@ -430,15 +429,15 @@ public class F24ServiceImpl implements F24Service {
     public Mono<RequestAccepted> preparePDF(String xPagopaF24CxId, String requestId, Mono<PrepareF24Request> monoPrepareF24Request) {
         log.info("starting preparePdf with requestId {} for cxId {}", requestId, xPagopaF24CxId);
         return monoPrepareF24Request
-                .flatMap(prepareF24Request -> validatePreparePdfRequest(prepareF24Request, xPagopaF24CxId))
-                .flatMap(prepareF24Request -> f24FileRequestDao.getItem(xPagopaF24CxId, requestId)
+                .flatMap(this::validatePreparePdfRequest)
+                .flatMap(prepareF24Request -> f24FileRequestDao.getItem(requestId)
                         .map(f24Request -> handleExistingRequest(f24Request, prepareF24Request))
                         .switchIfEmpty(Mono.defer(() -> handleNewPreparePdfRequest(xPagopaF24CxId, requestId, prepareF24Request)))
                 );
     }
 
-    private Mono<PrepareF24Request> validatePreparePdfRequest(PrepareF24Request prepareF24Request, String cxId) {
-        if(!checkPathTokensMaxDimension(prepareF24Request.getPathTokens())) {
+    private Mono<PrepareF24Request> validatePreparePdfRequest(PrepareF24Request prepareF24Request) {
+        if(!checkPathTokensAllowedDimension(prepareF24Request.getPathTokens())) {
             return Mono.error(new PnBadRequestException(
                     "max dimension of pathTokens",
                     String.format(PnF24ExceptionCodes.ERROR_MESSAGE_F24_PATH_TOKENS_DIMENSION_NOT_ALLOWED, MAX_PATH_TOKENS_DIMENSION),
@@ -447,7 +446,7 @@ public class F24ServiceImpl implements F24Service {
         }
 
         //Cerco se nel set di metadata è presente almeno un metadata con path tokens indicato nel body della richiesta.
-        return getMetadataSet(prepareF24Request.getSetId(), cxId)
+        return getMetadataSet(prepareF24Request.getSetId())
                 .doOnNext(f24MetadataSet -> {
                     String pathTokensString = Utility.convertPathTokensList(prepareF24Request.getPathTokens());
                     Map<String, F24MetadataRef> fileKeysByPathTokens = filterFileKeysByPathTokens(f24MetadataSet.getFileKeys(), pathTokensString);
@@ -455,7 +454,7 @@ public class F24ServiceImpl implements F24Service {
                     if(fileKeysByPathTokens.isEmpty()) {
                         throw new PnNotFoundException(
                                 "MetadataSet not found",
-                                String.format(PnF24ExceptionCodes.ERROR_MESSAGE_F24_METADATA_NOT_FOUND, pathTokensString, prepareF24Request.getSetId(), cxId),
+                                String.format(PnF24ExceptionCodes.ERROR_MESSAGE_F24_METADATA_NOT_FOUND, pathTokensString, prepareF24Request.getSetId()),
                                 PnF24ExceptionCodes.ERROR_CODE_F24_METADATA_NOT_FOUND
                         );
                     }
@@ -496,15 +495,15 @@ public class F24ServiceImpl implements F24Service {
 
     private Mono<RequestAccepted> handleNewPreparePdfRequest(String xPagopaF24CxId, String requestId, PrepareF24Request prepareF24Request) {
         log.debug("Handling new prepare pdf request");
-        return sendPreparePdfEvent(xPagopaF24CxId, requestId)
+        return sendPreparePdfEvent(requestId)
                 .then(tryToSaveF24Request(xPagopaF24CxId, requestId, prepareF24Request));
     }
 
-    private Mono<Void> sendPreparePdfEvent(String cxId, String requestId) {
+    private Mono<Void> sendPreparePdfEvent(String requestId) {
         log.debug("Sending prepare pdf event for requestId={}",requestId);
 
         return Mono.fromRunnable(() -> preparePdfEventProducer.push(
-                PreparePdfEventBuilder.buildPreparePdfEvent(cxId ,requestId)
+                PreparePdfEventBuilder.buildPreparePdfEvent(requestId)
         ))
         .doOnError(t -> log.warn("Error sending preparePdf event"))
         .then();
@@ -517,7 +516,7 @@ public class F24ServiceImpl implements F24Service {
                 .doOnError(throwable -> log.error("Error saving in f24Request Table", throwable))
                 .onErrorResume(ConditionalCheckFailedException.class, e -> {
                     log.debug("Request already saved with requestId: {}", requestId);
-                    return this.f24FileRequestDao.getItem(xPagopaF24CxId, requestId)
+                    return this.f24FileRequestDao.getItem(requestId)
                             .map(f24Request -> handleExistingRequest(f24Request, prepareF24Request));
                 });
     }

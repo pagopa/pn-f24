@@ -21,7 +21,6 @@ public class PreparePdfEvent implements GenericEvent<GenericEventHeader, Prepare
     @ToString
     @EqualsAndHashCode
     public static class Payload {
-        private String cxId;
         private String requestId;
     }
 }
