@@ -33,14 +33,13 @@ public class F24MetadataSetRepositoryImpl implements F24MetadataSetDao {
     }
 
     @Override
-    public Mono<F24MetadataSet> getItem(String setId, String cxId) {
-        return getItem(setId, cxId, false);
+    public Mono<F24MetadataSet> getItem(String setId) {
+        return getItem(setId,false);
     }
 
     @Override
-    public Mono<F24MetadataSet> getItem(String setId, String cxId, boolean isConsistentRead) {
-        F24MetadataSetEntity f24MetadataSetEntity = new F24MetadataSetEntity(cxId, setId);
-        Key pk = Key.builder().partitionValue(f24MetadataSetEntity.getPk()).build();
+    public Mono<F24MetadataSet> getItem(String setId, boolean isConsistentRead) {
+        Key pk = Key.builder().partitionValue(setId).build();
 
         GetItemEnhancedRequest getItemEnhancedRequest = GetItemEnhancedRequest.builder()
                 .key(pk)
@@ -90,14 +89,14 @@ public class F24MetadataSetRepositoryImpl implements F24MetadataSetDao {
 
     private UpdateItemEnhancedRequest<F24MetadataSetEntity> createUpdateItemEnhancedRequest(F24MetadataSetEntity entity) {
         Map<String, String> expressionNames = new HashMap<>();
-        expressionNames.put("#pk", "pk");
+        expressionNames.put("#setId", "setId");
 
         Map<String, AttributeValue> expressionValues = new HashMap<>();
-        expressionValues.put(":pk", AttributeValue.builder().s(entity.getPk()).build());
+        expressionValues.put(":setId", AttributeValue.builder().s(entity.getSetId()).build());
 
         return UpdateItemEnhancedRequest
                 .builder(F24MetadataSetEntity.class)
-                .conditionExpression(expressionBuilder("#pk = :pk", expressionValues, expressionNames))
+                .conditionExpression(expressionBuilder("#setId = :setId", expressionValues, expressionNames))
                 .item(entity)
                 .build();
     }

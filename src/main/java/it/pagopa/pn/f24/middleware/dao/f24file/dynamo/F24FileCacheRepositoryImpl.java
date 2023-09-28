@@ -28,13 +28,13 @@ public class F24FileCacheRepositoryImpl implements F24FileCacheDao {
     }
 
     @Override
-    public Mono<F24File> getItem(String cxId, String setId, Integer cost, String pathTokens) {
-        return getItem(cxId, setId, cost, pathTokens, false);
+    public Mono<F24File> getItem(String setId, Integer cost, String pathTokens) {
+        return getItem(setId, cost, pathTokens, false);
     }
 
     @Override
-    public Mono<F24File> getItem(String cxId, String setId, Integer cost, String pathTokens, boolean isConsistentRead) {
-        F24FileCacheEntity f24FileCacheEntity = new F24FileCacheEntity(cxId, setId, cost, pathTokens);
+    public Mono<F24File> getItem(String setId, Integer cost, String pathTokens, boolean isConsistentRead) {
+        F24FileCacheEntity f24FileCacheEntity = new F24FileCacheEntity(setId, cost, pathTokens);
         Key pk = Key.builder().partitionValue(f24FileCacheEntity.getPk()).build();
 
         GetItemEnhancedRequest getItemEnhancedRequest = GetItemEnhancedRequest.builder()

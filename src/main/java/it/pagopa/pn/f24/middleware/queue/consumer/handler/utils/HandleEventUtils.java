@@ -53,7 +53,7 @@ public class HandleEventUtils {
         MDC.put(MDCUtils.MDC_CX_ID_KEY, cxId);
     }
 
-    private static void addSetIdToMdc(String setId) {
+    public static void addSetIdToMdc(String setId) {
         MDC.put("setId", setId);
     }
 

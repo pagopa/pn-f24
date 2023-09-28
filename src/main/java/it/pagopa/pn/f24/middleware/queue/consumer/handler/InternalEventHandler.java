@@ -24,7 +24,7 @@ public class InternalEventHandler {
             log.debug("Handle validate metadata message with content {}", message);
             try {
                 ValidateMetadataSetEvent.Payload payload = message.getPayload();
-                HandleEventUtils.addSetIdAndCxIdToMdc(payload.getSetId(), payload.getCxId());
+                HandleEventUtils.addSetIdToMdc(payload.getSetId());
                 validateMetadataEventService.handleMetadataValidation(payload)
                         .block();
             } catch (Exception ex) {

@@ -45,18 +45,17 @@ class F24FileCachRepositoryImplTest {
 
         F24FileCacheRepositoryImpl f24FileCacheRepository = new F24FileCacheRepositoryImpl(dynamoDbEnhancedAsyncClient, f24Config);
 
-        String cxId = "cxId";
         String setId = "setId";
         Integer cost = 1000;
         String pathTokens = "0_0";
-        F24FileCacheEntity f24FileCacheEntity = new F24FileCacheEntity(cxId, setId, cost, pathTokens);
+        F24FileCacheEntity f24FileCacheEntity = new F24FileCacheEntity(setId, cost, pathTokens);
 
         CompletableFuture<Object> completableFuture = new CompletableFuture<>();
         completableFuture.completeAsync(() -> f24FileCacheEntity);
         when(dynamoDbAsyncTable.getItem((GetItemEnhancedRequest) any())).thenReturn(completableFuture);
 
-        StepVerifier.create(f24FileCacheRepository.getItem(cxId, setId, cost, pathTokens))
-                .expectNextMatches(f24FileCache -> f24FileCache.getPk().equalsIgnoreCase("CACHE#cxId#setId#1000#0_0"))
+        StepVerifier.create(f24FileCacheRepository.getItem(setId, cost, pathTokens))
+                .expectNextMatches(f24FileCache -> f24FileCache.getPk().equalsIgnoreCase("CACHE#setId#1000#0_0"))
                 .verifyComplete();
     }
 
@@ -66,18 +65,17 @@ class F24FileCachRepositoryImplTest {
 
         F24FileCacheRepositoryImpl f24FileCacheRepository = new F24FileCacheRepositoryImpl(dynamoDbEnhancedAsyncClient, f24Config);
 
-        String cxId = "cxId";
         String setId = "setId";
         Integer cost = 1000;
         String pathTokens = "0_0";
-        F24FileCacheEntity f24FileCacheEntity = new F24FileCacheEntity(cxId, setId, cost, pathTokens);
+        F24FileCacheEntity f24FileCacheEntity = new F24FileCacheEntity(setId, cost, pathTokens);
 
         CompletableFuture<Object> completableFuture = new CompletableFuture<>();
         completableFuture.completeAsync(() -> f24FileCacheEntity);
         when(dynamoDbAsyncTable.getItem((GetItemEnhancedRequest) any())).thenReturn(completableFuture);
 
-        StepVerifier.create(f24FileCacheRepository.getItem(cxId, setId, cost, pathTokens))
-                .expectNextMatches(f24FileCache -> f24FileCache.getPk().equalsIgnoreCase("CACHE#cxId#setId#1000#0_0"))
+        StepVerifier.create(f24FileCacheRepository.getItem(setId, cost, pathTokens))
+                .expectNextMatches(f24FileCache -> f24FileCache.getPk().equalsIgnoreCase("CACHE#setId#1000#0_0"))
                 .verifyComplete();
     }
 
@@ -94,7 +92,6 @@ class F24FileCachRepositoryImplTest {
 
         F24File f24File = new F24File();
         f24File.setSetId("setId");
-        f24File.setCxId("cxId");
         when(dynamoDbAsyncTable.putItem(f24File)).thenReturn(completableFuture);
 
         StepVerifier.create(f24FileCacheRepository.putItemIfAbsent(f24File))

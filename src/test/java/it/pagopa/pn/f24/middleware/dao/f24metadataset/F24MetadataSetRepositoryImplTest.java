@@ -15,6 +15,7 @@ import reactor.test.StepVerifier;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbAsyncTable;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedAsyncClient;
 import software.amazon.awssdk.enhanced.dynamodb.model.GetItemEnhancedRequest;
+import software.amazon.awssdk.enhanced.dynamodb.model.PutItemEnhancedRequest;
 import software.amazon.awssdk.enhanced.dynamodb.model.UpdateItemEnhancedRequest;
 
 import java.util.concurrent.CompletableFuture;
@@ -43,14 +44,14 @@ class F24MetadataSetRepositoryImplTest {
 
 
         F24MetadataSetEntity f24MetadataSet = new F24MetadataSetEntity();
-        f24MetadataSet.setPk("42#42");
+        f24MetadataSet.setSetId("42");
 
         CompletableFuture<Object> completableFuture = new CompletableFuture<>();
         completableFuture.completeAsync(() -> f24MetadataSet);
         when(dynamoDbAsyncTable.getItem((GetItemEnhancedRequest) any())).thenReturn(completableFuture);
 
-        StepVerifier.create(f24MetadataSetRepository.getItem("42", "42"))
-                .expectNextMatches(f24MetadataSet1 -> f24MetadataSet1.getPk().equalsIgnoreCase("42#42"))
+        StepVerifier.create(f24MetadataSetRepository.getItem("42"))
+                .expectNextMatches(f24MetadataSet1 -> f24MetadataSet1.getSetId().equalsIgnoreCase("42"))
                 .verifyComplete();
     }
 
@@ -62,14 +63,14 @@ class F24MetadataSetRepositoryImplTest {
 
 
         F24MetadataSetEntity f24MetadataSet = new F24MetadataSetEntity();
-        f24MetadataSet.setPk("42#42");
+        f24MetadataSet.setSetId("42");
 
         CompletableFuture<Object> completableFuture = new CompletableFuture<>();
         completableFuture.completeAsync(() -> f24MetadataSet);
         when(dynamoDbAsyncTable.getItem((GetItemEnhancedRequest) any())).thenReturn(completableFuture);
 
-        StepVerifier.create(f24MetadataSetRepository.getItem("42", "42", true))
-                .expectNextMatches(f24MetadataSet1 -> f24MetadataSet1.getPk().equalsIgnoreCase("42#42"))
+        StepVerifier.create(f24MetadataSetRepository.getItem("42", true))
+                .expectNextMatches(f24MetadataSet1 -> f24MetadataSet1.getSetId().equalsIgnoreCase("42"))
                 .verifyComplete();
     }
 
@@ -82,11 +83,10 @@ class F24MetadataSetRepositoryImplTest {
 
         CompletableFuture<Void> completableFuture = new CompletableFuture<>();
         completableFuture.completeAsync(() -> null);
+        when(dynamoDbAsyncTable.putItem((PutItemEnhancedRequest<F24MetadataSetEntity>) any())).thenReturn(completableFuture);
 
         F24MetadataSet f24MetadataSet = new F24MetadataSet();
-        f24MetadataSet.setSetId("setId");
-        f24MetadataSet.setCxId("cxId");
-        when(dynamoDbAsyncTable.putItem(f24MetadataSet)).thenReturn(completableFuture);
+        f24MetadataSet.setSetId("42");
 
         StepVerifier.create(f24MetadataSetRepository.putItemIfAbsent(f24MetadataSet))
                 .expectComplete()
@@ -100,15 +100,13 @@ class F24MetadataSetRepositoryImplTest {
         F24MetadataSetRepositoryImpl f24MetadataSetRepository = new F24MetadataSetRepositoryImpl(dynamoDbEnhancedAsyncClient, f24Config);
 
         F24MetadataSetEntity f24MetadataSetEntity = new F24MetadataSetEntity();
-        f24MetadataSetEntity.setPk("cxId#setId");
+        f24MetadataSetEntity.setSetId("setId");
         CompletableFuture<Object> completableFuture = new CompletableFuture<>();
         completableFuture.completeAsync(() -> f24MetadataSetEntity);
 
         F24MetadataSet f24MetadataSet = new F24MetadataSet();
         String setId = "setId";
-        String cxId = "cxId";
         f24MetadataSet.setSetId(setId);
-        f24MetadataSet.setCxId(cxId);
         when(dynamoDbAsyncTable.updateItem((UpdateItemEnhancedRequest<Object>) any())).thenReturn(completableFuture);
 
         StepVerifier.create(f24MetadataSetRepository.setF24MetadataSetStatusValidationEnded(f24MetadataSet))
@@ -124,14 +122,14 @@ class F24MetadataSetRepositoryImplTest {
         F24MetadataSetRepositoryImpl f24MetadataSetRepository = new F24MetadataSetRepositoryImpl(dynamoDbEnhancedAsyncClient, f24Config);
 
         F24MetadataSetEntity f24MetadataSetEntity = new F24MetadataSetEntity();
-        f24MetadataSetEntity.setPk("42");
+        f24MetadataSetEntity.setSetId("42");
 
         CompletableFuture<Object> completableFuture = new CompletableFuture<>();
         completableFuture.completeAsync(() -> f24MetadataSetEntity);
         when(dynamoDbAsyncTable.updateItem((UpdateItemEnhancedRequest<Object>) any())).thenReturn(completableFuture);
 
         F24MetadataSet f24MetadataSet = new F24MetadataSet();
-        f24MetadataSet.setPk("42");
+        f24MetadataSet.setSetId("42");
         StepVerifier.create(f24MetadataSetRepository.updateItem(f24MetadataSet))
                 .expectNext()
                 .expectComplete();

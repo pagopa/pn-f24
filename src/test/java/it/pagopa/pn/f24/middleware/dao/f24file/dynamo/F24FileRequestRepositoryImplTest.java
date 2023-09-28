@@ -37,7 +37,7 @@ class F24FileRequestRepositoryImplTest {
     private F24Config f24Config;
 
     /**
-     * Method under test: {@link F24FileRequestRepositoryImpl#getItem(String, String)}
+     * Method under test: {@link F24FileRequestRepositoryImpl#getItem(String)}
      */
     @Test
     void testGetItem() {
@@ -45,22 +45,21 @@ class F24FileRequestRepositoryImplTest {
 
         F24FileRequestRepositoryImpl f24FileRequestRepository = new F24FileRequestRepositoryImpl(dynamoDbEnhancedAsyncClient, f24Config);
 
-        String cxId = "cxId";
         String requestId = "requestId";
-        F24FileRequestEntity f24FileRequestEntity = new F24FileRequestEntity(cxId, requestId);
+        F24FileRequestEntity f24FileRequestEntity = new F24FileRequestEntity(requestId);
         f24FileRequestEntity.setFiles(new HashMap<>());
 
         CompletableFuture<Object> completableFuture = new CompletableFuture<>();
         completableFuture.completeAsync(() -> f24FileRequestEntity);
         when(dynamoDbAsyncTable.getItem((GetItemEnhancedRequest) any())).thenReturn(completableFuture);
 
-        StepVerifier.create(f24FileRequestRepository.getItem(cxId, requestId))
-                .expectNextMatches(f24FileCache -> f24FileCache.getPk().equalsIgnoreCase("REQUEST#cxId#requestId"))
+        StepVerifier.create(f24FileRequestRepository.getItem(requestId))
+                .expectNextMatches(f24FileCache -> f24FileCache.getPk().equalsIgnoreCase("REQUEST#requestId"))
                 .verifyComplete();
     }
 
     /**
-     * Method under test: {@link F24FileRequestRepositoryImpl#getItem(String, String, boolean)}
+     * Method under test: {@link F24FileRequestRepositoryImpl#getItem(String, boolean)}
      */
     @Test
     void testGetItem2() {
@@ -68,17 +67,16 @@ class F24FileRequestRepositoryImplTest {
 
         F24FileRequestRepositoryImpl f24FileRequestRepository = new F24FileRequestRepositoryImpl(dynamoDbEnhancedAsyncClient, f24Config);
 
-        String cxId = "cxId";
         String requestId = "requestId";
-        F24FileRequestEntity f24FileRequestEntity = new F24FileRequestEntity(cxId, requestId);
+        F24FileRequestEntity f24FileRequestEntity = new F24FileRequestEntity(requestId);
         f24FileRequestEntity.setFiles(new HashMap<>());
 
         CompletableFuture<Object> completableFuture = new CompletableFuture<>();
         completableFuture.completeAsync(() -> f24FileRequestEntity);
         when(dynamoDbAsyncTable.getItem((GetItemEnhancedRequest) any())).thenReturn(completableFuture);
 
-        StepVerifier.create(f24FileRequestRepository.getItem(cxId, requestId, false))
-                .expectNextMatches(f24FileCache -> f24FileCache.getPk().equalsIgnoreCase("REQUEST#cxId#requestId"))
+        StepVerifier.create(f24FileRequestRepository.getItem(requestId, false))
+                .expectNextMatches(f24FileCache -> f24FileCache.getPk().equalsIgnoreCase("REQUEST#requestId"))
                 .verifyComplete();
     }
 
