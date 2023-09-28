@@ -16,7 +16,7 @@ public class F24Config {
     private String safeStorageBaseUrl;
     private Integer pollingIntervalSec;
     private Integer safeStorageExecutionLimitMin;
-    private Integer retryAfterWhenErrorSafeStorage;
+    private Integer defaultRetryAfterMilliSec;
     private Integer pollingTimeoutSec;
     private Integer retentionForF24FilesInDays;
     private String safeStorageCxId;

@@ -3,7 +3,6 @@ package it.pagopa.pn.f24.service.impl;
 import it.pagopa.pn.commons.exceptions.PnInternalException;
 import it.pagopa.pn.f24.dto.safestorage.FileCreationResponseInt;
 import it.pagopa.pn.f24.dto.safestorage.FileCreationWithContentRequest;
-import it.pagopa.pn.f24.dto.safestorage.FileDownloadInfoInt;
 import it.pagopa.pn.f24.dto.safestorage.FileDownloadResponseInt;
 import it.pagopa.pn.f24.generated.openapi.msclient.safestorage.model.FileCreationResponse;
 import it.pagopa.pn.f24.generated.openapi.msclient.safestorage.model.FileDownloadInfo;
@@ -145,7 +144,7 @@ class SafeStorageServiceImplTest {
         Mockito.when(safeStorageClient.getFile(Mockito.anyString(), Mockito.anyBoolean()))
                 .thenReturn(Mono.just(fileDownloadResponse));
 
-        StepVerifier.create(safeStorageService.getFilePollingSafeStorage("filekey", false, 3, 1))
+        StepVerifier.create(safeStorageService.getFilePolling("filekey", false, 3, 1))
                 .expectNextMatches(f -> Objects.equals(f.getDownload().getUrl(), "url"))
                 .expectComplete()
                 .verify(Duration.ofSeconds(10 + 1));
