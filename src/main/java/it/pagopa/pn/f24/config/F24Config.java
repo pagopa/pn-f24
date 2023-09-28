@@ -29,9 +29,6 @@ public class F24Config {
     private List<String> corsAllowedDomains;
     private Integer retentionForF24RequestsInDays;
     private Integer retentionForF24FilesInDays;
-    private String paperChannelCxId;
-    private String deliveryPushCxId;
-
     @Data
     public static class EventBus {
         private String name;

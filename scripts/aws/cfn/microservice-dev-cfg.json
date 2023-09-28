@@ -1,6 +1,4 @@
 {
   "Parameters" : {
-    "PaperChannelCxId": "pn-paper-channel",
-    "DeliveryPushCxId": "pn-delivery-push"
   }
 }

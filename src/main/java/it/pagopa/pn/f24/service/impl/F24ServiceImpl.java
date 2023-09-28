@@ -284,19 +284,21 @@ public class F24ServiceImpl implements F24Service {
         String setId = f24MetadataSet.getSetId();
         log.debug("Sending validation ended event for metadata with setId : {} and validatorCxId : {}", setId, validatorCxId);
 
-        PnF24MetadataValidationEndEvent event = PnF24AsyncEventBuilderHelper.buildMetadataValidationEndEvent(validatorCxId, setId, f24MetadataSet.getValidationResult(), f24Config.getDeliveryPushCxId());
+        PnF24MetadataValidationEndEvent event = PnF24AsyncEventBuilderHelper.buildMetadataValidationEndEvent(validatorCxId, setId, f24MetadataSet.getValidationResult());
         return Mono.fromRunnable(() -> metadataValidationEndedEventProducer.sendEvent(event))
                 .doOnError(throwable -> log.warn("Error sending validation ended event", throwable))
-                .then(Mono.defer(() -> {
-                    //Indifferente a questo punto, lo setto solo per coerenza. (HaveToSendValidationEvent)
-                    f24MetadataSet.setHaveToSendValidationEvent(true);
-                    f24MetadataSet.setValidationEventSent(true);
-                    f24MetadataSet.setUpdated(Instant.now());
-                    f24MetadataSet.setTtl(null);
-                    f24MetadataSet.setValidatorCxId(validatorCxId);
-                    return f24MetadataSetDao.updateItem(f24MetadataSet)
-                            .then();
-                }));
+                .then(Mono.defer(() -> setValidationEventSentOnMetadataSet(f24MetadataSet, validatorCxId)));
+    }
+
+    private Mono<Void> setValidationEventSentOnMetadataSet(F24MetadataSet f24MetadataSet, String validatorCxId) {
+        //Indifferente a questo punto, lo setto solo per coerenza. (HaveToSendValidationEvent)
+        f24MetadataSet.setHaveToSendValidationEvent(true);
+        f24MetadataSet.setValidationEventSent(true);
+        f24MetadataSet.setUpdated(Instant.now());
+        f24MetadataSet.setTtl(null);
+        f24MetadataSet.setValidatorCxId(validatorCxId);
+        return f24MetadataSetDao.updateItem(f24MetadataSet)
+                .then();
     }
 
     @Override

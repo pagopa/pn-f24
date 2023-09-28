@@ -120,7 +120,7 @@ public class ValidateMetadataEventService {
                     String setId = f24MetadataSet.getSetId();
                     if(refreshedF24MetadataSet.getHaveToSendValidationEvent()) {
                         log.debug("MetadataSet with setId {} and validatorCxId {} has to send validation end event", setId, validatorCxId);
-                        PnF24MetadataValidationEndEvent event = PnF24AsyncEventBuilderHelper.buildMetadataValidationEndEvent(validatorCxId, setId, f24MetadataValidationIssues, f24Config.getDeliveryPushCxId());
+                        PnF24MetadataValidationEndEvent event = PnF24AsyncEventBuilderHelper.buildMetadataValidationEndEvent(validatorCxId, setId, f24MetadataValidationIssues);
                         return Mono.fromRunnable(() -> eventBridgeProducer.sendEvent(event))
                                 .doOnError(throwable -> log.warn("Error sending validation end event", throwable))
                                 .then(updateMetadataSetWithValidation(refreshedF24MetadataSet, f24MetadataValidationIssues, true));

@@ -12,12 +12,11 @@ import java.util.Map;
 public class PnF24AsyncEventBuilderHelper {
     private static final String OK_STATUS = "OK";
     private static final String KO_STATUS = "KO";
-    public static PnF24MetadataValidationEndEvent buildMetadataValidationEndEvent(String cxId, String setId, List<F24MetadataValidationIssue> errors, String clientId) {
+    public static PnF24MetadataValidationEndEvent buildMetadataValidationEndEvent(String cxId, String setId, List<F24MetadataValidationIssue> errors) {
         return PnF24MetadataValidationEndEvent.builder()
                 .detail(
                         PnF24MetadataValidationEndEvent.Detail.builder()
-                                .cxId(cxId)
-                                .clientId(clientId)
+                                .clientId(cxId)
                                 .metadataValidationEnd(buildMetadataValidationEndPayload(setId, errors))
                                 .build()
                 )
