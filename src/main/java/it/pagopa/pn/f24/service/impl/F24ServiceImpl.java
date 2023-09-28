@@ -264,7 +264,7 @@ public class F24ServiceImpl implements F24Service {
     }
 
     private Mono<Void> handleMetadataToValidate(F24MetadataSet f24MetadataSet, String cxId) {
-        log.debug("metadata with setId {} is in state TO_VALIDATE", f24MetadataSet.getSetId());
+        log.debug("MetadataSet with setId {} is in state TO_VALIDATE", f24MetadataSet.getSetId());
 
         return updateHaveToSendValidationEventAndRemoveTtl(f24MetadataSet, cxId)
             .flatMap(this::checkIfValidationOnQueueHasEnded);
@@ -278,7 +278,7 @@ public class F24ServiceImpl implements F24Service {
     }
     private Mono<Void> checkIfValidationOnQueueHasEnded(F24MetadataSet f24MetadataSet) {
         String setId = f24MetadataSet.getSetId();
-        log.debug("checking if MetadataSet with setId {} has been validated on queue", setId);
+        log.debug("Checking if validation on queue of MetadataSet with setId {} has ended", setId);
 
         return f24MetadataSetDao.getItem(setId, true)
             .flatMap(f24MetadataSetConsistent -> {

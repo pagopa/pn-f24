@@ -105,9 +105,7 @@ public class ValidateMetadataEventService {
         List<F24MetadataValidationIssue> validationIssues = new ArrayList<>();
 
         metadataToValidateList.forEach(
-                metadataToValidate -> {
-                    validationIssues.addAll(metadataValidator.validateMetadata(metadataToValidate));
-                }
+                metadataToValidate -> validationIssues.addAll(metadataValidator.validateMetadata(metadataToValidate))
         );
 
         return validationIssues;
@@ -116,23 +114,26 @@ public class ValidateMetadataEventService {
     private Mono<Void> endValidationProcess(List<F24MetadataValidationIssue> f24MetadataValidationIssues, F24MetadataSet f24MetadataSet) {
         return this.f24MetadataSetDao.getItem(f24MetadataSet.getSetId(), true)
                 .flatMap(refreshedF24MetadataSet -> {
-                    String validatorCxId = f24MetadataSet.getValidatorCxId();
-                    String setId = f24MetadataSet.getSetId();
                     if(refreshedF24MetadataSet.getHaveToSendValidationEvent()) {
-                        log.debug("MetadataSet with setId {} and validatorCxId {} has to send validation end event", setId, validatorCxId);
-                        PnF24MetadataValidationEndEvent event = PnF24AsyncEventBuilderHelper.buildMetadataValidationEndEvent(validatorCxId, setId, f24MetadataValidationIssues);
-                        return Mono.fromRunnable(() -> eventBridgeProducer.sendEvent(event))
-                                .doOnError(throwable -> log.warn("Error sending validation end event", throwable))
-                                .then(updateMetadataSetWithValidation(refreshedF24MetadataSet, f24MetadataValidationIssues, true));
+                        return sendValidationEndedEvent(refreshedF24MetadataSet, f24MetadataValidationIssues);
                     } else {
-                        log.debug("MetadataSet with setId {} hasn't to send validation end event", setId);
+                        log.debug("MetadataSet with setId {} hasn't to send validation end event", refreshedF24MetadataSet.getSetId());
                         return updateMetadataSetWithValidation(refreshedF24MetadataSet, f24MetadataValidationIssues, false);
                     }
-                })
-                .then();
+                });
     }
 
-    private Mono<F24MetadataSet> updateMetadataSetWithValidation(F24MetadataSet f24MetadataSet, List<F24MetadataValidationIssue> f24MetadataValidationIssues, boolean validationEventSent) {
+    private Mono<Void> sendValidationEndedEvent(F24MetadataSet f24MetadataSet, List<F24MetadataValidationIssue> f24MetadataValidationIssues) {
+        String setId = f24MetadataSet.getSetId();
+        String validatorCxId = f24MetadataSet.getValidatorCxId();
+        log.debug("MetadataSet with setId {} and validatorCxId {} has to send validation end event", setId, validatorCxId);
+        PnF24MetadataValidationEndEvent event = PnF24AsyncEventBuilderHelper.buildMetadataValidationEndEvent(validatorCxId, setId, f24MetadataValidationIssues);
+        return Mono.fromRunnable(() -> eventBridgeProducer.sendEvent(event))
+                .doOnError(throwable -> log.warn("Error sending validation end event", throwable))
+                .then(updateMetadataSetWithValidation(f24MetadataSet, f24MetadataValidationIssues, true));
+    }
+
+    private Mono<Void> updateMetadataSetWithValidation(F24MetadataSet f24MetadataSet, List<F24MetadataValidationIssue> f24MetadataValidationIssues, boolean validationEventSent) {
         f24MetadataSet.setUpdated(Instant.now());
         f24MetadataSet.setValidationEventSent(validationEventSent);
         if(f24MetadataValidationIssues != null) {
@@ -144,6 +145,7 @@ public class ValidateMetadataEventService {
                 .onErrorResume(ConditionalCheckFailedException.class, e -> {
                     log.debug("MetadataSet with setId: {} already with status VALIDATION_ENDED ", f24MetadataSet.getSetId());
                     return Mono.empty();
-                });
+                })
+                .then();
     }
 }
