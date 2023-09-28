@@ -23,7 +23,7 @@ public class PnF24AsyncEventBuilderHelper {
     }
 
     private static PnF24MetadataValidationEndEventPayload buildMetadataValidationEndPayload(String setId, List<F24MetadataValidationIssue> errors) {
-        String status = errors != null && errors.size() != 0 ? OK_STATUS : KO_STATUS;
+        String status = errors != null && errors.size() != 0 ? KO_STATUS : OK_STATUS;
 
         return PnF24MetadataValidationEndEventPayload.builder()
                 .setId(setId)
