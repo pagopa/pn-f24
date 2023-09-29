@@ -24,8 +24,6 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import software.amazon.awssdk.services.dynamodb.model.ConditionalCheckFailedException;
 
-import java.time.Instant;
-
 @Service
 @CustomLog
 @AllArgsConstructor
@@ -115,11 +113,8 @@ public class GeneratePdfEventService {
 
     private Mono<Void> setFileKeyToF24File(FileCreationResponseInt fileCreationResponseInt, F24File f24File) {
         log.debug("Updating F24File with pk:{}, setting fileKey: {} and status: GENERATED", f24File.getPk(), fileCreationResponseInt.getKey());
-        f24File.setFileKey(fileCreationResponseInt.getKey());
-        f24File.setUpdated(Instant.now());
-        f24File.setStatus(F24FileStatus.GENERATED);
 
-        return f24FileCacheDao.setFileKey(f24File)
+        return f24FileCacheDao.setFileKey(f24File, fileCreationResponseInt.getKey())
                 .doOnError(throwable -> log.warn("Error updating record f24File with pk {}", f24File.getPk()))
                 .onErrorResume(ConditionalCheckFailedException.class, e -> {
                     log.debug("f24File with pk {} already in status GENERATED", f24File.getPk());

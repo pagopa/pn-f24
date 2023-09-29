@@ -6,17 +6,14 @@ import static org.junit.Assert.assertTrue;
 
 import it.pagopa.pn.f24.dto.F24Request;
 import it.pagopa.pn.f24.dto.F24RequestStatus;
-import it.pagopa.pn.f24.middleware.dao.f24file.dynamo.entity.BaseEntity;
 import it.pagopa.pn.f24.middleware.dao.f24file.dynamo.entity.F24FileRequestEntity;
 import it.pagopa.pn.f24.middleware.dao.f24file.dynamo.entity.F24RequestStatusEntity;
-import it.pagopa.pn.f24.middleware.dao.f24file.dynamo.entity.FileKeyEntity;
+import it.pagopa.pn.f24.middleware.dao.f24file.dynamo.entity.FileRefEntity;
 
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.junit.Ignore;
 
 import org.junit.Test;
 
@@ -40,8 +37,8 @@ public class F24FileRequestMapperTest {
 
     @Test
     public void testEntityToDto7() {
-        HashMap<String, FileKeyEntity> files = new HashMap<>();
-        files.put("#", new FileKeyEntity("#"));
+        HashMap<String, FileRefEntity> files = new HashMap<>();
+        files.put("#", new FileRefEntity("#"));
 
         F24FileRequestEntity f24FileRequestEntity = new F24FileRequestEntity( "42");
         f24FileRequestEntity.setFiles(files);
@@ -53,7 +50,7 @@ public class F24FileRequestMapperTest {
         assertEquals("42", actualEntityToDtoResult.getRequestId());
         assertEquals("REQUEST#42", actualEntityToDtoResult.getPk());
         assertNull(actualEntityToDtoResult.getPathTokens());
-        Map<String, F24Request.FileKey> files2 = actualEntityToDtoResult.getFiles();
+        Map<String, F24Request.FileRef> files2 = actualEntityToDtoResult.getFiles();
         assertEquals(1, files2.size());
         assertEquals("42", actualEntityToDtoResult.getCxId());
         assertEquals("#", files2.get("#").getFileKey());

@@ -77,8 +77,6 @@ public class SafeStorageEventService {
 
     private Mono<Void> updateF24FileStatusInDone(F24File f24File) {
         log.debug("Updating F24File with pk: {} setting status DONE", f24File.getPk());
-        f24File.setStatus(F24FileStatus.DONE);
-        f24File.setUpdated(Instant.now());
         return f24FileCacheDao.setStatusDone(f24File)
                 .doOnError(throwable -> log.warn("Error setting status DONE to F24File record with pk: {}", f24File.getPk()))
                 .then();

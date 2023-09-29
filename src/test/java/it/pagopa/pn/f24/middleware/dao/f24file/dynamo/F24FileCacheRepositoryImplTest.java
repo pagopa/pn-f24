@@ -2,6 +2,7 @@ package it.pagopa.pn.f24.middleware.dao.f24file.dynamo;
 
 import it.pagopa.pn.f24.config.F24Config;
 import it.pagopa.pn.f24.dto.F24File;
+import it.pagopa.pn.f24.dto.F24FileStatus;
 import it.pagopa.pn.f24.middleware.dao.f24file.dynamo.entity.F24FileCacheEntity;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -29,7 +30,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(SpringExtension.class)
 @TestPropertySource("classpath:/application-test.properties")
 @EnableConfigurationProperties(value = F24Config.class)
-class F24FileCachRepositoryImplTest {
+class F24FileCacheRepositoryImplTest {
     @MockBean
     private DynamoDbEnhancedAsyncClient dynamoDbEnhancedAsyncClient;
 
@@ -38,6 +39,25 @@ class F24FileCachRepositoryImplTest {
 
     @MockBean
     private F24Config f24Config;
+
+    @Test
+    void getItemByPk() {
+        when(dynamoDbEnhancedAsyncClient.table(any(),any())).thenReturn(dynamoDbAsyncTable);
+
+        F24FileCacheRepositoryImpl f24FileCacheRepository = new F24FileCacheRepositoryImpl(dynamoDbEnhancedAsyncClient, f24Config);
+
+        String pk = "CACHE#setId#1000#0_0";
+        F24FileCacheEntity f24FileCacheEntity = new F24FileCacheEntity();
+        f24FileCacheEntity.setPk(pk);
+
+        CompletableFuture<Object> completableFuture = new CompletableFuture<>();
+        completableFuture.completeAsync(() -> f24FileCacheEntity);
+        when(dynamoDbAsyncTable.getItem((GetItemEnhancedRequest) any())).thenReturn(completableFuture);
+
+        StepVerifier.create(f24FileCacheRepository.getItem(pk))
+                .expectNextMatches(f24FileCache -> f24FileCache.getPk().equalsIgnoreCase("CACHE#setId#1000#0_0"))
+                .verifyComplete();
+    }
 
     @Test
     void getItem() {
@@ -129,6 +149,46 @@ class F24FileCachRepositoryImplTest {
         f24File.setPk("42");
         StepVerifier.create(f24FileCacheRepository.updateItem(f24File))
                 .expectNext()
+                .expectComplete();
+    }
+
+    @Test
+    void setStatusDone() {
+        when(dynamoDbEnhancedAsyncClient.table(any(),any())).thenReturn(dynamoDbAsyncTable);
+
+        F24FileCacheRepositoryImpl f24FileCacheRepository = new F24FileCacheRepositoryImpl(dynamoDbEnhancedAsyncClient, f24Config);
+
+        F24FileCacheEntity f24FileCacheEntity = new F24FileCacheEntity();
+        f24FileCacheEntity.setPk("42");
+
+        CompletableFuture<Object> completableFuture = new CompletableFuture<>();
+        completableFuture.completeAsync(() -> f24FileCacheEntity);
+        when(dynamoDbAsyncTable.updateItem((UpdateItemEnhancedRequest<Object>) any())).thenReturn(completableFuture);
+
+        F24File f24FileToUpdate = new F24File();
+        f24FileToUpdate.setPk("42");
+        StepVerifier.create(f24FileCacheRepository.setStatusDone(f24FileToUpdate))
+                .expectNextMatches(f24FileUpdated -> f24FileUpdated.getStatus() == F24FileStatus.DONE)
+                .expectComplete();
+    }
+
+    @Test
+    void setFileKey() {
+        when(dynamoDbEnhancedAsyncClient.table(any(),any())).thenReturn(dynamoDbAsyncTable);
+
+        F24FileCacheRepositoryImpl f24FileCacheRepository = new F24FileCacheRepositoryImpl(dynamoDbEnhancedAsyncClient, f24Config);
+
+        F24FileCacheEntity f24FileCacheEntity = new F24FileCacheEntity();
+        f24FileCacheEntity.setPk("42");
+
+        CompletableFuture<Object> completableFuture = new CompletableFuture<>();
+        completableFuture.completeAsync(() -> f24FileCacheEntity);
+        when(dynamoDbAsyncTable.updateItem((UpdateItemEnhancedRequest<Object>) any())).thenReturn(completableFuture);
+
+        F24File f24FileToUpdate = new F24File();
+        f24FileToUpdate.setPk("42");
+        StepVerifier.create(f24FileCacheRepository.setFileKey(f24FileToUpdate, "fileKey"))
+                .expectNextMatches(f24FileUpdated -> f24FileUpdated.getStatus() == F24FileStatus.GENERATED && f24FileUpdated.getFileKey().equalsIgnoreCase("fileKey"))
                 .expectComplete();
     }
 }

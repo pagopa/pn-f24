@@ -2,9 +2,9 @@ package it.pagopa.pn.f24.middleware.dao.f24file.dynamo;
 
 import it.pagopa.pn.f24.config.F24Config;
 import it.pagopa.pn.f24.dto.F24File;
+import it.pagopa.pn.f24.dto.F24FileStatus;
 import it.pagopa.pn.f24.middleware.dao.f24file.F24FileCacheDao;
 import it.pagopa.pn.f24.middleware.dao.f24file.dynamo.entity.F24FileCacheEntity;
-import it.pagopa.pn.f24.middleware.dao.f24file.dynamo.entity.F24FileStatusEntity;
 import it.pagopa.pn.f24.middleware.dao.f24file.dynamo.mapper.F24FileCacheMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -13,6 +13,7 @@ import software.amazon.awssdk.enhanced.dynamodb.*;
 import software.amazon.awssdk.enhanced.dynamodb.model.*;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -63,12 +64,17 @@ public class F24FileCacheRepositoryImpl implements F24FileCacheDao {
     }
 
     @Override
-    public Mono<F24File> setFileKey(F24File f24File) {
+    public Mono<F24File> setFileKey(F24File f24File, String fileKey) {
+        f24File.setFileKey(fileKey);
+        f24File.setUpdated(Instant.now());
+        f24File.setStatus(F24FileStatus.GENERATED);
+
         Map<String, String> expressionNames = new HashMap<>();
         expressionNames.put("#status", COL_STATUS);
 
         Map<String, AttributeValue> expressionValues = new HashMap<>();
-        expressionValues.put(":status", AttributeValue.builder().s(F24FileStatusEntity.TO_PROCESS.getValue()).build());
+        String previousStatus = f24File.getStatus().prev().getValue();
+        expressionValues.put(":status", AttributeValue.builder().s(previousStatus).build());
 
         UpdateItemEnhancedRequest<F24FileCacheEntity> updateItemEnhancedRequest = UpdateItemEnhancedRequest
                 .builder(F24FileCacheEntity.class)
@@ -82,11 +88,15 @@ public class F24FileCacheRepositoryImpl implements F24FileCacheDao {
 
     @Override
     public Mono<F24File> setStatusDone(F24File f24File) {
+        f24File.setStatus(F24FileStatus.DONE);
+        f24File.setUpdated(Instant.now());
+
         Map<String, String> expressionNames = new HashMap<>();
         expressionNames.put("#status", COL_STATUS);
 
         Map<String, AttributeValue> expressionValues = new HashMap<>();
-        expressionValues.put(":status", AttributeValue.builder().s(F24FileStatusEntity.GENERATED.getValue()).build());
+        String previousState = f24File.getStatus().prev().getValue();
+        expressionValues.put(":status", AttributeValue.builder().s(previousState).build());
 
         UpdateItemEnhancedRequest<F24FileCacheEntity> updateItemEnhancedRequest = UpdateItemEnhancedRequest
                 .builder(F24FileCacheEntity.class)
