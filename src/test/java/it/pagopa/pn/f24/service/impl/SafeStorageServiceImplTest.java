@@ -16,18 +16,19 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 
 class SafeStorageServiceImplTest {
     @Mock
     private PnSafeStorageClient safeStorageClient;
-    
+
     private SafeStorageServiceImpl safeStorageService;
-    
+
     @BeforeEach
-    public void init(){
-        safeStorageService = new SafeStorageServiceImpl( safeStorageClient);
+    public void init() {
+        safeStorageService = new SafeStorageServiceImpl(safeStorageClient);
     }
-    
+
     @Test
     @ExtendWith(SpringExtension.class)
     void getFile() {
@@ -39,13 +40,13 @@ class SafeStorageServiceImplTest {
         fileDownloadResponse.setDocumentStatus("status");
         fileDownloadResponse.setDocumentType("type");
         fileDownloadResponse.setDownload(new FileDownloadInfo());
-        
+
         Mockito.when(safeStorageClient.getFile(Mockito.anyString(), Mockito.anyBoolean()))
                 .thenReturn(Mono.just(fileDownloadResponse));
-        
+
         //WHEN
         Mono<FileDownloadResponseInt> responseMono = safeStorageService.getFile("test", true);
-        
+
         //THEN
         Assertions.assertNotNull(responseMono);
         FileDownloadResponseInt response = responseMono.block();
@@ -60,12 +61,12 @@ class SafeStorageServiceImplTest {
     void getFileError() {
         //GIVEN
         Mockito.when(safeStorageClient.getFile(Mockito.anyString(), Mockito.anyBoolean()))
-                .thenReturn( Mono.error(new PnInternalException("test", "test")) );
+                .thenReturn(Mono.error(new PnInternalException("test", "test")));
 
         Mono<FileDownloadResponseInt> mono = safeStorageService.getFile("test", true);
-        
+
         //WHEN
-        Assertions.assertThrows( PnInternalException.class, mono::block);
+        Assertions.assertThrows(PnInternalException.class, mono::block);
     }
 
     @Test
@@ -78,7 +79,7 @@ class SafeStorageServiceImplTest {
         FileCreationResponse expectedResponse = new FileCreationResponse();
         expectedResponse.setKey("key");
         expectedResponse.setSecret("secret");
-        
+
         Mockito.when(safeStorageClient.createFile(Mockito.any(FileCreationWithContentRequest.class), Mockito.anyString()))
                 .thenReturn(Mono.just(expectedResponse));
 
@@ -97,16 +98,15 @@ class SafeStorageServiceImplTest {
         //GIVEN
         FileCreationWithContentRequest fileCreationWithContentRequest = new FileCreationWithContentRequest();
         fileCreationWithContentRequest.setContent("content".getBytes());
-        
+
         Mockito.when(safeStorageClient.createFile(Mockito.any(FileCreationWithContentRequest.class), Mockito.anyString()))
                 .thenReturn(Mono.error(new PnInternalException("test", "test")));
 
         //WHEN
         Mono<FileCreationResponseInt> mono = safeStorageService.createAndUploadContent(fileCreationWithContentRequest);
 
-        Assertions.assertThrows( PnInternalException.class, mono::block);
+        Assertions.assertThrows(PnInternalException.class, mono::block);
     }
-
 
 
     @Test
@@ -127,4 +127,21 @@ class SafeStorageServiceImplTest {
         Assertions.assertNotNull(response);
 
     }
+
+    @Test
+    void downloadPieceOfContentShouldGenerateErrorMono() {
+
+        // Chiamata al metodo downloadPieceOfContent con parametri appropriati che genereranno un errore
+        String fileKey = "yourFileKey";
+        String url = "yourInvalidUrl";
+        long maxSize = 1000L;
+
+        Mono<byte[]> resultMono = safeStorageService.downloadPieceOfContent(fileKey, url, maxSize);
+
+        // Verifica che il resultMono generi un'errore di tipo PnInternalException
+        StepVerifier.create(resultMono)
+                .expectError(PnInternalException.class)
+                .verify();
+    }
+
 }

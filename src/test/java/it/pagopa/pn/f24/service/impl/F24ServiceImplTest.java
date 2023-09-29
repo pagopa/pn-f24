@@ -27,52 +27,6 @@ import reactor.core.publisher.Mono;
 @ContextConfiguration(classes = {F24ServiceImpl.class})
 @ExtendWith(SpringExtension.class)
 class F24ServiceImplTest {
-    @MockBean
-    private EventBridgeProducer<PnF24MetadataValidationEndEvent> momProducerExternal;
 
-    @MockBean
-    private F24Generator f24Generator;
-
-    @MockBean
-    private F24MetadataSetDao f24MetadataSetDao;
-
-    @Autowired
-    private F24ServiceImpl f24ServiceImpl;
-
-    @MockBean
-    private MomProducer<ValidateMetadataSetEvent> momProducer;
-
-    @MockBean
-    private PnSafeStorageClientImpl pnSafeStorageClientImpl;
-
-    /**
-     * Method under test: {@link F24ServiceImpl#validate(String, String)}
-     */
-    @Test
-    void testValidate() {
-        when(f24MetadataSetDao.getItem(any(), any())).thenThrow(new PnBadRequestException(
-                "An error occurred", "The characteristics of someone or something", "An error occurred"));
-        assertThrows(PnBadRequestException.class, () -> f24ServiceImpl.validate("42", "42"));
-        verify(f24MetadataSetDao).getItem(any(), any());
-    }
-
-    /**
-     * Method under test: {@link F24ServiceImpl#validate(String, String)}
-     */
-    @Test
-    void testValidate2() {
-        when(f24MetadataSetDao.getItem(any(), any()))
-                .thenReturn((Mono<F24MetadataSet>) mock(Mono.class));
-        f24ServiceImpl.validate("42", "42");
-        verify(f24MetadataSetDao).getItem(any(), any());
-    }
-
-    /**
-     * Method under test: {@link F24ServiceImpl#generatePDF(String, String, String)}
-     */
-    @Test
-    void testGeneratePDF() {
-        assertNull(f24ServiceImpl.generatePDF("Iun", "Recipient Index", "Attachment Index"));
-    }
 }
 

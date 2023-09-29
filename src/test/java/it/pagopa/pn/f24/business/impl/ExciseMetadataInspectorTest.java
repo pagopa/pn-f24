@@ -2,13 +2,7 @@ package it.pagopa.pn.f24.business.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import it.pagopa.pn.f24.generated.openapi.server.v1.dto.F24Elid;
-import it.pagopa.pn.f24.generated.openapi.server.v1.dto.F24Excise;
-import it.pagopa.pn.f24.generated.openapi.server.v1.dto.F24Metadata;
-import it.pagopa.pn.f24.generated.openapi.server.v1.dto.F24Simplified;
-import it.pagopa.pn.f24.generated.openapi.server.v1.dto.F24Standard;
-import it.pagopa.pn.f24.generated.openapi.server.v1.dto.LocalTaxRecord;
-import it.pagopa.pn.f24.generated.openapi.server.v1.dto.LocalTaxSection;
+import it.pagopa.pn.f24.generated.openapi.server.v1.dto.*;
 
 import java.util.List;
 
@@ -37,10 +31,38 @@ class ExciseMetadataInspectorTest {
         LocalTaxSection localTax = new LocalTaxSection();
         localTax.setRecords(List.of(localTaxRecord));
 
+        Tax tax = new Tax();
+        tax.setApplyCost(true);
+
+        TreasurySection treasurySection = new TreasurySection();
+        treasurySection.setRecords(List.of(tax));
+
+        InpsRecord inpsRecord = new InpsRecord();
+        inpsRecord.setApplyCost(true);
+
+        InpsSection inpsSection = new InpsSection();
+        inpsSection.setRecords(List.of(inpsRecord));
+
+        RegionRecord regionRecord = new RegionRecord();
+        regionRecord.setApplyCost(true);
+
+        RegionSection regionSection = new RegionSection();
+        regionSection.setRecords(List.of(regionRecord));
+
+        ExciseTax exciseTax = new ExciseTax();
+        exciseTax.setApplyCost(true);
+
+        ExciseSection exciseSection = new ExciseSection();
+        exciseSection.setRecords(List.of(exciseTax));
+
         F24Excise f24Excise = new F24Excise();
         f24Excise.setLocalTax(localTax);
+        f24Excise.setTreasury(treasurySection);
+        f24Excise.setInps(inpsSection);
+        f24Excise.setRegion(regionSection);
+        f24Excise.setExcise(exciseSection);
 
-        assertEquals(1, exciseMetadataInspector
+        assertEquals(5, exciseMetadataInspector
                 .countMetadataApplyCost(new F24Metadata(new F24Standard(), new F24Simplified(), f24Excise, new F24Elid())));
     }
 
