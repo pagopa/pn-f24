@@ -12,6 +12,7 @@ import it.pagopa.pn.commons.exceptions.PnInternalException;
 import it.pagopa.pn.f24.generated.openapi.server.v1.dto.F24Metadata;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.Set;
 import javax.validation.ConstraintViolation;
@@ -42,7 +43,7 @@ public class JsonServiceImplTest {
     public void testParseMetadataFile() throws IOException {
         F24Metadata f24Metadata = new F24Metadata();
         when(objectMapper.readValue(Mockito.<byte[]>any(), Mockito.<Class<F24Metadata>>any())).thenReturn(f24Metadata);
-        assertSame(f24Metadata, jsonServiceImpl.parseMetadataFile("AXAXAXAX".getBytes("UTF-8")));
+        assertSame(f24Metadata, jsonServiceImpl.parseMetadataFile("AXAXAXAX".getBytes(StandardCharsets.UTF_8)));
         verify(objectMapper).readValue(Mockito.<byte[]>any(), Mockito.<Class<F24Metadata>>any());
     }
 
@@ -50,7 +51,8 @@ public class JsonServiceImplTest {
     public void testParseMetadataFile2() throws IOException {
         when(objectMapper.readValue(Mockito.<byte[]>any(), Mockito.<Class<F24Metadata>>any()))
                 .thenThrow(new IOException("foo"));
-        assertThrows(PnInternalException.class, () -> jsonServiceImpl.parseMetadataFile("AXAXAXAX".getBytes("UTF-8")));
+        byte[] jsonMetadata = "AXAXAXAX".getBytes(StandardCharsets.UTF_8);
+        assertThrows(PnInternalException.class, () -> jsonServiceImpl.parseMetadataFile(jsonMetadata));
         verify(objectMapper).readValue(Mockito.<byte[]>any(), Mockito.<Class<F24Metadata>>any());
     }
 
@@ -70,7 +72,8 @@ public class JsonServiceImplTest {
                 .thenThrow(JsonProcessingException.class);
 
         // Chiamata al metodo stringifyObject che dovrebbe generare una PnInternalException
-        assertThrows(PnInternalException.class, () -> jsonServiceImpl.stringifyObject(new Object()));
+        Object test = new Object();
+        assertThrows(PnInternalException.class, () -> jsonServiceImpl.stringifyObject(test));
 
         // Verifica che objectMapper.writeValueAsString sia stato chiamato esattamente una volta
         verify(objectMapper, times(1)).writeValueAsString(any());

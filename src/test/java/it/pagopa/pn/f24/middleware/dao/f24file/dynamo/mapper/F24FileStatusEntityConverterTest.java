@@ -12,7 +12,7 @@ import software.amazon.awssdk.enhanced.dynamodb.AttributeValueType;
 import software.amazon.awssdk.enhanced.dynamodb.EnhancedType;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 
-public class F24FileStatusEntityConverterTest {
+class F24FileStatusEntityConverterTest {
 
     private F24FileStatusEntityConverter converter;
 

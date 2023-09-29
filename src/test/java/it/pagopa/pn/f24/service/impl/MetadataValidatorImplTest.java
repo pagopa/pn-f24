@@ -8,22 +8,21 @@ import it.pagopa.pn.f24.dto.MetadataToValidate;
 import it.pagopa.pn.f24.generated.openapi.server.v1.dto.*;
 import it.pagopa.pn.f24.service.JsonService;
 
-import java.io.UnsupportedEncodingException;
 import java.util.HashSet;
 import java.util.List;
 
 import it.pagopa.pn.f24.util.Sha256Handler;
-import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
-import org.junit.runner.RunWith;
 import org.mockito.Mockito;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 @ContextConfiguration(classes = {MetadataValidatorImpl.class})
-@RunWith(SpringJUnit4ClassRunner.class)
+@ExtendWith(SpringExtension.class)
 public class MetadataValidatorImplTest {
     @MockBean
     private JsonService jsonService;
@@ -32,7 +31,7 @@ public class MetadataValidatorImplTest {
     private MetadataValidatorImpl metadataValidatorImpl;
 
     @Test
-    public void testValidateMetadata() throws UnsupportedEncodingException {
+    public void testValidateMetadata() {
 
         F24MetadataRef f24MetadataRef = new F24MetadataRef();
         f24MetadataRef.setApplyCost(true);
@@ -89,7 +88,7 @@ public class MetadataValidatorImplTest {
     }
 
     @Test
-    public void testValidateMetadataCheckApplyCostFalse() throws UnsupportedEncodingException {
+    public void testValidateMetadataCheckApplyCostFalse() {
 
         F24MetadataRef f24MetadataRef = new F24MetadataRef();
         f24MetadataRef.setApplyCost(true);
@@ -146,7 +145,7 @@ public class MetadataValidatorImplTest {
     }
 
     @Test
-    public void testValidateMetadataSha256Error() throws UnsupportedEncodingException {
+    public void testValidateMetadataSha256Error() {
 
         F24MetadataRef f24MetadataRef = new F24MetadataRef();
         f24MetadataRef.setApplyCost(true);
@@ -203,7 +202,7 @@ public class MetadataValidatorImplTest {
     }
 
     @Test
-    public void testValidateMetadataCheckApplyCostNoApplyCost() throws UnsupportedEncodingException {
+    public void testValidateMetadataCheckApplyCostNoApplyCost() {
 
         F24MetadataRef f24MetadataRef = new F24MetadataRef();
         f24MetadataRef.setApplyCost(false);
@@ -263,7 +262,7 @@ public class MetadataValidatorImplTest {
     }
 
     @Test
-    public void testValidateMetadataParseJsonError() throws UnsupportedEncodingException {
+    public void testValidateMetadataParseJsonError() {
 
         F24MetadataRef f24MetadataRef = new F24MetadataRef();
         f24MetadataRef.setApplyCost(true);
