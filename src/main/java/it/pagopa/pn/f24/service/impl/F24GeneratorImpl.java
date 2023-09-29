@@ -1,7 +1,9 @@
 package it.pagopa.pn.f24.service.impl;
 
+import it.pagopa.pn.commons.exceptions.PnInternalException;
 import it.pagopa.pn.f24.business.F24Converter;
 import it.pagopa.pn.f24.business.F24ConverterFactory;
+import it.pagopa.pn.f24.exception.PnF24ExceptionCodes;
 import it.pagopa.pn.f24.generated.openapi.server.v1.dto.F24Metadata;
 import it.pagopa.pn.f24.service.F24Generator;
 import lombok.extern.slf4j.Slf4j;
@@ -26,7 +28,7 @@ public class F24GeneratorImpl implements F24Generator {
         try {
             pdfCreator = PDFCreatorFactory.createPDFCreator(f24Form);
         } catch (ResourceException e) {
-            throw new RuntimeException(e);
+            throw new PnInternalException("Error generating F24 PDF", PnF24ExceptionCodes.ERROR_CODE_F24_GENERATING_PDF);
         }
         generatedPdf = pdfCreator.createPDF();
 

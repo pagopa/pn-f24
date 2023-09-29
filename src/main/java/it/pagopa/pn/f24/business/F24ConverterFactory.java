@@ -7,6 +7,7 @@ import it.pagopa.pn.f24.business.impl.F24StandardConverter;
 import it.pagopa.pn.f24.dto.F24Type;
 
 public class F24ConverterFactory {
+    private F24ConverterFactory() { }
     public static F24Converter getConverter(F24Type f24Type) {
 
         return switch (f24Type) {

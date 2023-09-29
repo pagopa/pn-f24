@@ -1,7 +1,5 @@
 package it.pagopa.pn.f24.service.impl;
 
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import it.pagopa.pn.f24.dto.F24MetadataRef;
@@ -15,7 +13,6 @@ import java.util.HashSet;
 import java.util.List;
 
 import it.pagopa.pn.f24.util.Sha256Handler;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 import org.junit.runner.RunWith;
@@ -87,7 +84,7 @@ public class MetadataValidatorImplTest {
 
         List <F24MetadataValidationIssue> result = metadataValidatorImpl.validateMetadata(metadataToValidate);
 
-        Assertions.assertEquals(result.isEmpty(),false);
+        Assertions.assertFalse(result.isEmpty());
 
     }
 
@@ -144,7 +141,7 @@ public class MetadataValidatorImplTest {
 
         List <F24MetadataValidationIssue> result = metadataValidatorImpl.validateMetadata(metadataToValidate);
 
-        Assertions.assertEquals(result.isEmpty(),false);
+        Assertions.assertFalse(result.isEmpty());
 
     }
 
@@ -201,7 +198,7 @@ public class MetadataValidatorImplTest {
 
         List <F24MetadataValidationIssue> result = metadataValidatorImpl.validateMetadata(metadataToValidate);
 
-        Assertions.assertEquals(result.isEmpty(),false);
+        Assertions.assertFalse(result.isEmpty());
 
     }
 
@@ -261,7 +258,7 @@ public class MetadataValidatorImplTest {
 
         List <F24MetadataValidationIssue> result = metadataValidatorImpl.validateMetadata(metadataToValidate);
 
-        Assertions.assertEquals(result.isEmpty(),false);
+        Assertions.assertFalse(result.isEmpty());
 
     }
 

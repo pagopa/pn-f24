@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class MetadataInspectorFactory {
+    private MetadataInspectorFactory() { }
     public static MetadataInspector getInspector(F24Type f24Type) {
 
         return switch (f24Type) {

@@ -54,7 +54,7 @@ public class F24RequestStatusEntityConverterTest {
         F24RequestStatusEntity f24RequestStatusEntity = converter.transformTo(
                 AttributeValue.builder().s("PROCESSING").build()
         );
-        Assertions.assertEquals(f24RequestStatusEntity, F24RequestStatusEntity.PROCESSING);
+        Assertions.assertEquals(F24RequestStatusEntity.PROCESSING, f24RequestStatusEntity);
     }
 
     @Test

@@ -1,7 +1,6 @@
 package it.pagopa.pn.f24.middleware.queue.consumer.service;
 
 import it.pagopa.pn.api.dto.events.PnF24MetadataValidationEndEvent;
-import it.pagopa.pn.f24.config.F24Config;
 import it.pagopa.pn.f24.service.MetadataValidator;
 import it.pagopa.pn.f24.dto.*;
 import it.pagopa.pn.f24.exception.PnF24ExceptionCodes;
@@ -29,14 +28,12 @@ public class ValidateMetadataEventService {
     private final SafeStorageService safeStorageService;
     private final EventBridgeProducer<PnF24MetadataValidationEndEvent> eventBridgeProducer;
     private final MetadataValidator metadataValidator;
-    private final F24Config f24Config;
 
-    public ValidateMetadataEventService(F24MetadataSetDao f24MetadataSetDao, SafeStorageService safeStorageService, EventBridgeProducer<PnF24MetadataValidationEndEvent> eventBridgeProducer, MetadataValidator metadataValidator, F24Config f24Config) {
+    public ValidateMetadataEventService(F24MetadataSetDao f24MetadataSetDao, SafeStorageService safeStorageService, EventBridgeProducer<PnF24MetadataValidationEndEvent> eventBridgeProducer, MetadataValidator metadataValidator) {
         this.f24MetadataSetDao = f24MetadataSetDao;
         this.safeStorageService = safeStorageService;
         this.eventBridgeProducer = eventBridgeProducer;
         this.metadataValidator = metadataValidator;
-        this.f24Config = f24Config;
     }
 
     public Mono<Void> handleMetadataValidation(ValidateMetadataSetEvent.Payload payload) {
@@ -115,7 +112,7 @@ public class ValidateMetadataEventService {
     private Mono<Void> endValidationProcess(List<F24MetadataValidationIssue> f24MetadataValidationIssues, F24MetadataSet f24MetadataSet) {
         return this.f24MetadataSetDao.getItem(f24MetadataSet.getSetId(), true)
                 .flatMap(refreshedF24MetadataSet -> {
-                    if (refreshedF24MetadataSet.getHaveToSendValidationEvent()) {
+                    if (Boolean.TRUE.equals(refreshedF24MetadataSet.getHaveToSendValidationEvent())) {
                         return sendValidationEndedEvent(refreshedF24MetadataSet, f24MetadataValidationIssues);
                     }
 

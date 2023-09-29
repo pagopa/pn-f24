@@ -17,7 +17,7 @@ public class F24FileStatusEntityConverterTest {
     private F24FileStatusEntityConverter converter;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         converter = new F24FileStatusEntityConverter();
     }
     @Test
@@ -72,7 +72,7 @@ public class F24FileStatusEntityConverterTest {
         F24FileStatusEntity f24FileStatusEntity = converter.transformTo(
                 AttributeValue.builder().s("PROCESSING").build()
         );
-        assertEquals(f24FileStatusEntity, F24FileStatusEntity.PROCESSING);
+        assertEquals(F24FileStatusEntity.PROCESSING, f24FileStatusEntity);
     }
 
     @Test

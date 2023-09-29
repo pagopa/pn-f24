@@ -9,7 +9,8 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 
 public class Sha256Handler {
-    private final static String ALGORITHM = "SHA-256";
+    private Sha256Handler() { }
+    private static final String ALGORITHM = "SHA-256";
     public static String computeSha256(String content) {
         return computeSha256(content.getBytes(StandardCharsets.UTF_8));
     }

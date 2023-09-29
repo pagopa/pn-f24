@@ -39,7 +39,7 @@ class F24SimplifiedConverterTest {
 
         org.f24.dto.form.F24Simplified actualConvertResult = f24SimplifiedConverter
                 .convert(new F24Metadata(new F24Standard(), f24Simplified, new F24Excise(), new F24Elid()));
-        assertEquals(actualConvertResult.getPaymentReasonSection().getOperationId(), "operationId");
+        assertEquals("operationId", actualConvertResult.getPaymentReasonSection().getOperationId());
         TaxPayer taxPayer1 = actualConvertResult.getTaxPayer();
         assertNull(taxPayer1.getIdCode());
         assertNull(taxPayer1.getDocumentCode());

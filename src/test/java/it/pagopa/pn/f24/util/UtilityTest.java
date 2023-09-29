@@ -7,6 +7,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import it.pagopa.pn.commons.exceptions.PnInternalException;
 import it.pagopa.pn.f24.dto.F24Type;
 import it.pagopa.pn.f24.generated.openapi.server.v1.dto.F24Elid;
 import it.pagopa.pn.f24.generated.openapi.server.v1.dto.F24Excise;
@@ -21,27 +22,6 @@ import java.util.function.Predicate;
 import org.junit.jupiter.api.Test;
 
 class UtilityTest {
-    /**
-     * Method under test: {@link Utility#getIndexOfByPredicate(List, Predicate)}
-     */
-    @Test
-    void testGetIndexOfByPredicate() {
-        assertEquals(Utility.INDEX_NOT_FOUND,
-                Utility.getIndexOfByPredicate(new ArrayList<>(), (Predicate<Integer>) mock(Predicate.class)).intValue());
-    }
-
-    /**
-     * Method under test: {@link Utility#getIndexOfByPredicate(List, Predicate)}
-     */
-    @Test
-    void testGetIndexOfByPredicate2() {
-        ArrayList<Object> objectList = new ArrayList<>();
-        objectList.add("42");
-        Predicate<Integer> predicate = (Predicate<Integer>) mock(Predicate.class);
-        when(predicate.test(any())).thenReturn(true);
-        assertEquals(0, Utility.getIndexOfByPredicate(objectList, predicate).intValue());
-        verify(predicate).test(any());
-    }
 
     /**
      * Method under test: {@link Utility#countElementsByPredicate(List, Predicate)}
@@ -70,7 +50,8 @@ class UtilityTest {
      */
     @Test
     void testGetF24TypeFromMetadata() {
-        assertThrows(RuntimeException.class, () -> Utility.getF24TypeFromMetadata(new F24Metadata()));
+        F24Metadata f24Metadata = new F24Metadata();
+        assertThrows(PnInternalException.class, () -> Utility.getF24TypeFromMetadata(f24Metadata));
     }
 
 

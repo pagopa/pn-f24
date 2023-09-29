@@ -6,7 +6,7 @@ import it.pagopa.pn.f24.middleware.dao.f24file.dynamo.entity.F24FileCacheEntity;
 import it.pagopa.pn.f24.middleware.dao.f24file.dynamo.entity.F24FileStatusEntity;
 
 public class F24FileCacheMapper {
-
+    private F24FileCacheMapper() { }
     public static F24File entityToDto(F24FileCacheEntity f24FileCacheEntity){
         F24File f24File = new F24File();
         f24File.setPk(f24FileCacheEntity.getPk());

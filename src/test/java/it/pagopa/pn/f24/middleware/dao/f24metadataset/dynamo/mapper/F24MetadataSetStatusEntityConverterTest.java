@@ -85,7 +85,7 @@ class F24MetadataSetStatusEntityConverterTest {
         F24MetadataSetStatusEntity f24MetadataSetStatusEntity = converter.transformTo(
                 AttributeValue.builder().s("VALIDATION_ENDED").build()
         );
-        assertEquals(f24MetadataSetStatusEntity, F24MetadataSetStatusEntity.VALIDATION_ENDED);
+        assertEquals(F24MetadataSetStatusEntity.VALIDATION_ENDED, f24MetadataSetStatusEntity);
     }
 
     /**

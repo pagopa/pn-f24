@@ -9,11 +9,13 @@ import it.pagopa.pn.f24.middleware.dao.f24metadataset.dynamo.entity.F24MetadataR
 import it.pagopa.pn.f24.middleware.dao.f24metadataset.dynamo.entity.F24MetadataSetStatusEntity;
 import it.pagopa.pn.f24.middleware.dao.f24metadataset.dynamo.entity.F24MetadataValidationEntity;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class F24MetadataSetMapper {
+    private F24MetadataSetMapper() { }
     public static F24MetadataSet entityToDto(F24MetadataSetEntity f24MetadataSetEntity) {
         F24MetadataSet f24MetadataSet = new F24MetadataSet();
         f24MetadataSet.setSetId(f24MetadataSetEntity.getSetId());
@@ -91,7 +93,7 @@ public class F24MetadataSetMapper {
 
     private static List<F24MetadataValidationEntity> convertDtoValidationResultToEntity(List<F24MetadataValidationIssue> validationResult) {
         if(validationResult == null) {
-            return null;
+            return new ArrayList<>();
         }
         return validationResult.stream()
                 .map(
