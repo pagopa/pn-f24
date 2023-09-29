@@ -5,9 +5,7 @@ import it.pagopa.pn.f24.business.impl.F24ExciseConverter;
 import it.pagopa.pn.f24.business.impl.F24SimplifiedConverter;
 import it.pagopa.pn.f24.business.impl.F24StandardConverter;
 import it.pagopa.pn.f24.dto.F24Type;
-import org.springframework.stereotype.Component;
 
-@Component
 public class F24ConverterFactory {
     public static F24Converter getConverter(F24Type f24Type) {
 

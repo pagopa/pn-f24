@@ -6,7 +6,7 @@ import it.pagopa.pn.api.dto.events.EventPublisher;
 import it.pagopa.pn.api.dto.events.GenericEventHeader;
 import org.junit.jupiter.api.Test;
 
-class ValidateMetadataSetEventBuilderTest {
+class InternalMetadataEventBuilderTest {
     /**
      * Method under test: {@link InternalMetadataEventBuilder#buildValidateMetadataEvent(String)}
      */
