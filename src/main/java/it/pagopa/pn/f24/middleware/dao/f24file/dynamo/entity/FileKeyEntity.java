@@ -10,5 +10,5 @@ import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
 @ToString
 @DynamoDbBean
 public class FileKeyEntity {
-    public String fileKey;
+    private String fileKey;
 }

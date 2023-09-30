@@ -5,6 +5,6 @@ import org.springframework.http.HttpStatus;
 
 public class PnConflictException extends PnRuntimeException {
     public PnConflictException(String message, String description, String errorCode) {
-        super(message, description, HttpStatus.CONFLICT.value(), errorCode, null, null);
+        super(message, description, HttpStatus.CONFLICT.value(), errorCode, null, description);
     }
 }

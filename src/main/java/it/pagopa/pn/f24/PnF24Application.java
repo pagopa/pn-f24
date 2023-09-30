@@ -12,4 +12,5 @@ public class PnF24Application {
         SpringApplication.run(PnF24Application.class, args);
     }
 
+
 }

@@ -520,9 +520,9 @@ components:
       minProperties: 2
       maxProperties: 2
       required:
-        - cxId
+        - clientId
       properties:
-        cxId:
+        clientId:
           type: string
           minLength: 1
           pattern: /[A-Za-z0-9]+/

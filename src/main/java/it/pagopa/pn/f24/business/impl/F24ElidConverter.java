@@ -4,8 +4,6 @@ import it.pagopa.pn.f24.generated.openapi.server.v1.dto.*;
 import it.pagopa.pn.f24.business.F24Converter;
 import org.f24.dto.component.TaxPayer;
 
-import java.util.stream.Collectors;
-
 public class F24ElidConverter extends F24Converter {
 
     @Override
@@ -16,9 +14,7 @@ public class F24ElidConverter extends F24Converter {
         if(f24ElidItem == null) {
             return f24Elid;
         }
-        //TODO ? f24Elid.setAbiCode();
-        //TODO ? f24Elid.setBankId();
-        //TODO ? f24Elid.setBankAccountNumber();
+
         if(f24ElidItem.getTaxPayer() != null) {
             f24Elid.setTaxPayer(this.convertTaxPayer(f24ElidItem.getTaxPayer()));
         }
@@ -38,7 +34,7 @@ public class F24ElidConverter extends F24Converter {
                     treasury.getRecords()
                             .stream()
                             .map(this::convertTreasuryAndOtherSectionRecord)
-                            .collect(Collectors.toList())
+                            .toList()
             );
         }
 
@@ -57,7 +53,6 @@ public class F24ElidConverter extends F24Converter {
 
     private TaxPayer convertTaxPayer(TaxPayerElide inputTaxPayer) {
         TaxPayer taxPayer = new TaxPayer();
-        // TODO ? taxPayer.setIsNotTaxYear(inputTaxPayer.ge);
         taxPayer.setTaxCode(inputTaxPayer.getTaxCode());
         if(inputTaxPayer.getCompany() != null) {
             taxPayer.setCompanyData(this.convertCompanyData(inputTaxPayer.getCompany()));
@@ -68,8 +63,7 @@ public class F24ElidConverter extends F24Converter {
 
         taxPayer.setIdCode(inputTaxPayer.getId());
         taxPayer.setRelativePersonTaxCode(inputTaxPayer.getRelativePersonTaxCode());
-        // TODO ? taxPayer.setDocumentCode(dv);
-        // TODO ? taxPayer.setOfficeCode(inputTaxPayer.get);
+
         return taxPayer;
     }
 

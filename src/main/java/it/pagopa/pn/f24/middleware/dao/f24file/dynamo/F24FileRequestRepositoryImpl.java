@@ -21,7 +21,7 @@ public class F24FileRequestRepositoryImpl implements F24FileRequestDao {
     private final DynamoDbAsyncTable<F24FileRequestEntity> table;
 
     public F24FileRequestRepositoryImpl(DynamoDbEnhancedAsyncClient dynamoDbEnhancedClient, F24Config f24Config) {
-        this.table = dynamoDbEnhancedClient.table(f24Config.getFileDao().getTableName(), TableSchema.fromBean(F24FileRequestEntity.class));
+        this.table = dynamoDbEnhancedClient.table(f24Config.getFileTableName(), TableSchema.fromBean(F24FileRequestEntity.class));
     }
 
     @Override
@@ -32,10 +32,9 @@ public class F24FileRequestRepositoryImpl implements F24FileRequestDao {
     @Override
     public Mono<F24Request> getItem(String cxId, String requestId, boolean isConsistentRead) {
         F24FileRequestEntity f24FileRequestEntity = new F24FileRequestEntity(cxId, requestId);
-        Key partitionKey = Key.builder().partitionValue(f24FileRequestEntity.getPk()).build();
 
         GetItemEnhancedRequest getItemEnhancedRequest = GetItemEnhancedRequest.builder()
-                .key(partitionKey)
+                .key(k -> k.partitionValue(f24FileRequestEntity.getPk()))
                 .consistentRead(isConsistentRead)
                 .build();
 

@@ -192,7 +192,7 @@ Parameters:
     Type: String
     Description: SafeStorage-to-f24 queue age alarm ARN
 
-  PnF24InternalDLQAlarmARN: 
+  PnF24InternalDLQAlarmARN:
     Type: String
 
   F24InternalAgeAlarmARN:

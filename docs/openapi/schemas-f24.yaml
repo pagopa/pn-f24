@@ -143,13 +143,17 @@ components:
         socialSecurity:
           $ref: "#/components/schemas/SocialSecuritySection"
     LocalTaxRecord:
-      allOf:
-        - $ref: "#/components/schemas/IncludeNotificationCost"
+      #allOf:
+      #  - $ref: "#/components/schemas/IncludeNotificationCost"
       type: object
       required:
         - municipality
         - taxType
       properties:
+        applyCost:
+          type: boolean
+          nullable: false
+          description: to check if include notification cost
         municipality:
           pattern: ^[0-9A-Z]{4}$
           type: string

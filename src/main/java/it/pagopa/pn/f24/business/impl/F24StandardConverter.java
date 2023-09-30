@@ -4,8 +4,6 @@ import it.pagopa.pn.f24.business.F24Converter;
 import it.pagopa.pn.f24.generated.openapi.server.v1.dto.*;
 import org.f24.dto.component.TaxPayer;
 
-import java.util.stream.Collectors;
-
 public class F24StandardConverter extends F24Converter {
 
     @Override
@@ -65,7 +63,7 @@ public class F24StandardConverter extends F24Converter {
                     socialSecuritySection.getSocSecRecords()
                             .stream()
                             .map(this::convertSocialSecurityRecord)
-                            .collect(Collectors.toList())
+                            .toList()
             );
         }
 
@@ -74,7 +72,7 @@ public class F24StandardConverter extends F24Converter {
                     socialSecuritySection.getRecords()
                             .stream()
                             .map(this::convertInailRecord)
-                            .collect(Collectors.toList())
+                            .toList()
             );
         }
 
@@ -95,15 +93,12 @@ public class F24StandardConverter extends F24Converter {
 
     public org.f24.dto.component.SocialSecurityRecord convertSocialSecurityRecord(SocialSecurityRecord socialSecurityRecord) {
         org.f24.dto.component.SocialSecurityRecord outputSocialSecurityRecord = new org.f24.dto.component.SocialSecurityRecord();
-        //TODO outputSocialSecurityRecord.setMunicipalityCode(socialSecurityRecord.get);
         outputSocialSecurityRecord.setOfficeCode(socialSecurityRecord.getOffice());
         outputSocialSecurityRecord.setContributionReason(socialSecurityRecord.getReason());
         outputSocialSecurityRecord.setPositionCode(socialSecurityRecord.getPosition());
         outputSocialSecurityRecord.setPeriod(convertPeriod(socialSecurityRecord.getPeriod()));
         outputSocialSecurityRecord.setDebitAmount(socialSecurityRecord.getDebit());
         outputSocialSecurityRecord.setCreditAmount(socialSecurityRecord.getCredit());
-        //TODO outputSocialSecurityRecord.setDeduction(socialSecurityRecord.get);
-        //TODO socialSecurityRecord.getInstitution();
         return outputSocialSecurityRecord;
     }
 
