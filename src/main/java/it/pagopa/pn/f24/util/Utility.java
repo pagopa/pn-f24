@@ -1,25 +1,14 @@
 package it.pagopa.pn.f24.util;
 
+import it.pagopa.pn.commons.exceptions.PnInternalException;
 import it.pagopa.pn.f24.dto.F24Type;
 import it.pagopa.pn.f24.generated.openapi.server.v1.dto.F24Metadata;
 
 import java.util.List;
 import java.util.function.Predicate;
-import java.util.stream.IntStream;
 
 public class Utility {
-    public static final int INDEX_NOT_FOUND = -1;
-
-    /**
-     * Returns the first index of an element that matches the predicate
-     * or -1 if there are no matching elements
-     */
-    public static <T> Integer getIndexOfByPredicate(List<T> list, Predicate<Integer> matcher) {
-        return IntStream.range(0, list.size())
-                .filter(matcher::test)
-                .findFirst()
-                .orElse(INDEX_NOT_FOUND);
-    }
+    private Utility() { }
 
     public static <T> Integer countElementsByPredicate(List<T> list, Predicate<T> matcher) {
         return Math.toIntExact(list.stream()
@@ -38,7 +27,7 @@ public class Utility {
             return F24Type.F24_EXCISE;
         }
 
-        throw new RuntimeException("Invalid F24 Type");
+        throw new PnInternalException("Invalid F24 Type", "ERROR_INVALID_F24_TYPE");
     }
 
     public static String convertPathTokensList(List<String> pathTokens) {

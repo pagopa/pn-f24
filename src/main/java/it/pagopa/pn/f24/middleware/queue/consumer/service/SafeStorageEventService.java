@@ -1,12 +1,9 @@
 package it.pagopa.pn.f24.middleware.queue.consumer.service;
 
-import it.pagopa.pn.api.dto.events.MomProducer;
 import it.pagopa.pn.f24.config.F24Config;
 import it.pagopa.pn.f24.generated.openapi.msclient.safestorage.model.FileDownloadResponse;
-import it.pagopa.pn.f24.middleware.dao.f24metadataset.F24MetadataSetDao;
 import it.pagopa.pn.f24.middleware.msclient.safestorage.PnSafeStorageClient;
 import it.pagopa.pn.f24.middleware.queue.consumer.handler.utils.HandleEventUtils;
-import it.pagopa.pn.f24.middleware.queue.producer.events.ValidateMetadataSetEvent;
 import lombok.CustomLog;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
@@ -14,15 +11,10 @@ import reactor.core.publisher.Mono;
 @Service
 @CustomLog
 public class SafeStorageEventService {
-
-    private final F24MetadataSetDao f24MetadataSetDao;
     private final F24Config f24Config;
-    private final MomProducer<ValidateMetadataSetEvent> internalMetadataEventMomProducer;
 
-    public SafeStorageEventService(F24MetadataSetDao f24MetadataSetDao, F24Config f24Config, MomProducer<ValidateMetadataSetEvent> internalMetadataEventMomProducer) {
-        this.f24MetadataSetDao = f24MetadataSetDao;
+    public SafeStorageEventService(F24Config f24Config) {
         this.f24Config = f24Config;
-        this.internalMetadataEventMomProducer = internalMetadataEventMomProducer;
     }
 
     public Mono<Void> handleSafeStorageResponse(FileDownloadResponse response) {
@@ -35,10 +27,10 @@ public class SafeStorageEventService {
             log.logStartingProcess(processName);
 
             if(response.getDocumentType().equalsIgnoreCase(f24Config.getSafeStorageMetadataDocType())) {
-                return tryToUpdateF24MetadataTable(response)
+                return tryToUpdateF24MetadataTable()
                         .doOnNext(unused -> log.logEndingProcess(processName));
             } else if(response.getDocumentType().equalsIgnoreCase(f24Config.getSafeStorageF24DocType())) {
-                return handleF24FileKey(response)
+                return handleF24FileKey()
                         .doOnNext(unused -> log.logEndingProcess(processName));
             } else {
                 log.warn("Unsupported document type");
@@ -50,11 +42,11 @@ public class SafeStorageEventService {
             throw ex;
         }
     }
-    private Mono<Void> tryToUpdateF24MetadataTable(FileDownloadResponse response) {
+    private Mono<Void> tryToUpdateF24MetadataTable() {
         return Mono.empty();
     }
 
-    private Mono<Void> handleF24FileKey(FileDownloadResponse response) {
+    private Mono<Void> handleF24FileKey() {
         return Mono.empty();
     }
 }

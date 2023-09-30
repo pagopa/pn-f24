@@ -1,6 +1,5 @@
-package it.pagopa.pn.f24.exceptions;
+package it.pagopa.pn.f24.exception;
 
-import it.pagopa.pn.f24.exception.PnNotFoundException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

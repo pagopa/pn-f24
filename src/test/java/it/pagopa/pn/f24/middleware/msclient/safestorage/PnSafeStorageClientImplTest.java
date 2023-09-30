@@ -1,6 +1,5 @@
 package it.pagopa.pn.f24.middleware.msclient.safestorage;
 
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
@@ -14,8 +13,10 @@ import it.pagopa.pn.f24.generated.openapi.msclient.safestorage.api.FileDownloadA
 import it.pagopa.pn.f24.generated.openapi.msclient.safestorage.api.FileUploadApi;
 import it.pagopa.pn.f24.generated.openapi.msclient.safestorage.model.FileCreationResponse;
 
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 
+import it.pagopa.pn.f24.generated.openapi.msclient.safestorage.model.FileDownloadInfo;
+import it.pagopa.pn.f24.generated.openapi.msclient.safestorage.model.FileDownloadResponse;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +24,7 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 
 class PnSafeStorageClientImplTest {
 
@@ -31,47 +33,43 @@ class PnSafeStorageClientImplTest {
      */
     @Test
     void testCreateFile() throws WebClientResponseException {
-        //   Diffblue Cover was unable to write a Spring test,
-        //   so wrote a non-Spring test instead.
-        //   Reason: R027 Missing beans when creating Spring context.
-        //   Failed to create Spring context due to missing beans
-        //   in the current Spring profile:
-        //       it.pagopa.pn.f24.config.F24Config
-        //       it.pagopa.pn.f24.middleware.msclient.safestorage.PnSafeStorageClientImpl
-        //   See https://diff.blue/R027 to resolve this issue.
 
         FileUploadApi fileUploadApi = mock(FileUploadApi.class);
+        FileCreationResponse fileCreationResponse = new FileCreationResponse();
+        fileCreationResponse.setKey("key");
+        fileCreationResponse.setUploadUrl("http://upload-test.it");
+
         when(fileUploadApi.createFile(any(), any(), any(), any()))
-                .thenReturn((Mono<FileCreationResponse>) mock(Mono.class));
+                .thenReturn(Mono.just(fileCreationResponse));
         FileDownloadApi fileDownloadApi = new FileDownloadApi();
         PnSafeStorageClientImpl pnSafeStorageClientImpl = new PnSafeStorageClientImpl(fileUploadApi, fileDownloadApi,
                 new F24Config(), mock(RestTemplate.class));
-        pnSafeStorageClientImpl.createFile(new FileCreationWithContentRequest(), "Sha256");
-        verify(fileUploadApi).createFile(any(), any(), any(), any());
+
+        FileCreationWithContentRequest fileCreationWithContentRequest = new FileCreationWithContentRequest();
+        StepVerifier.create(pnSafeStorageClientImpl.createFile(fileCreationWithContentRequest, "Sha256"))
+                .expectNext(fileCreationResponse)
+                .verifyComplete();
     }
 
-
-    /**
-     * Method under test: {@link PnSafeStorageClientImpl#getFile(String, boolean)}
-     */
     @Test
-    void testGetFile2() throws WebClientResponseException {
-        //   Diffblue Cover was unable to write a Spring test,
-        //   so wrote a non-Spring test instead.
-        //   Reason: R027 Missing beans when creating Spring context.
-        //   Failed to create Spring context due to missing beans
-        //   in the current Spring profile:
-        //       it.pagopa.pn.f24.config.F24Config
-        //       it.pagopa.pn.f24.middleware.msclient.safestorage.PnSafeStorageClientImpl
-        //   See https://diff.blue/R027 to resolve this issue.
-
+    void testGetFile() throws WebClientResponseException {
+        FileUploadApi fileUploadApi = mock(FileUploadApi.class);
         FileDownloadApi fileDownloadApi = mock(FileDownloadApi.class);
-        when(fileDownloadApi.getFile(any(), any(), any())).thenReturn(null);
-        FileUploadApi fileUploadApi = new FileUploadApi();
-        assertNull(
-                (new PnSafeStorageClientImpl(fileUploadApi, fileDownloadApi, new F24Config(), mock(RestTemplate.class)))
-                        .getFile("File Key", true));
-        verify(fileDownloadApi).getFile(any(), any(), any());
+
+        FileDownloadResponse fileDownloadResponse = new FileDownloadResponse();
+        FileDownloadInfo fileDownloadInfo = new FileDownloadInfo();
+        fileDownloadInfo.setUrl("http://download.test.it");
+        fileDownloadResponse.setDownload(fileDownloadInfo);
+
+        when(fileDownloadApi.getFile(any(), any(), any()))
+                .thenReturn(Mono.just(fileDownloadResponse));
+        PnSafeStorageClientImpl pnSafeStorageClientImpl = new PnSafeStorageClientImpl(fileUploadApi, fileDownloadApi,
+                new F24Config(), mock(RestTemplate.class));
+
+        FileCreationWithContentRequest fileCreationWithContentRequest = new FileCreationWithContentRequest();
+        StepVerifier.create(pnSafeStorageClientImpl.getFile("fileKeyTest", true))
+                .expectNext(fileDownloadResponse)
+                .verifyComplete();
     }
 
     /**
@@ -79,37 +77,22 @@ class PnSafeStorageClientImplTest {
      */
     @Test
     void testUploadContent() {
-        //   Diffblue Cover was unable to write a Spring test,
-        //   so wrote a non-Spring test instead.
-        //   Reason: R027 Missing beans when creating Spring context.
-        //   Failed to create Spring context due to missing beans
-        //   in the current Spring profile:
-        //       it.pagopa.pn.f24.config.F24Config
-        //       it.pagopa.pn.f24.middleware.msclient.safestorage.PnSafeStorageClientImpl
-        //   See https://diff.blue/R027 to resolve this issue.
-
         FileUploadApi fileUploadApi = new FileUploadApi();
         FileDownloadApi fileDownloadApi = new FileDownloadApi();
         PnSafeStorageClientImpl pnSafeStorageClientImpl = new PnSafeStorageClientImpl(fileUploadApi, fileDownloadApi,
                 new F24Config(), mock(RestTemplate.class));
         FileCreationWithContentRequest fileCreationRequest = new FileCreationWithContentRequest();
+        FileCreationResponse fileCreationResponse = new FileCreationResponse();
         assertThrows(PnInternalException.class,
-                () -> pnSafeStorageClientImpl.uploadContent(fileCreationRequest, new FileCreationResponse(), "Sha256"));
+                () -> pnSafeStorageClientImpl.uploadContent(fileCreationRequest, fileCreationResponse, "Sha256"));
     }
 
     /**
      * Method under test: {@link PnSafeStorageClientImpl#uploadContent(FileCreationWithContentRequest, FileCreationResponse, String)}
      */
     @Test
-    void testUploadContent5() throws UnsupportedEncodingException, RestClientException {
-        //   Diffblue Cover was unable to write a Spring test,
-        //   so wrote a non-Spring test instead.
-        //   Reason: R027 Missing beans when creating Spring context.
-        //   Failed to create Spring context due to missing beans
-        //   in the current Spring profile:
-        //       it.pagopa.pn.f24.config.F24Config
-        //       it.pagopa.pn.f24.middleware.msclient.safestorage.PnSafeStorageClientImpl
-        //   See https://diff.blue/R027 to resolve this issue.
+    void testUploadContent5() throws RestClientException {
+
 
         RestTemplate restTemplate = mock(RestTemplate.class);
         when(restTemplate.exchange(any(), any(), any(), (Class<Object>) any()))
@@ -119,7 +102,7 @@ class PnSafeStorageClientImplTest {
         PnSafeStorageClientImpl pnSafeStorageClientImpl = new PnSafeStorageClientImpl(fileUploadApi, fileDownloadApi,
                 new F24Config(), restTemplate);
         FileCreationWithContentRequest fileCreationWithContentRequest = mock(FileCreationWithContentRequest.class);
-        when(fileCreationWithContentRequest.getContent()).thenReturn("AAAAAAAA".getBytes("UTF-8"));
+        when(fileCreationWithContentRequest.getContent()).thenReturn("AAAAAAAA".getBytes(StandardCharsets.UTF_8));
         when(fileCreationWithContentRequest.getContentType()).thenReturn("text/plain");
         FileCreationResponse fileCreationResponse = mock(FileCreationResponse.class);
         when(fileCreationResponse.getUploadMethod()).thenReturn(FileCreationResponse.UploadMethodEnum.PUT);
@@ -137,146 +120,12 @@ class PnSafeStorageClientImplTest {
         verify(fileCreationResponse).getUploadUrl();
     }
 
-    /**
-     * Method under test: {@link PnSafeStorageClientImpl#uploadContent(FileCreationWithContentRequest, FileCreationResponse, String)}
-     */
-    @Test
-    void testUploadContent6() throws UnsupportedEncodingException, RestClientException {
-        //   Diffblue Cover was unable to write a Spring test,
-        //   so wrote a non-Spring test instead.
-        //   Reason: R027 Missing beans when creating Spring context.
-        //   Failed to create Spring context due to missing beans
-        //   in the current Spring profile:
-        //       it.pagopa.pn.f24.config.F24Config
-        //       it.pagopa.pn.f24.middleware.msclient.safestorage.PnSafeStorageClientImpl
-        //   See https://diff.blue/R027 to resolve this issue.
-
-        RestTemplate restTemplate = mock(RestTemplate.class);
-        when(restTemplate.exchange(any(), any(), any(), (Class<Object>) any()))
-                .thenReturn(new ResponseEntity<>(HttpStatus.CONTINUE));
-        FileUploadApi fileUploadApi = new FileUploadApi();
-        FileDownloadApi fileDownloadApi = new FileDownloadApi();
-        PnSafeStorageClientImpl pnSafeStorageClientImpl = new PnSafeStorageClientImpl(fileUploadApi, fileDownloadApi,
-                new F24Config(), restTemplate);
-        FileCreationWithContentRequest fileCreationWithContentRequest = mock(FileCreationWithContentRequest.class);
-        when(fileCreationWithContentRequest.getContent()).thenReturn("AAAAAAAA".getBytes("UTF-8"));
-        when(fileCreationWithContentRequest.getContentType()).thenReturn("text/plain");
-        FileCreationResponse fileCreationResponse = mock(FileCreationResponse.class);
-        when(fileCreationResponse.getUploadMethod()).thenThrow(new PnInternalException("An error occurred"));
-        when(fileCreationResponse.getKey()).thenReturn("Key");
-        when(fileCreationResponse.getSecret()).thenReturn("Secret");
-        when(fileCreationResponse.getUploadUrl()).thenReturn("https://example.org/example");
-        assertThrows(PnInternalException.class,
-                () -> pnSafeStorageClientImpl.uploadContent(fileCreationWithContentRequest, fileCreationResponse, "Sha256"));
-        verify(fileCreationWithContentRequest).getContent();
-        verify(fileCreationWithContentRequest).getContentType();
-        verify(fileCreationResponse).getUploadMethod();
-        verify(fileCreationResponse).getKey();
-        verify(fileCreationResponse).getSecret();
-        verify(fileCreationResponse).getUploadUrl();
-    }
-
-    /**
-     * Method under test: {@link PnSafeStorageClientImpl#uploadContent(FileCreationWithContentRequest, FileCreationResponse, String)}
-     */
-    @Test
-    void testUploadContent7() throws UnsupportedEncodingException, RestClientException {
-        //   Diffblue Cover was unable to write a Spring test,
-        //   so wrote a non-Spring test instead.
-        //   Reason: R027 Missing beans when creating Spring context.
-        //   Failed to create Spring context due to missing beans
-        //   in the current Spring profile:
-        //       it.pagopa.pn.f24.config.F24Config
-        //       it.pagopa.pn.f24.middleware.msclient.safestorage.PnSafeStorageClientImpl
-        //   See https://diff.blue/R027 to resolve this issue.
-
-        ResponseEntity<Object> responseEntity = (ResponseEntity<Object>) mock(ResponseEntity.class);
-        when(responseEntity.getStatusCodeValue()).thenThrow(new PnInternalException("An error occurred"));
-        RestTemplate restTemplate = mock(RestTemplate.class);
-        when(restTemplate.exchange(any(), any(), any(), (Class<Object>) any()))
-                .thenReturn(responseEntity);
-        FileUploadApi fileUploadApi = new FileUploadApi();
-        FileDownloadApi fileDownloadApi = new FileDownloadApi();
-        PnSafeStorageClientImpl pnSafeStorageClientImpl = new PnSafeStorageClientImpl(fileUploadApi, fileDownloadApi,
-                new F24Config(), restTemplate);
-        FileCreationWithContentRequest fileCreationWithContentRequest = mock(FileCreationWithContentRequest.class);
-        when(fileCreationWithContentRequest.getContent()).thenReturn("AAAAAAAA".getBytes("UTF-8"));
-        when(fileCreationWithContentRequest.getContentType()).thenReturn("text/plain");
-        FileCreationResponse fileCreationResponse = mock(FileCreationResponse.class);
-        when(fileCreationResponse.getUploadMethod()).thenReturn(FileCreationResponse.UploadMethodEnum.PUT);
-        when(fileCreationResponse.getKey()).thenReturn("Key");
-        when(fileCreationResponse.getSecret()).thenReturn("Secret");
-        when(fileCreationResponse.getUploadUrl()).thenReturn("https://example.org/example");
-        assertThrows(PnInternalException.class,
-                () -> pnSafeStorageClientImpl.uploadContent(fileCreationWithContentRequest, fileCreationResponse, "Sha256"));
-        verify(restTemplate).exchange(any(), any(), any(), (Class<Object>) any());
-        verify(responseEntity).getStatusCodeValue();
-        verify(fileCreationWithContentRequest).getContent();
-        verify(fileCreationWithContentRequest).getContentType();
-        verify(fileCreationResponse).getUploadMethod();
-        verify(fileCreationResponse).getKey();
-        verify(fileCreationResponse).getSecret();
-        verify(fileCreationResponse).getUploadUrl();
-    }
-
-    /**
-     * Method under test: {@link PnSafeStorageClientImpl#uploadContent(FileCreationWithContentRequest, FileCreationResponse, String)}
-     */
-    @Test
-    void testUploadContent8() throws UnsupportedEncodingException, RestClientException {
-        //   Diffblue Cover was unable to write a Spring test,
-        //   so wrote a non-Spring test instead.
-        //   Reason: R027 Missing beans when creating Spring context.
-        //   Failed to create Spring context due to missing beans
-        //   in the current Spring profile:
-        //       it.pagopa.pn.f24.config.F24Config
-        //       it.pagopa.pn.f24.middleware.msclient.safestorage.PnSafeStorageClientImpl
-        //   See https://diff.blue/R027 to resolve this issue.
-
-        new PnInternalException("An error occurred");
-        ResponseEntity<Object> responseEntity = (ResponseEntity<Object>) mock(ResponseEntity.class);
-        when(responseEntity.getStatusCodeValue()).thenReturn(42);
-        RestTemplate restTemplate = mock(RestTemplate.class);
-        when(restTemplate.exchange(any(), any(), any(), (Class<Object>) any()))
-                .thenReturn(responseEntity);
-        FileUploadApi fileUploadApi = new FileUploadApi();
-        FileDownloadApi fileDownloadApi = new FileDownloadApi();
-        PnSafeStorageClientImpl pnSafeStorageClientImpl = new PnSafeStorageClientImpl(fileUploadApi, fileDownloadApi,
-                new F24Config(), restTemplate);
-        FileCreationWithContentRequest fileCreationWithContentRequest = mock(FileCreationWithContentRequest.class);
-        when(fileCreationWithContentRequest.getContent()).thenReturn("AAAAAAAA".getBytes("UTF-8"));
-        when(fileCreationWithContentRequest.getContentType()).thenReturn("text/plain");
-        FileCreationResponse fileCreationResponse = mock(FileCreationResponse.class);
-        when(fileCreationResponse.getUploadMethod()).thenReturn(FileCreationResponse.UploadMethodEnum.POST);
-        when(fileCreationResponse.getKey()).thenReturn("Key");
-        when(fileCreationResponse.getSecret()).thenReturn("Secret");
-        when(fileCreationResponse.getUploadUrl()).thenReturn("https://example.org/example");
-        assertThrows(PnInternalException.class,
-                () -> pnSafeStorageClientImpl.uploadContent(fileCreationWithContentRequest, fileCreationResponse, "Sha256"));
-        verify(restTemplate).exchange(any(), any(), any(), (Class<Object>) any());
-        verify(responseEntity).getStatusCodeValue();
-        verify(fileCreationWithContentRequest).getContent();
-        verify(fileCreationWithContentRequest).getContentType();
-        verify(fileCreationResponse).getUploadMethod();
-        verify(fileCreationResponse).getKey();
-        verify(fileCreationResponse).getSecret();
-        verify(fileCreationResponse).getUploadUrl();
-    }
 
     /**
      * Method under test: {@link PnSafeStorageClientImpl#downloadPieceOfContent(String, long)}
      */
     @Test
     void testDownloadPieceOfContent() {
-        //   Diffblue Cover was unable to write a Spring test,
-        //   so wrote a non-Spring test instead.
-        //   Reason: R027 Missing beans when creating Spring context.
-        //   Failed to create Spring context due to missing beans
-        //   in the current Spring profile:
-        //       it.pagopa.pn.f24.config.F24Config
-        //       it.pagopa.pn.f24.middleware.msclient.safestorage.PnSafeStorageClientImpl
-        //   See https://diff.blue/R027 to resolve this issue.
-
         FileUploadApi fileUploadApi = new FileUploadApi();
         FileDownloadApi fileDownloadApi = new FileDownloadApi();
         assertThrows(PnInternalException.class,
@@ -289,14 +138,6 @@ class PnSafeStorageClientImplTest {
      */
     @Test
     void testDownloadPieceOfContent2() {
-        //   Diffblue Cover was unable to write a Spring test,
-        //   so wrote a non-Spring test instead.
-        //   Reason: R027 Missing beans when creating Spring context.
-        //   Failed to create Spring context due to missing beans
-        //   in the current Spring profile:
-        //       it.pagopa.pn.f24.config.F24Config
-        //       it.pagopa.pn.f24.middleware.msclient.safestorage.PnSafeStorageClientImpl
-        //   See https://diff.blue/R027 to resolve this issue.
 
         FileUploadApi fileUploadApi = new FileUploadApi();
         FileDownloadApi fileDownloadApi = new FileDownloadApi();

@@ -57,17 +57,17 @@ public class F24SimplifiedConverter extends F24Converter {
         return paymentReasonSection;
     }
 
-    private PaymentReasonRecord convertReasonRecord(SimplifiedPaymentRecord record) {
+    private PaymentReasonRecord convertReasonRecord(SimplifiedPaymentRecord simplifiedPaymentRecord) {
         PaymentReasonRecord paymentReasonRecord = new PaymentReasonRecord();
-        paymentReasonRecord.setSection(record.getSection());
-        paymentReasonRecord.setAdvancePayment(record.getAdvancePayment());
-        paymentReasonRecord.setFullPayment(record.getFullPayment());
-        paymentReasonRecord.setYear(record.getYear());
-        paymentReasonRecord.setReconsideration(record.getReconsideration());
-        paymentReasonRecord.setMunicipalityCode(record.getMunicipality());
-        paymentReasonRecord.setPropertiesChanges(record.getPropertiesChanges());
-        paymentReasonRecord.setTaxTypeCode(record.getTaxType());
-        paymentReasonRecord.setNumberOfProperties(record.getNumberOfProperties());
+        paymentReasonRecord.setSection(simplifiedPaymentRecord.getSection());
+        paymentReasonRecord.setAdvancePayment(simplifiedPaymentRecord.getAdvancePayment());
+        paymentReasonRecord.setFullPayment(simplifiedPaymentRecord.getFullPayment());
+        paymentReasonRecord.setYear(simplifiedPaymentRecord.getYear());
+        paymentReasonRecord.setReconsideration(simplifiedPaymentRecord.getReconsideration());
+        paymentReasonRecord.setMunicipalityCode(simplifiedPaymentRecord.getMunicipality());
+        paymentReasonRecord.setPropertiesChanges(simplifiedPaymentRecord.getPropertiesChanges());
+        paymentReasonRecord.setTaxTypeCode(simplifiedPaymentRecord.getTaxType());
+        paymentReasonRecord.setNumberOfProperties(simplifiedPaymentRecord.getNumberOfProperties());
         return paymentReasonRecord;
     }
 }

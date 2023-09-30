@@ -22,13 +22,13 @@ public abstract class F24Converter {
     }
 
     private org.f24.dto.component.Tax convertTreasuryRecord(Tax tax) {
-        org.f24.dto.component.Tax record = new org.f24.dto.component.Tax();
-        record.setCreditAmount(tax.getCredit());
-        record.setDebitAmount(tax.getDebit());
-        record.setInstallment(tax.getInstallment());
-        record.setYear(tax.getYear());
-        record.setTaxTypeCode(tax.getTaxType());
-        return record;
+        org.f24.dto.component.Tax taxRecord = new org.f24.dto.component.Tax();
+        taxRecord.setCreditAmount(tax.getCredit());
+        taxRecord.setDebitAmount(tax.getDebit());
+        taxRecord.setInstallment(tax.getInstallment());
+        taxRecord.setYear(tax.getYear());
+        taxRecord.setTaxTypeCode(tax.getTaxType());
+        return taxRecord;
     }
 
     protected org.f24.dto.component.InpsSection convertInpsSection(InpsSection dvInpsSection) {

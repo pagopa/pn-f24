@@ -6,12 +6,9 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
-import it.pagopa.pn.f24.middleware.dao.f24file.dynamo.entity.F24FileStatusEntity;
 import it.pagopa.pn.f24.middleware.dao.f24file.dynamo.entity.F24RequestStatusEntity;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import software.amazon.awssdk.enhanced.dynamodb.AttributeValueType;
 import software.amazon.awssdk.enhanced.dynamodb.EnhancedType;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
@@ -57,7 +54,7 @@ public class F24RequestStatusEntityConverterTest {
         F24RequestStatusEntity f24RequestStatusEntity = converter.transformTo(
                 AttributeValue.builder().s("PROCESSING").build()
         );
-        Assertions.assertEquals(f24RequestStatusEntity, F24RequestStatusEntity.PROCESSING);
+        Assertions.assertEquals(F24RequestStatusEntity.PROCESSING, f24RequestStatusEntity);
     }
 
     @Test

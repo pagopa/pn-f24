@@ -75,7 +75,7 @@ class F24MetadataSetRepositoryImplTest {
     }
 
     @Test
-    @Disabled
+    @Disabled("To repair")
     void putItemIfAbsent() {
         when(dynamoDbEnhancedAsyncClient.table(any(),any())).thenReturn(dynamoDbAsyncTable);
 

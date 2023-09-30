@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import it.pagopa.pn.f24.generated.openapi.server.v1.dto.*;
 import java.util.List;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.mock.mockito.MockBean;
 
 class ExciseMetadataInspectorTest {
     /**
