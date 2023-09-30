@@ -1,7 +1,6 @@
 package it.pagopa.pn.f24.middleware.queue.consumer.service;
 
 import it.pagopa.pn.api.dto.events.PnF24MetadataValidationEndEvent;
-import it.pagopa.pn.f24.config.F24Config;
 import it.pagopa.pn.f24.service.MetadataValidator;
 import it.pagopa.pn.f24.dto.*;
 import it.pagopa.pn.f24.exception.PnF24ExceptionCodes;
@@ -29,13 +28,12 @@ public class ValidateMetadataEventService {
     private final SafeStorageService safeStorageService;
     private final EventBridgeProducer<PnF24MetadataValidationEndEvent> eventBridgeProducer;
     private final MetadataValidator metadataValidator;
-    private final F24Config f24Config;
-    public ValidateMetadataEventService(F24MetadataSetDao f24MetadataSetDao, SafeStorageService safeStorageService, EventBridgeProducer<PnF24MetadataValidationEndEvent> eventBridgeProducer, MetadataValidator metadataValidator, F24Config f24Config) {
+
+    public ValidateMetadataEventService(F24MetadataSetDao f24MetadataSetDao, SafeStorageService safeStorageService, EventBridgeProducer<PnF24MetadataValidationEndEvent> eventBridgeProducer, MetadataValidator metadataValidator) {
         this.f24MetadataSetDao = f24MetadataSetDao;
         this.safeStorageService = safeStorageService;
         this.eventBridgeProducer = eventBridgeProducer;
         this.metadataValidator = metadataValidator;
-        this.f24Config = f24Config;
     }
 
     public Mono<Void> handleMetadataValidation(ValidateMetadataSetEvent.Payload payload) {
@@ -53,29 +51,29 @@ public class ValidateMetadataEventService {
     private Mono<F24MetadataSet> getMetadataSet(String setId) {
         return f24MetadataSetDao.getItem(setId)
                 .switchIfEmpty(Mono.defer(
-                        () -> {
-                            log.warn("MetadataSet with setId {} not found on dynamo", setId);
-                            return Mono.error(
-                                    new PnNotFoundException(
-                                            "MetadataSet not found",
-                                            String.format(PnF24ExceptionCodes.ERROR_MESSAGE_F24_METADATA_SET_NOT_FOUND, setId),
-                                            PnF24ExceptionCodes.ERROR_CODE_F24_METADATA_NOT_FOUND
-                                    )
-                            );
-                        }
-                    )
+                                () -> {
+                                    log.warn("MetadataSet with setId {} not found on dynamo", setId);
+                                    return Mono.error(
+                                            new PnNotFoundException(
+                                                    "MetadataSet not found",
+                                                    String.format(PnF24ExceptionCodes.ERROR_MESSAGE_F24_METADATA_SET_NOT_FOUND, setId),
+                                                    PnF24ExceptionCodes.ERROR_CODE_F24_METADATA_NOT_FOUND
+                                            )
+                                    );
+                                }
+                        )
                 );
     }
 
     private Mono<Void> startMetadataValidation(F24MetadataSet f24MetadataSet) {
-        if(f24MetadataSet.getStatus().equals(F24MetadataStatus.VALIDATION_ENDED)) {
+        if (f24MetadataSet.getStatus().equals(F24MetadataStatus.VALIDATION_ENDED)) {
             log.debug("Metadata with setId {} already saved and validated", f24MetadataSet.getSetId());
             return Mono.empty();
         }
 
         return downloadMetadataSetFromSafeStorage(f24MetadataSet.getFileKeys())
-            .map(this::validateMetadataList)
-            .flatMap(f24MetadataValidationIssues -> endValidationProcess(f24MetadataValidationIssues, f24MetadataSet));
+                .map(this::validateMetadataList)
+                .flatMap(f24MetadataValidationIssues -> endValidationProcess(f24MetadataValidationIssues, f24MetadataSet));
     }
 
     private Mono<List<MetadataToValidate>> downloadMetadataSetFromSafeStorage(Map<String, F24MetadataRef> fileKeys) {
@@ -114,12 +112,12 @@ public class ValidateMetadataEventService {
     private Mono<Void> endValidationProcess(List<F24MetadataValidationIssue> f24MetadataValidationIssues, F24MetadataSet f24MetadataSet) {
         return this.f24MetadataSetDao.getItem(f24MetadataSet.getSetId(), true)
                 .flatMap(refreshedF24MetadataSet -> {
-                    if(refreshedF24MetadataSet.getHaveToSendValidationEvent()) {
+                    if (Boolean.TRUE.equals(refreshedF24MetadataSet.getHaveToSendValidationEvent())) {
                         return sendValidationEndedEvent(refreshedF24MetadataSet, f24MetadataValidationIssues);
-                    } else {
-                        log.debug("MetadataSet with setId {} hasn't to send validation end event", refreshedF24MetadataSet.getSetId());
-                        return updateMetadataSetWithValidation(refreshedF24MetadataSet, f24MetadataValidationIssues, false);
                     }
+
+                    log.debug("MetadataSet with setId {} hasn't to send validation end event", refreshedF24MetadataSet.getSetId());
+                    return updateMetadataSetWithValidation(refreshedF24MetadataSet, f24MetadataValidationIssues, false);
                 });
     }
 
@@ -136,7 +134,7 @@ public class ValidateMetadataEventService {
     private Mono<Void> updateMetadataSetWithValidation(F24MetadataSet f24MetadataSet, List<F24MetadataValidationIssue> f24MetadataValidationIssues, boolean validationEventSent) {
         f24MetadataSet.setUpdated(Instant.now());
         f24MetadataSet.setValidationEventSent(validationEventSent);
-        if(f24MetadataValidationIssues != null) {
+        if (f24MetadataValidationIssues != null) {
             f24MetadataSet.setValidationResult(f24MetadataValidationIssues);
         }
         f24MetadataSet.setStatus(F24MetadataStatus.VALIDATION_ENDED);

@@ -25,10 +25,7 @@ import static it.pagopa.pn.f24.middleware.dao.f24metadataset.dynamo.entity.F24Me
 public class F24MetadataSetRepositoryImpl implements F24MetadataSetDao {
     private final DynamoDbAsyncTable<F24MetadataSetEntity> table;
 
-    private final F24Config f24Config;
-
     public F24MetadataSetRepositoryImpl(DynamoDbEnhancedAsyncClient dynamoDbEnhancedClient, F24Config f24Config) {
-        this.f24Config = f24Config;
         this.table = dynamoDbEnhancedClient.table(f24Config.getMetadataSetTableName(), TableSchema.fromBean(F24MetadataSetEntity.class));
     }
 
@@ -39,10 +36,8 @@ public class F24MetadataSetRepositoryImpl implements F24MetadataSetDao {
 
     @Override
     public Mono<F24MetadataSet> getItem(String setId, boolean isConsistentRead) {
-        Key pk = Key.builder().partitionValue(setId).build();
-
         GetItemEnhancedRequest getItemEnhancedRequest = GetItemEnhancedRequest.builder()
-                .key(pk)
+                .key(k -> k.partitionValue(setId))
                 .consistentRead(isConsistentRead)
                 .build();
 

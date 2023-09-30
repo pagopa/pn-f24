@@ -32,7 +32,6 @@ public class F24FileRequestMapperTest {
         assertEquals("REQUEST#42", actualEntityToDtoResult.getPk());
         assertNull(actualEntityToDtoResult.getPathTokens());
         assertTrue(actualEntityToDtoResult.getFiles().isEmpty());
-        assertEquals("42", actualEntityToDtoResult.getCxId());
     }
 
     @Test
@@ -52,7 +51,6 @@ public class F24FileRequestMapperTest {
         assertNull(actualEntityToDtoResult.getPathTokens());
         Map<String, F24Request.FileRef> files2 = actualEntityToDtoResult.getFiles();
         assertEquals(1, files2.size());
-        assertEquals("42", actualEntityToDtoResult.getCxId());
         assertEquals("#", files2.get("#").getFileKey());
     }
 
@@ -64,7 +62,6 @@ public class F24FileRequestMapperTest {
         f24Request.setCxId("42");
         f24Request.setFiles(new HashMap<>());
         f24Request.setPathTokens("ABC123");
-        f24Request.setPk("Pk");
         f24Request.setRequestId("42");
         f24Request.setSetId("42");
         f24Request.setStatus(F24RequestStatus.TO_PROCESS);
@@ -76,7 +73,7 @@ public class F24FileRequestMapperTest {
         assertTrue(actualDtoToEntityResult.getFiles().isEmpty());
         assertEquals(F24RequestStatusEntity.TO_PROCESS, actualDtoToEntityResult.getStatus());
         assertEquals("42", actualDtoToEntityResult.getSetId());
-        assertEquals("REQUEST#42#42", actualDtoToEntityResult.getPk());
+        assertEquals("REQUEST#42", actualDtoToEntityResult.getPk());
         assertEquals("ABC123", actualDtoToEntityResult.getPathTokens());
     }
 

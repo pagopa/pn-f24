@@ -1,6 +1,5 @@
-package it.pagopa.pn.f24.exceptions;
+package it.pagopa.pn.f24.exception;
 
-import it.pagopa.pn.f24.exception.PnConflictException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 public class PnF24AsyncEventBuilderHelper {
+    private PnF24AsyncEventBuilderHelper() { }
     private static final String OK_STATUS = "OK";
     private static final String KO_STATUS = "KO";
     public static PnF24MetadataValidationEndEvent buildMetadataValidationEndEvent(String cxId, String setId, List<F24MetadataValidationIssue> errors) {
@@ -24,7 +25,7 @@ public class PnF24AsyncEventBuilderHelper {
     }
 
     private static PnF24MetadataValidationEndEventPayload buildMetadataValidationEndPayload(String setId, List<F24MetadataValidationIssue> errors) {
-        String status = errors != null && errors.size() != 0 ? KO_STATUS : OK_STATUS;
+        String status = errors != null && !errors.isEmpty() ? KO_STATUS : OK_STATUS;
 
         return PnF24MetadataValidationEndEventPayload.builder()
                 .setId(setId)

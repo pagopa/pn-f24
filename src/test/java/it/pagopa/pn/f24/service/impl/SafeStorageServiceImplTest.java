@@ -149,4 +149,21 @@ class SafeStorageServiceImplTest {
                 .expectComplete()
                 .verify(Duration.ofSeconds(10 + 1));
     }
+
+    @Test
+    void downloadPieceOfContentShouldGenerateErrorMono() {
+
+        // Chiamata al metodo downloadPieceOfContent con parametri appropriati che genereranno un errore
+        String fileKey = "yourFileKey";
+        String url = "yourInvalidUrl";
+        long maxSize = 1000L;
+
+        Mono<byte[]> resultMono = safeStorageService.downloadPieceOfContent(fileKey, url, maxSize);
+
+        // Verifica che il resultMono generi un'errore di tipo PnInternalException
+        StepVerifier.create(resultMono)
+                .expectError(PnInternalException.class)
+                .verify();
+    }
+
 }

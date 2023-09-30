@@ -39,7 +39,6 @@ public class F24FileCacheMapperTest {
         f24File.setCreated(LocalDate.of(1970, 1, 1).atStartOfDay().atZone(ZoneOffset.UTC).toInstant());
         f24File.setFileKey("File Key");
         f24File.setPathTokens("ABC123");
-        f24File.setPk("Pk");
         f24File.setRequestIds(new ArrayList<>());
         f24File.setSetId("42");
         f24File.setStatus(F24FileStatus.TO_PROCESS);

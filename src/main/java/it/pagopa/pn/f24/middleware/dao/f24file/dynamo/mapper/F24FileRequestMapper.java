@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class F24FileRequestMapper {
-
+    private F24FileRequestMapper() { }
     public static F24Request entityToDto(F24FileRequestEntity f24FileRequestEntity){
         F24Request f24Request = new F24Request();
         f24Request.setPk(f24FileRequestEntity.getPk());

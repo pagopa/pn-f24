@@ -8,6 +8,7 @@ import it.pagopa.pn.f24.middleware.queue.producer.events.ValidateMetadataSetEven
 import java.time.Instant;
 
 public class InternalMetadataEventBuilder {
+    private InternalMetadataEventBuilder() { }
     private static final String VALIDATE_METADATA_EVENT_ID_DESCRIPTOR = "validate_f24_metadata_";
 
     public static ValidateMetadataSetEvent buildValidateMetadataEvent(String setId) {

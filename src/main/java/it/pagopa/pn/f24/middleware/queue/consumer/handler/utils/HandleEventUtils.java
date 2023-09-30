@@ -44,27 +44,13 @@ public class HandleEventUtils {
         return createdAt != null ? Instant.parse((CharSequence) createdAt) : null;
     }
 
-    public static void addSetIdAndCxIdToMdc(String setId, String cxId) {
-        addSetIdToMdc(setId);
-        addCxIdToMdc(cxId);
-    }
-
-    public static void addCxIdAndRequestIdToMdc(String cxId, String requestId) {
-        addCxIdToMdc(cxId);
-        addRequestIdToMdc(requestId);
-    }
-
-    private static void addCxIdToMdc(String cxId) {
-        MDC.put(MDCUtils.MDC_CX_ID_KEY, cxId);
-    }
-
-    //TODO Aggiungere key in MDCUtils
+    //TODO sostituire con MDCUtils.MDC_PN_SET_ID
     public static void addSetIdToMdc(String setId) {
         MDC.put("setId", setId);
     }
-    //TODO Aggiungere key in MDCUtils
+
     public static void addRequestIdToMdc(String requestId) {
-        MDC.put("requestId", requestId);
+        MDC.put(MDCUtils.MDC_PN_CTX_REQUEST_ID, requestId);
     }
 
     public static void addCorrelationIdToMdc(String correlationId) {
