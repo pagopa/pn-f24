@@ -4,7 +4,7 @@ import lombok.ToString;
 
 @ToString
 public enum F24FileStatusEntity {
-    PROCESSING("PROCESSING"),
+    TO_PROCESS("TO_PROCESS"),
     GENERATED("GENERATED"),
     DONE("DONE");
 

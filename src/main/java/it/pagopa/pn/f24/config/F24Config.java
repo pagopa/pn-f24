@@ -9,12 +9,15 @@ import org.springframework.context.annotation.Import;
 import java.util.List;
 
 @Configuration
-@ConfigurationProperties( prefix = "pn.f24")
+@ConfigurationProperties(prefix = "pn.f24")
 @Data
 @Import(SharedAutoConfiguration.class)
 public class F24Config {
     private String safeStorageBaseUrl;
-    private String msToWaitForSafeStorage;
+    private Integer pollingIntervalSec;
+    private Integer safeStorageExecutionLimitMin;
+    private Integer defaultRetryAfterMilliSec;
+    private Integer pollingTimeoutSec;
     private String safeStorageCxId;
     private String safeStorageMetadataDocType;
     private String safeStorageF24DocType;
@@ -24,7 +27,8 @@ public class F24Config {
     private String safeStorageQueueName;
     private EventBus eventBus;
     private List<String> corsAllowedDomains;
-
+    private Integer retentionForF24RequestsInDays;
+    private Integer retentionForF24FilesInDays;
     @Data
     public static class EventBus {
         private String name;

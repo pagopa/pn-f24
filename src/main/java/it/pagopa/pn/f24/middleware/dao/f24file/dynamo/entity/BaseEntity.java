@@ -14,8 +14,8 @@ import java.time.Instant;
 public class BaseEntity {
     public static final String ITEMS_SEPARATOR = "#";
     public static final String COL_PK = "pk";
-    private static final String COL_CREATED = "created";
-    private static final String COL_UPDATED = "updated";
+    public static final String COL_CREATED = "created";
+    public static final String COL_UPDATED = "updated";
 
     protected BaseEntity(){
         this.setCreated(Instant.now());

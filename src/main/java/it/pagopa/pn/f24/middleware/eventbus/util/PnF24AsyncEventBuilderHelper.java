@@ -1,12 +1,13 @@
 package it.pagopa.pn.f24.middleware.eventbus.util;
 
-import it.pagopa.pn.api.dto.events.PnF24MetadataValidationEndEvent;
-import it.pagopa.pn.api.dto.events.PnF24MetadataValidationEndEventPayload;
-import it.pagopa.pn.api.dto.events.PnF24MetadataValidationIssue;
+import it.pagopa.pn.api.dto.events.*;
 import it.pagopa.pn.f24.dto.F24MetadataValidationIssue;
+import it.pagopa.pn.f24.dto.F24Request;
+import it.pagopa.pn.f24.middleware.dao.f24file.dynamo.entity.F24FileCacheEntity;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class PnF24AsyncEventBuilderHelper {
     private PnF24AsyncEventBuilderHelper() { }
@@ -46,5 +47,42 @@ public class PnF24AsyncEventBuilderHelper {
                         .build()
                 )
                 .toList();
+    }
+
+    public static PnF24PdfSetReadyEvent buildPdfSetReadyEvent(F24Request f24Request) {
+        //All files in the list should share cxId, requestId and setId.
+        return PnF24PdfSetReadyEvent.builder()
+                .detail(
+                        PnF24PdfSetReadyEvent.Detail.builder()
+                                .clientId(f24Request.getCxId())
+                                .pdfSetReady(buildPdfSetReadyPayload(f24Request))
+                                .build()
+                )
+                .build();
+    }
+
+    private static PnF24PdfSetReadyEventPayload buildPdfSetReadyPayload(F24Request f24Request) {
+        return PnF24PdfSetReadyEventPayload.builder()
+                .requestId(f24Request.getRequestId())
+                .status(OK_STATUS)
+                .generatedPdfsUrls(buildGeneratedPdfsUrls(f24Request.getFiles()))
+                .build();
+    }
+
+    private static List<PnF24PdfSetReadyEventItem> buildGeneratedPdfsUrls(Map<String, F24Request.FileRef> f24Files) {
+        return f24Files.entrySet().stream()
+                .map(entry ->
+                    PnF24PdfSetReadyEventItem.builder()
+                            .pathTokens(extractPathTokensFromFilePk(entry.getKey()))
+                            .uri(entry.getValue().getFileKey())
+                            .build()
+                ).toList();
+    }
+
+    private static String extractPathTokensFromFilePk(String pk) {
+         //TODO Trovare modo migliore di gestire chiave
+         F24FileCacheEntity entity = new F24FileCacheEntity();
+         entity.setPk(pk);
+         return entity.getPathTokens();
     }
 }

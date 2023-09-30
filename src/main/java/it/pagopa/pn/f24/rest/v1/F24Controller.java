@@ -41,12 +41,16 @@ public class F24Controller implements F24ControllerApi {
     }
 
     @Override
-    public Mono<ResponseEntity<F24Response>> generatePDF(String xPagopaF24CxId, String setId, List<String> pathTokens, Integer cost,  final ServerWebExchange exchange) {
-        return null;
+    public Mono<ResponseEntity<F24Response>> generatePDF(String xPagopaF24CxId, String setId, List<String> pathTokens, Integer cost, final ServerWebExchange exchange) {
+        return f24Service.generatePDF(xPagopaF24CxId, setId, pathTokens, cost)
+                .map(ResponseEntity::ok)
+                .publishOn(scheduler);
     }
 
     @Override
     public Mono<ResponseEntity<RequestAccepted>> preparePDF(String xPagopaF24CxId, String requestId, Mono<PrepareF24Request> prepareF24Request, final ServerWebExchange exchange) {
-        return null;
+        return f24Service.preparePDF(xPagopaF24CxId, requestId, prepareF24Request)
+                .map(requestAccepted -> ResponseEntity.status(HttpStatus.ACCEPTED).body(requestAccepted))
+                .publishOn(scheduler);
     }
 }

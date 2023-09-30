@@ -1,14 +1,13 @@
 package it.pagopa.pn.f24.rest.v1;
 
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import it.pagopa.pn.f24.generated.openapi.server.v1.dto.F24Response;
 import it.pagopa.pn.f24.generated.openapi.server.v1.dto.RequestAccepted;
-import it.pagopa.pn.f24.generated.openapi.server.v1.dto.SaveF24Request;
 import it.pagopa.pn.f24.service.F24Service;
 
 import org.junit.jupiter.api.Test;
@@ -29,15 +28,15 @@ import org.springframework.web.server.session.WebSessionManager;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Scheduler;
 
+import java.util.List;
+
 @ContextConfiguration(classes = {F24Controller.class})
 @ExtendWith(SpringExtension.class)
 class F24ControllerTest {
     @MockBean
     private F24Service f24Service;
-
     @Autowired
     private F24Controller f24Controller;
-    
     @MockBean
     private Scheduler scheduler;
 
@@ -46,7 +45,7 @@ class F24ControllerTest {
      */
     @Test
     void testSaveMetadata() {
-        when(f24Service.saveMetadata(any(), any(),  any()))
+        when(f24Service.saveMetadata(any(), any(), any()))
                 .thenReturn((Mono<RequestAccepted>) mock(Mono.class));
         ServerHttpRequestDecorator serverHttpRequestDecorator = mock(ServerHttpRequestDecorator.class);
         when(serverHttpRequestDecorator.getHeaders()).thenReturn(new HttpHeaders());
@@ -57,7 +56,7 @@ class F24ControllerTest {
         DefaultServerCodecConfigurer codecConfigurer = new DefaultServerCodecConfigurer();
         f24Controller.saveMetadata("42", "42", null, new DefaultServerWebExchange(serverHttpRequestDecorator, response,
                 webSessionManager, codecConfigurer, new AcceptHeaderLocaleContextResolver()));
-        verify(f24Service).saveMetadata(any(), any(),  any());
+        verify(f24Service).saveMetadata(any(), any(), any());
         verify(serverHttpRequestDecorator).getId();
         verify(serverHttpRequestDecorator, atLeast(1)).getHeaders();
         verify(webSessionManager).getSession(any());
@@ -85,10 +84,12 @@ class F24ControllerTest {
     }
 
     /**
-     * Method under test: {@link F24Controller#preparePDF(String, String, Mono, ServerWebExchange)}
+     * Method under test: {@link F24Controller#generatePDF(String, String, List, Integer, ServerWebExchange)}
      */
     @Test
-    void testPreparePDF() {
+    void testGeneratePDF() {
+        when(f24Service.generatePDF(any(), any(), any(), any()))
+                .thenReturn((Mono<F24Response>) mock(Mono.class));
         ServerHttpRequestDecorator serverHttpRequestDecorator = mock(ServerHttpRequestDecorator.class);
         when(serverHttpRequestDecorator.getHeaders()).thenReturn(new HttpHeaders());
         when(serverHttpRequestDecorator.getId()).thenReturn("https://example.org/example");
@@ -96,8 +97,32 @@ class F24ControllerTest {
         when(webSessionManager.getSession(any())).thenReturn((Mono<WebSession>) mock(Mono.class));
         MockServerHttpResponse response = new MockServerHttpResponse();
         DefaultServerCodecConfigurer codecConfigurer = new DefaultServerCodecConfigurer();
-        assertNull(f24Controller.preparePDF("42", "42", null, new DefaultServerWebExchange(serverHttpRequestDecorator,
-                response, webSessionManager, codecConfigurer, new AcceptHeaderLocaleContextResolver())));
+        f24Controller.generatePDF("42", "42", List.of("0","0"), 1000, new DefaultServerWebExchange(serverHttpRequestDecorator,
+                response, webSessionManager, codecConfigurer, new AcceptHeaderLocaleContextResolver()));
+        verify(f24Service).generatePDF(any(), any(), any(), any());
+        verify(serverHttpRequestDecorator).getId();
+        verify(serverHttpRequestDecorator, atLeast(1)).getHeaders();
+        verify(webSessionManager).getSession(any());
+    }
+
+
+    /**
+     * Method under test: {@link F24Controller#preparePDF(String, String, Mono, ServerWebExchange)}
+     */
+    @Test
+    void testPreparePDF() {
+        when(f24Service.preparePDF(any(), any(), any()))
+                .thenReturn((Mono<RequestAccepted>) mock(Mono.class));
+        ServerHttpRequestDecorator serverHttpRequestDecorator = mock(ServerHttpRequestDecorator.class);
+        when(serverHttpRequestDecorator.getHeaders()).thenReturn(new HttpHeaders());
+        when(serverHttpRequestDecorator.getId()).thenReturn("https://example.org/example");
+        WebSessionManager webSessionManager = mock(WebSessionManager.class);
+        when(webSessionManager.getSession(any())).thenReturn((Mono<WebSession>) mock(Mono.class));
+        MockServerHttpResponse response = new MockServerHttpResponse();
+        DefaultServerCodecConfigurer codecConfigurer = new DefaultServerCodecConfigurer();
+        f24Controller.preparePDF("42", "42", null, new DefaultServerWebExchange(serverHttpRequestDecorator,
+                response, webSessionManager, codecConfigurer, new AcceptHeaderLocaleContextResolver()));
+        verify(f24Service).preparePDF(any(), any(), any());
         verify(serverHttpRequestDecorator).getId();
         verify(serverHttpRequestDecorator, atLeast(1)).getHeaders();
         verify(webSessionManager).getSession(any());

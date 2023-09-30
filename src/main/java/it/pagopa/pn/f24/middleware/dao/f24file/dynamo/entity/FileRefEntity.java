@@ -9,6 +9,6 @@ import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
 @AllArgsConstructor
 @ToString
 @DynamoDbBean
-public class FileKeyEntity {
+public class FileRefEntity {
     private String fileKey;
 }

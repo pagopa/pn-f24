@@ -18,6 +18,9 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
+import java.time.Duration;
+import java.util.Objects;
+
 class SafeStorageServiceImplTest {
     @Mock
     private PnSafeStorageClient safeStorageClient;
@@ -126,6 +129,25 @@ class SafeStorageServiceImplTest {
         byte[] response = responseMono.block();
         Assertions.assertNotNull(response);
 
+    }
+
+    @Test
+    @ExtendWith(SpringExtension.class)
+    void getFilePollingSafeStorage() {
+
+        FileDownloadResponse fileDownloadResponse = new FileDownloadResponse();
+        FileDownloadInfo fileDownloadInfo = new FileDownloadInfo();
+
+        fileDownloadInfo.setUrl("url");
+        fileDownloadResponse.setDownload(fileDownloadInfo);
+
+        Mockito.when(safeStorageClient.getFile(Mockito.anyString(), Mockito.anyBoolean()))
+                .thenReturn(Mono.just(fileDownloadResponse));
+
+        StepVerifier.create(safeStorageService.getFilePolling("filekey", false, 3, 1))
+                .expectNextMatches(f -> Objects.equals(f.getDownload().getUrl(), "url"))
+                .expectComplete()
+                .verify(Duration.ofSeconds(10 + 1));
     }
 
     @Test

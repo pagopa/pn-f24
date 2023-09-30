@@ -14,25 +14,27 @@ public class F24FileRequestEntity extends BaseEntity {
     private static final String PK_PREFIX = "REQUEST#";
     public static final String COL_FILES = "files";
     public static final String COL_SET_ID = "setId";
+    public static final String COL_CX_ID = "cxId";
     public static final String COL_PATH_TOKENS = "pathTokens";
     public static final String COL_COST = "cost";
-    private static final String COL_RECORD_VERSION = "recordVersion";
+    public static final String COL_RECORD_VERSION = "recordVersion";
     public static final String COL_STATUS = "status";
     public static final String COL_TTL = "ttl";
-
-    private static final int CX_ID_INDEX = 1;
-    private static final int REQUEST_ID_INDEX = 2;
+    private static final int REQUEST_ID_INDEX = 1;
 
 
-    public F24FileRequestEntity(String cxId, String requestId) {
-        this.setPk(cxId, requestId);
+    public F24FileRequestEntity(String requestId) {
+        this.setPk(PK_PREFIX + requestId);
     }
 
     @Getter(onMethod = @__({@DynamoDbAttribute(COL_FILES)}))
-    private Map<String, FileKeyEntity> files;
+    private Map<String, FileRefEntity> files;
 
     @Getter(onMethod = @__({@DynamoDbAttribute(COL_SET_ID)}))
     private String setId;
+
+    @Getter(onMethod = @__({@DynamoDbAttribute(COL_CX_ID)}))
+    private String cxId;
 
     @Getter(onMethod = @__({@DynamoDbAttribute(COL_PATH_TOKENS)}))
     private String pathTokens;
@@ -49,14 +51,6 @@ public class F24FileRequestEntity extends BaseEntity {
     @Getter(onMethod = @__({@DynamoDbAttribute(COL_TTL)}))
     private Long ttl;
 
-    public void setPk(String cxId, String requestId) {
-        super.setPk(PK_PREFIX + cxId + ITEMS_SEPARATOR + requestId);
-    }
-
-    @DynamoDbIgnore
-    public String getCxId() {
-        return this.getPk().split(ITEMS_SEPARATOR)[CX_ID_INDEX];
-    }
     @DynamoDbIgnore
     public String getRequestId() { return this.getPk().split(ITEMS_SEPARATOR)[REQUEST_ID_INDEX]; }
 }

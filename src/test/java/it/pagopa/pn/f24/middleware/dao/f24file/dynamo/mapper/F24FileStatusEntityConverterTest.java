@@ -22,10 +22,10 @@ class F24FileStatusEntityConverterTest {
     }
     @Test
     void testTransformFrom() {
-        AttributeValue actualTransformFromResult = converter.transformFrom(F24FileStatusEntity.PROCESSING);
+        AttributeValue actualTransformFromResult = converter.transformFrom(F24FileStatusEntity.TO_PROCESS);
         assertNull(actualTransformFromResult.b());
         assertEquals(AttributeValue.Type.S, actualTransformFromResult.type());
-        assertEquals("PROCESSING", actualTransformFromResult.s());
+        assertEquals("TO_PROCESS", actualTransformFromResult.s());
         assertNull(actualTransformFromResult.nul());
         assertNull(actualTransformFromResult.n());
         assertFalse(actualTransformFromResult.hasSs());
@@ -53,10 +53,10 @@ class F24FileStatusEntityConverterTest {
     }
     @Test
     void testTransformFrom3() {
-        AttributeValue actualTransformFromResult = converter.transformFrom(F24FileStatusEntity.PROCESSING);
+        AttributeValue actualTransformFromResult = converter.transformFrom(F24FileStatusEntity.TO_PROCESS);
         assertNull(actualTransformFromResult.b());
         assertEquals(AttributeValue.Type.S, actualTransformFromResult.type());
-        assertEquals("PROCESSING", actualTransformFromResult.s());
+        assertEquals("TO_PROCESS", actualTransformFromResult.s());
         assertNull(actualTransformFromResult.nul());
         assertNull(actualTransformFromResult.n());
         assertFalse(actualTransformFromResult.hasSs());
@@ -70,9 +70,9 @@ class F24FileStatusEntityConverterTest {
     @Test
     void testTransformTo() {
         F24FileStatusEntity f24FileStatusEntity = converter.transformTo(
-                AttributeValue.builder().s("PROCESSING").build()
+                AttributeValue.builder().s("TO_PROCESS").build()
         );
-        assertEquals(F24FileStatusEntity.PROCESSING, f24FileStatusEntity);
+        assertEquals(F24FileStatusEntity.TO_PROCESS, f24FileStatusEntity);
     }
 
     @Test

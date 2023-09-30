@@ -13,7 +13,12 @@ import it.pagopa.pn.f24.util.Sha256Handler;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClientException;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
+
+import java.time.Duration;
 
 import static it.pagopa.pn.f24.exception.PnF24ExceptionCodes.ERROR_CODE_F24_READ_FILE_ERROR;
 import static it.pagopa.pn.f24.exception.PnF24ExceptionCodes.ERROR_CODE_F24_UPLOADFILEERROR;
@@ -101,5 +106,20 @@ public class SafeStorageServiceImpl implements SafeStorageService {
                     MDC.remove(MDCUtils.MDC_PN_CTX_SAFESTORAGE_FILEKEY);
                     return Mono.error(new PnInternalException("Cannot update metadata", ERROR_CODE_F24_READ_FILE_ERROR, err));
                 });
+    }
+
+    public Mono<FileDownloadResponseInt> getFilePolling(String fileKey, Boolean metadataOnly, Integer pollingTimeoutSec, Integer pollingIntervalSec) {
+        log.debug("Starting polling for fileKey: {}, metadataOnly: {}, pollingTimeoutSec: {}, pollingIntervalSec: {}", fileKey, metadataOnly, pollingTimeoutSec, pollingIntervalSec);
+        return Flux.interval(Duration.ofSeconds(pollingIntervalSec))
+                .flatMap(i -> getFile(fileKey, false)
+                        .onErrorResume(WebClientException.class, e -> Mono.empty())
+                )
+                .doOnNext(response -> log.info("Polling response: {}", response))
+                .doOnError(e -> log.warn("Error polling safeStorage: " + e))
+                .takeUntil(response -> response.getDownload() != null)
+                .take(Duration.ofSeconds(pollingTimeoutSec))
+                .last()
+                .publishOn(Schedulers.boundedElastic());
+
     }
 }

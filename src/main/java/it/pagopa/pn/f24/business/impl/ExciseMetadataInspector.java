@@ -14,22 +14,70 @@ public class ExciseMetadataInspector implements MetadataInspector {
         }
 
         int applyCostCounter = 0;
-        if(f24Excise.getTreasury() != null && f24Excise.getTreasury().getRecords() != null) {
+        if (f24Excise.getTreasury() != null && f24Excise.getTreasury().getRecords() != null) {
             applyCostCounter += countElementsByPredicate(f24Excise.getTreasury().getRecords(), Tax::getApplyCost);
         }
-        if(f24Excise.getInps() != null && f24Excise.getInps().getRecords() != null) {
+        if (f24Excise.getInps() != null && f24Excise.getInps().getRecords() != null) {
             applyCostCounter += countElementsByPredicate(f24Excise.getInps().getRecords(), InpsRecord::getApplyCost);
         }
-        if(f24Excise.getRegion() != null && f24Excise.getRegion().getRecords() != null) {
+        if (f24Excise.getRegion() != null && f24Excise.getRegion().getRecords() != null) {
             applyCostCounter += countElementsByPredicate(f24Excise.getRegion().getRecords(), RegionRecord::getApplyCost);
         }
-        if(f24Excise.getLocalTax() != null && f24Excise.getLocalTax().getRecords() != null) {
+        if (f24Excise.getLocalTax() != null && f24Excise.getLocalTax().getRecords() != null) {
             applyCostCounter += countElementsByPredicate(f24Excise.getLocalTax().getRecords(), LocalTaxRecord::getApplyCost);
         }
-        if(f24Excise.getExcise() != null && f24Excise.getExcise().getRecords() != null) {
+        if (f24Excise.getExcise() != null && f24Excise.getExcise().getRecords() != null) {
             applyCostCounter += countElementsByPredicate(f24Excise.getExcise().getRecords(), ExciseTax::getApplyCost);
         }
-        
+
         return applyCostCounter;
     }
+
+    @Override
+    public void addCostToDebit(F24Metadata f24Metadata, Integer cost) {
+        if (f24Metadata.getF24Excise() != null) {
+            F24Excise f24Excise = f24Metadata.getF24Excise();
+            if (f24Excise.getTreasury() != null && f24Excise.getTreasury().getRecords() != null) {
+                for (Tax tax : f24Excise.getTreasury().getRecords()) {
+                    if (tax.getApplyCost()) {
+                        tax.setDebit(MetadataInspector.convertDebitSum(tax.getDebit(), cost));
+                        return;
+                    }
+                }
+            }
+            if (f24Excise.getInps() != null && f24Excise.getInps().getRecords() != null) {
+                for (InpsRecord inpsRecord : f24Excise.getInps().getRecords()) {
+                    if (inpsRecord.getApplyCost()) {
+                        inpsRecord.setDebit(MetadataInspector.convertDebitSum(inpsRecord.getDebit(), cost));
+                        return;
+                    }
+                }
+            }
+            if (f24Excise.getRegion() != null && f24Excise.getRegion().getRecords() != null) {
+                for (RegionRecord regionRecord : f24Excise.getRegion().getRecords()) {
+                    if (regionRecord.getApplyCost()) {
+                        regionRecord.setDebit(MetadataInspector.convertDebitSum(regionRecord.getDebit(), cost));
+                        return;
+                    }
+                }
+            }
+            if (f24Excise.getLocalTax() != null && f24Excise.getLocalTax().getRecords() != null) {
+                for (LocalTaxRecord localTaxRecord : f24Excise.getLocalTax().getRecords()) {
+                    if (localTaxRecord.getApplyCost()) {
+                        localTaxRecord.setDebit(MetadataInspector.convertDebitSum(localTaxRecord.getDebit(), cost));
+                        return;
+                    }
+                }
+            }
+            if (f24Excise.getExcise() != null && f24Excise.getExcise().getRecords() != null) {
+                for (ExciseTax exciseTax : f24Excise.getExcise().getRecords()) {
+                    if (exciseTax.getApplyCost()) {
+                        exciseTax.setDebit(MetadataInspector.convertDebitSum(exciseTax.getDebit(), cost));
+                        return;
+                    }
+                }
+            }
+        }
+    }
 }
+

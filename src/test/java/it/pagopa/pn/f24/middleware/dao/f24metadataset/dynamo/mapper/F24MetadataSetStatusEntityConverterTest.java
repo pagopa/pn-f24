@@ -20,9 +20,7 @@ class F24MetadataSetStatusEntityConverterTest {
     public void setup() {
         converter = new F24MetadataSetStatusEntityConverter();
     }
-    /**
-     * Method under test: {@link F24MetadataSetStatusEntityConverter#transformFrom(F24MetadataSetStatusEntity)}
-     */
+
     @Test
     void testTransformFrom() {
         AttributeValue actualTransformFromResult = converter.transformFrom(F24MetadataSetStatusEntity.VALIDATION_ENDED);

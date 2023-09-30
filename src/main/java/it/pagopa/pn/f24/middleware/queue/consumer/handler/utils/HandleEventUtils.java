@@ -49,6 +49,10 @@ public class HandleEventUtils {
         MDC.put("setId", setId);
     }
 
+    public static void addRequestIdToMdc(String requestId) {
+        MDC.put(MDCUtils.MDC_PN_CTX_REQUEST_ID, requestId);
+    }
+
     public static void addCorrelationIdToMdc(String correlationId) {
         MDC.put(MDCUtils.MDC_PN_CTX_REQUEST_ID, correlationId);
     }
