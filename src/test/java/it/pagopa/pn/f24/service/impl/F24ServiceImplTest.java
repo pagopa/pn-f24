@@ -1,16 +1,10 @@
 package it.pagopa.pn.f24.service.impl;
 
 import static org.mockito.Mockito.*;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.Mockito.*;
 
 import it.pagopa.pn.api.dto.events.MomProducer;
 import it.pagopa.pn.api.dto.events.PnF24MetadataValidationEndEvent;
-import it.pagopa.pn.f24.config.F24Config;
-import it.pagopa.pn.f24.dto.F24File;
-import it.pagopa.pn.f24.dto.F24FileStatus;
-import it.pagopa.pn.f24.dto.F24MetadataRef;
 import it.pagopa.pn.f24.config.F24Config;
 import it.pagopa.pn.f24.dto.F24File;
 import it.pagopa.pn.f24.dto.F24FileStatus;
@@ -20,19 +14,13 @@ import it.pagopa.pn.f24.dto.safestorage.FileCreationResponseInt;
 import it.pagopa.pn.f24.dto.safestorage.FileDownloadInfoInt;
 import it.pagopa.pn.f24.dto.safestorage.FileDownloadResponseInt;
 import it.pagopa.pn.f24.dto.F24MetadataStatus;
-import it.pagopa.pn.f24.dto.safestorage.FileCreationResponseInt;
-import it.pagopa.pn.f24.dto.safestorage.FileDownloadInfoInt;
-import it.pagopa.pn.f24.dto.safestorage.FileDownloadResponseInt;
 import it.pagopa.pn.f24.exception.PnBadRequestException;
 import it.pagopa.pn.f24.exception.PnF24RuntimeException;
 import it.pagopa.pn.f24.exception.PnNotFoundException;
-import it.pagopa.pn.f24.generated.openapi.server.v1.dto.*;
 import it.pagopa.pn.f24.middleware.dao.f24file.F24FileCacheDao;
 import it.pagopa.pn.f24.exception.PnConflictException;
-import it.pagopa.pn.f24.exception.PnNotFoundException;
 import it.pagopa.pn.f24.generated.openapi.server.v1.dto.SaveF24Item;
 import it.pagopa.pn.f24.generated.openapi.server.v1.dto.SaveF24Request;
-import it.pagopa.pn.f24.exception.PnNotFoundException;
 import it.pagopa.pn.f24.generated.openapi.server.v1.dto.F24Metadata;
 import it.pagopa.pn.f24.generated.openapi.server.v1.dto.F24Standard;
 import it.pagopa.pn.f24.middleware.dao.f24metadataset.F24MetadataSetDao;
@@ -43,7 +31,6 @@ import it.pagopa.pn.f24.service.F24Generator;
 import it.pagopa.pn.f24.service.JsonService;
 import it.pagopa.pn.f24.service.MetadataDownloader;
 import it.pagopa.pn.f24.service.SafeStorageService;
-import it.pagopa.pn.f24.service.JsonService;
 import it.pagopa.pn.f24.util.Sha256Handler;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -53,7 +40,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.testcontainers.shaded.com.fasterxml.jackson.core.JsonProcessingException;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -63,19 +49,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import reactor.test.StepVerifier;
-
-import java.math.BigDecimal;
 import java.time.Duration;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-
-import reactor.test.StepVerifier;
-
-import java.util.List;
 
 @ContextConfiguration(classes = {F24ServiceImpl.class})
 @ExtendWith(SpringExtension.class)
@@ -95,16 +69,11 @@ class F24ServiceImplTest {
     private F24ServiceImpl f24ServiceImpl;
 
     @MockBean
-    private MomProducer<ValidateMetadataSetEvent> momProducer;
-
-    @MockBean
     private PnSafeStorageClientImpl pnSafeStorageClientImpl;
     @MockBean
     private F24FileCacheDao f24FileCacheDao;
     @MockBean
     private SafeStorageService safeStorageService;
-    @MockBean
-    private EventBridgeProducer<PnF24MetadataValidationEndEvent> metadataValidationEndedEventProducer;
     @MockBean
     private MomProducer<ValidateMetadataSetEvent> validateMetadataSetEventProducer;
     @MockBean
@@ -116,7 +85,6 @@ class F24ServiceImplTest {
     public void generatePDFFromCache() {
 
         //Mock for f24FileDao.getItem
-        //todo check
         F24File f24File = new F24File();
         f24File.setFileKey("fileKey");
         // f24File.setSk("fileMetadata");
@@ -425,7 +393,7 @@ class F24ServiceImplTest {
     }
 
     @Test
-    public void generatePdfWhenFileIsNotInCache() throws JsonProcessingException {
+    public void generatePdfWhenFileIsNotInCache() {
 
         List<String> pathTokens = List.of("key");
 
@@ -464,7 +432,7 @@ class F24ServiceImplTest {
                 .thenReturn(new byte[0]);
         when(safeStorageService.createAndUploadContent(any()))
                 .thenReturn(Mono.just(fileCreationResponseInt));
-        when(safeStorageService.getFile(anyString(), eq(false)))
+        when(safeStorageService.getFilePolling(anyString(), any(), any(), any()))
                 .thenReturn(Mono.just(fileDownloadResponseInt));
         when(f24FileCacheDao.putItemIfAbsent(any()))
                 .thenReturn(Mono.just(f24File));
@@ -503,7 +471,7 @@ class F24ServiceImplTest {
     }
 
     @Test
-    public void generatePdfFailOnMetadataWithoutApplyCostWhenRequestCostIsNotNull() throws JsonProcessingException {
+    public void generatePdfFailOnMetadataWithoutApplyCostWhenRequestCostIsNotNull() {
 
         List<String> pathTokens = List.of("key");
 
