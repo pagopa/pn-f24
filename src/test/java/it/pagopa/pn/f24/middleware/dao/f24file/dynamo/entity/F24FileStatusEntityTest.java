@@ -15,7 +15,7 @@ public class F24FileStatusEntityTest {
      */
     @Test
     public void testValueOf() {
-        assertEquals("PROCESSING", F24FileStatusEntity.valueOf("PROCESSING").getValue());
+        assertEquals("TO_PROCESS", F24FileStatusEntity.valueOf("TO_PROCESS").getValue());
     }
 }
 

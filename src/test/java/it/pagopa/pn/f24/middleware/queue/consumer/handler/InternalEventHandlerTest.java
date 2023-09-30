@@ -1,6 +1,10 @@
 package it.pagopa.pn.f24.middleware.queue.consumer.handler;
 
+import it.pagopa.pn.f24.middleware.queue.consumer.service.GeneratePdfEventService;
+import it.pagopa.pn.f24.middleware.queue.consumer.service.PreparePdfEventService;
 import it.pagopa.pn.f24.middleware.queue.consumer.service.ValidateMetadataEventService;
+import it.pagopa.pn.f24.middleware.queue.producer.events.GeneratePdfEvent;
+import it.pagopa.pn.f24.middleware.queue.producer.events.PreparePdfEvent;
 import it.pagopa.pn.f24.middleware.queue.producer.events.ValidateMetadataSetEvent;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
@@ -29,6 +33,12 @@ class InternalEventHandlerTest {
     @MockBean
     ValidateMetadataEventService validateMetadataEventService;
 
+    @MockBean
+    PreparePdfEventService preparePdfEventService;
+
+    @MockBean
+    GeneratePdfEventService generatePdfEventService;
+
     @Test
     void testPnF24ValidateMetadataEventInboundConsumer() {
         Message<ValidateMetadataSetEvent.Payload> message = getValidateMetadataSetMessage();
@@ -48,6 +58,67 @@ class InternalEventHandlerTest {
             public ValidateMetadataSetEvent.Payload getPayload() {
                 return ValidateMetadataSetEvent.Payload.builder()
                         .setId("setId")
+                        .build();
+            }
+
+            @Override
+            @NotNull
+            public MessageHeaders getHeaders() {
+                return new MessageHeaders(new HashMap<>());
+            }
+        };
+    }
+    @Test
+    void testPnF24PreparePdfEventInboundConsumer() {
+        Message<PreparePdfEvent.Payload> message = getPreparePdfMessage();
+
+        when(preparePdfEventService.preparePdf(any())).thenReturn(Mono.empty());
+        Consumer<Message<PreparePdfEvent.Payload>> consumer = internalEventHandler.pnF24PreparePdfEventInboundConsumer();
+        consumer.accept(message);
+
+
+        verify(preparePdfEventService).preparePdf(any());
+    }
+
+    private Message<PreparePdfEvent.Payload> getPreparePdfMessage() {
+        return new Message<>() {
+            @Override
+            @NotNull
+            public PreparePdfEvent.Payload getPayload() {
+                return PreparePdfEvent.Payload.builder()
+                        .requestId("requestId")
+                        .build();
+            }
+
+            @Override
+            @NotNull
+            public MessageHeaders getHeaders() {
+                return new MessageHeaders(new HashMap<>());
+            }
+        };
+    }
+
+    @Test
+    void testPnF24GeneratePdfEventInboundConsumer() {
+        Message<GeneratePdfEvent.Payload> message = getGeneratePdfMessage();
+
+        when(generatePdfEventService.generatePdf(any())).thenReturn(Mono.empty());
+        Consumer<Message<GeneratePdfEvent.Payload>> consumer = internalEventHandler.pnF24GeneratePdfEventInboundConsumer();
+        consumer.accept(message);
+
+
+        verify(generatePdfEventService).generatePdf(any());
+    }
+
+    private Message<GeneratePdfEvent.Payload> getGeneratePdfMessage() {
+        return new Message<>() {
+            @Override
+            @NotNull
+            public GeneratePdfEvent.Payload getPayload() {
+                return GeneratePdfEvent.Payload.builder()
+                        .metadataFileKey("metadataFileKey")
+                        .setId("setId")
+                        .filePk("CACHE#setId#NO_COST#0_0")
                         .build();
             }
 

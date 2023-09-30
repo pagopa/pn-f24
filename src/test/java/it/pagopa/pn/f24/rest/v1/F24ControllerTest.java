@@ -1,6 +1,5 @@
 package it.pagopa.pn.f24.rest.v1;
 
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.mock;
@@ -112,6 +111,8 @@ class F24ControllerTest {
      */
     @Test
     void testPreparePDF() {
+        when(f24Service.preparePDF(any(), any(), any()))
+                .thenReturn((Mono<RequestAccepted>) mock(Mono.class));
         ServerHttpRequestDecorator serverHttpRequestDecorator = mock(ServerHttpRequestDecorator.class);
         when(serverHttpRequestDecorator.getHeaders()).thenReturn(new HttpHeaders());
         when(serverHttpRequestDecorator.getId()).thenReturn("https://example.org/example");
@@ -119,8 +120,9 @@ class F24ControllerTest {
         when(webSessionManager.getSession(any())).thenReturn((Mono<WebSession>) mock(Mono.class));
         MockServerHttpResponse response = new MockServerHttpResponse();
         DefaultServerCodecConfigurer codecConfigurer = new DefaultServerCodecConfigurer();
-        assertNull(f24Controller.preparePDF("42", "42", null, new DefaultServerWebExchange(serverHttpRequestDecorator,
-                response, webSessionManager, codecConfigurer, new AcceptHeaderLocaleContextResolver())));
+        f24Controller.preparePDF("42", "42", null, new DefaultServerWebExchange(serverHttpRequestDecorator,
+                response, webSessionManager, codecConfigurer, new AcceptHeaderLocaleContextResolver()));
+        verify(f24Service).preparePDF(any(), any(), any());
         verify(serverHttpRequestDecorator).getId();
         verify(serverHttpRequestDecorator, atLeast(1)).getHeaders();
         verify(webSessionManager).getSession(any());

@@ -120,14 +120,14 @@ public class SafeStorageEventService {
     }
 
     private Map<String, F24Request.FileRef> updateFileMap(F24Request f24Request, F24File f24File) {
-        Map<String, F24Request.FileRef> mapFiles = f24Request.getFiles();
+        Map<String, F24Request.FileRef> requestMapFiles = f24Request.getFiles();
 
-        F24Request.FileRef fileRefToUpdate = mapFiles.get(f24File.getPk());
+        F24Request.FileRef fileRefToUpdate = requestMapFiles.get(f24File.getPk());
         fileRefToUpdate.setFileKey(f24File.getFileKey());
 
-        mapFiles.put(f24File.getPk(), fileRefToUpdate);
+        requestMapFiles.put(f24File.getPk(), fileRefToUpdate);
 
-        return mapFiles;
+        return requestMapFiles;
     }
 
     private Mono<List<F24Request>> updateTransactionalFileAndRequests(List<F24Request> f24Requests, F24File f24File) {

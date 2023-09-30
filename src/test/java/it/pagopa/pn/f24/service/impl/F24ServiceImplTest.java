@@ -6,15 +6,12 @@ import static org.mockito.ArgumentMatchers.anyBoolean;
 import it.pagopa.pn.api.dto.events.MomProducer;
 import it.pagopa.pn.api.dto.events.PnF24MetadataValidationEndEvent;
 import it.pagopa.pn.f24.config.F24Config;
-import it.pagopa.pn.f24.dto.F24File;
-import it.pagopa.pn.f24.dto.F24FileStatus;
-import it.pagopa.pn.f24.dto.F24MetadataRef;
-import it.pagopa.pn.f24.dto.F24MetadataSet;
+import it.pagopa.pn.f24.dto.*;
 import it.pagopa.pn.f24.dto.safestorage.FileCreationResponseInt;
 import it.pagopa.pn.f24.dto.safestorage.FileDownloadInfoInt;
 import it.pagopa.pn.f24.dto.safestorage.FileDownloadResponseInt;
-import it.pagopa.pn.f24.dto.F24MetadataStatus;
 import it.pagopa.pn.f24.exception.PnBadRequestException;
+import it.pagopa.pn.f24.exception.PnConflictException;
 import it.pagopa.pn.f24.exception.PnF24RuntimeException;
 import it.pagopa.pn.f24.exception.PnNotFoundException;
 import it.pagopa.pn.f24.generated.openapi.server.v1.dto.*;
@@ -551,6 +548,170 @@ class F24ServiceImplTest {
         StepVerifier.create(f24ServiceImpl.generatePDF("xPagopaF24CxId", "setId", pathTokens, null))
                 .expectNextCount(0)
                 .expectError(PnBadRequestException.class)
+                .verify();
+    }
+
+    @Test
+    void preparePdfFailsWhenPathTokensExceedAllowedDimension() {
+        PrepareF24Request prepareF24Request = new PrepareF24Request();
+        prepareF24Request.setRequestId("requestId");
+        prepareF24Request.setId("setId");
+        prepareF24Request.setNotificationCost(200);
+        prepareF24Request.setPathTokens(List.of("0","0","0","0","0"));
+
+        StepVerifier.create(f24ServiceImpl.preparePDF("cxId", "requestId", Mono.just(prepareF24Request)))
+                .expectError(PnBadRequestException.class)
+                .verify();
+    }
+
+    @Test
+    void preparePdfFailsWhenMetadataSetIsNotFound() {
+        PrepareF24Request prepareF24Request = new PrepareF24Request();
+        prepareF24Request.setRequestId("requestId");
+        prepareF24Request.setId("setId");
+        prepareF24Request.setNotificationCost(200);
+        prepareF24Request.setPathTokens(List.of("notExisting"));
+
+        when(f24MetadataSetDao.getItem(any()))
+                .thenReturn(Mono.empty());
+
+        StepVerifier.create(f24ServiceImpl.preparePDF("cxId", "requestId", Mono.just(prepareF24Request)))
+                .expectError(PnNotFoundException.class)
+                .verify();
+    }
+
+    @Test
+    void preparePdfFailsWhenMetadataSetHasNotPathTokensGivenInRequestBody() {
+        PrepareF24Request prepareF24Request = new PrepareF24Request();
+        prepareF24Request.setRequestId("requestId");
+        prepareF24Request.setId("setId");
+        prepareF24Request.setNotificationCost(200);
+        prepareF24Request.setPathTokens(List.of("notExisting"));
+
+        F24MetadataSet f24MetadataSet = new F24MetadataSet();
+        f24MetadataSet.setSetId("setId");
+        f24MetadataSet.setFileKeys(Map.of("0_0", new F24MetadataRef()));
+        f24MetadataSet.setStatus(F24MetadataStatus.VALIDATION_ENDED);
+
+        when(f24MetadataSetDao.getItem(any()))
+                .thenReturn(Mono.just(f24MetadataSet));
+
+        StepVerifier.create(f24ServiceImpl.preparePDF("cxId", "requestId", Mono.just(prepareF24Request)))
+                .expectError(PnNotFoundException.class)
+                .verify();
+    }
+
+    @Test
+    void preparePdfFailsWhenMetadataHasApplyCostAndIsNotGivenInRequestBody() {
+        PrepareF24Request prepareF24Request = new PrepareF24Request();
+        prepareF24Request.setRequestId("requestId");
+        prepareF24Request.setId("setId");
+        prepareF24Request.setNotificationCost(null);
+        prepareF24Request.setPathTokens(List.of("0"));
+
+        F24MetadataSet f24MetadataSet = new F24MetadataSet();
+        f24MetadataSet.setSetId("setId");
+        F24MetadataRef f24MetadataRef = new F24MetadataRef();
+        f24MetadataRef.setSha256("sha256");
+        f24MetadataRef.setApplyCost(true);
+        f24MetadataSet.setFileKeys(Map.of("0_0", f24MetadataRef));
+        f24MetadataSet.setStatus(F24MetadataStatus.VALIDATION_ENDED);
+
+        when(f24MetadataSetDao.getItem(any()))
+                .thenReturn(Mono.just(f24MetadataSet));
+
+        StepVerifier.create(f24ServiceImpl.preparePDF("cxId", "requestId", Mono.just(prepareF24Request)))
+                .expectError(PnBadRequestException.class)
+                .verify();
+    }
+
+    @Test
+    void preparePdfFailsWhenMetadataHasNotApplyCostButCostIsGivenInRequestBody() {
+        PrepareF24Request prepareF24Request = new PrepareF24Request();
+        prepareF24Request.setRequestId("requestId");
+        prepareF24Request.setId("setId");
+        prepareF24Request.setNotificationCost(200);
+        prepareF24Request.setPathTokens(List.of("0"));
+
+        F24MetadataSet f24MetadataSet = new F24MetadataSet();
+        f24MetadataSet.setSetId("setId");
+        F24MetadataRef f24MetadataRef = new F24MetadataRef();
+        f24MetadataRef.setSha256("sha256");
+        f24MetadataRef.setApplyCost(false);
+        f24MetadataSet.setFileKeys(Map.of("0_0", f24MetadataRef));
+        f24MetadataSet.setStatus(F24MetadataStatus.VALIDATION_ENDED);
+
+        when(f24MetadataSetDao.getItem(any()))
+                .thenReturn(Mono.just(f24MetadataSet));
+
+        StepVerifier.create(f24ServiceImpl.preparePDF("cxId", "requestId", Mono.just(prepareF24Request)))
+                .expectError(PnBadRequestException.class)
+                .verify();
+    }
+
+    @Test
+    void preparePdfFailsWhenRequestExistsAndHasDifferentRequestBody() {
+        PrepareF24Request prepareF24Request = new PrepareF24Request();
+        prepareF24Request.setRequestId("requestId");
+        prepareF24Request.setId("setId");
+        prepareF24Request.setNotificationCost(null);
+        prepareF24Request.setPathTokens(List.of("0"));
+
+        F24MetadataSet f24MetadataSet = new F24MetadataSet();
+        f24MetadataSet.setSetId("setId");
+        F24MetadataRef f24MetadataRef = new F24MetadataRef();
+        f24MetadataRef.setSha256("sha256");
+        f24MetadataRef.setApplyCost(false);
+        f24MetadataSet.setFileKeys(Map.of("0_0", f24MetadataRef));
+        f24MetadataSet.setStatus(F24MetadataStatus.VALIDATION_ENDED);
+
+        when(f24MetadataSetDao.getItem(any()))
+                .thenReturn(Mono.just(f24MetadataSet));
+
+        F24Request f24Request = new F24Request();
+        f24Request.setRequestId("requestId");
+        f24Request.setSetId("setId");
+        f24Request.setCxId("cxId");
+        f24Request.setPathTokens("0");
+        f24Request.setCost(200);
+        when(f24FileRequestDao.getItem(any()))
+                .thenReturn(Mono.just(f24Request));
+
+        StepVerifier.create(f24ServiceImpl.preparePDF("cxId", "requestId", Mono.just(prepareF24Request)))
+                .expectError(PnConflictException.class)
+                .verify();
+    }
+
+    @Test
+    void preparePdfSuccessWhenRequestDoesNotExists() {
+        PrepareF24Request prepareF24Request = new PrepareF24Request();
+        prepareF24Request.setRequestId("requestId");
+        prepareF24Request.setId("setId");
+        prepareF24Request.setNotificationCost(null);
+        prepareF24Request.setPathTokens(List.of("0"));
+
+        F24MetadataSet f24MetadataSet = new F24MetadataSet();
+        f24MetadataSet.setSetId("setId");
+        F24MetadataRef f24MetadataRef = new F24MetadataRef();
+        f24MetadataRef.setSha256("sha256");
+        f24MetadataRef.setApplyCost(false);
+        f24MetadataSet.setFileKeys(Map.of("0_0", f24MetadataRef));
+        f24MetadataSet.setStatus(F24MetadataStatus.VALIDATION_ENDED);
+
+        when(f24MetadataSetDao.getItem(any()))
+                .thenReturn(Mono.just(f24MetadataSet));
+
+        when(f24FileRequestDao.getItem(any()))
+                .thenReturn(Mono.empty());
+
+        doNothing().when(preparePdfEventProducer).push((PreparePdfEvent) any());
+
+        when(f24FileRequestDao.putItemIfAbsent(any()))
+                .thenReturn(Mono.empty());
+
+        StepVerifier.create(f24ServiceImpl.preparePDF("cxId", "requestId", Mono.just(prepareF24Request)))
+                .expectNextMatches(requestAccepted -> requestAccepted.getStatus().equalsIgnoreCase(DEFAULT_SUCCESS_STATUS))
+                .expectComplete()
                 .verify();
     }
 
