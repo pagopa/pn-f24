@@ -90,7 +90,7 @@ class F24FileRequestRepositoryImplTest {
      * Method under test: {@link F24FileRequestRepositoryImpl#putItemIfAbsent(F24Request)}
      */
     @Test
-    @Disabled
+    @Disabled("to repair")
     void testPutItemIfAbsent() {
         when(dynamoDbEnhancedAsyncClient.table(any(),any())).thenReturn(dynamoDbAsyncTable);
 
@@ -160,8 +160,8 @@ class F24FileRequestRepositoryImplTest {
     }
 
     @Test
-    @Disabled
-    public void testUpdateRequestAndRelatedFiles() {
+    @Disabled("to repair")
+    void testUpdateRequestAndRelatedFiles() {
         when(dynamoDbEnhancedAsyncClient.table(any(),any())).thenReturn(dynamoDbAsyncTable);
 
         F24FileRequestRepositoryImpl f24FileRequestRepository = new F24FileRequestRepositoryImpl(dynamoDbEnhancedAsyncClient, f24Config);

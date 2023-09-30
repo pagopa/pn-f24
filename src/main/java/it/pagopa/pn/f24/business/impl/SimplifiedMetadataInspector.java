@@ -3,7 +3,6 @@ package it.pagopa.pn.f24.business.impl;
 import it.pagopa.pn.f24.business.MetadataInspector;
 import it.pagopa.pn.f24.generated.openapi.server.v1.dto.F24Metadata;
 import it.pagopa.pn.f24.generated.openapi.server.v1.dto.F24Simplified;
-import it.pagopa.pn.f24.generated.openapi.server.v1.dto.F24Standard;
 import it.pagopa.pn.f24.generated.openapi.server.v1.dto.SimplifiedPaymentRecord;
 
 import static it.pagopa.pn.f24.util.Utility.countElementsByPredicate;
@@ -29,7 +28,7 @@ public class SimplifiedMetadataInspector implements MetadataInspector {
         if (f24Metadata.getF24Simplified() != null) {
             F24Simplified f24Simplified = f24Metadata.getF24Simplified();
             for (SimplifiedPaymentRecord simplifiedPaymentRecord : f24Simplified.getPayments().getRecords()) {
-                if (simplifiedPaymentRecord.getApplyCost()) {
+                if (Boolean.TRUE.equals(simplifiedPaymentRecord.getApplyCost())) {
                     simplifiedPaymentRecord.setDebit(MetadataInspector.convertDebitSum(simplifiedPaymentRecord.getDebit(), cost));
                     return;
                 }

@@ -10,6 +10,7 @@ import it.pagopa.pn.f24.middleware.queue.producer.events.GeneratePdfEvent;
 import java.time.Instant;
 
 public class GeneratePdfEventBuilder {
+    private GeneratePdfEventBuilder() { }
     private static final String GENERATE_PDF_EVENT_ID_DESCRIPTOR = "_generate_pdf";
 
     public static GeneratePdfEvent buildGeneratePdfEvent(PreparePdfLists.F24FileToCreate f24FileToCreate) {
@@ -29,7 +30,7 @@ public class GeneratePdfEventBuilder {
 
     private static GenericEventHeader buildInternalEventHeader(String f24FilePk) {
         // il carattere # non è accettato come eventId
-        String eventId = f24FilePk.replaceAll("#", "_") + GENERATE_PDF_EVENT_ID_DESCRIPTOR;
+        String eventId = f24FilePk.replace("#", "_") + GENERATE_PDF_EVENT_ID_DESCRIPTOR;
         return GenericEventHeader.builder()
                 .eventId(eventId)
                 .eventType(F24InternalEventType.GENERATE_PDF.getValue())

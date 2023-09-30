@@ -15,13 +15,13 @@ public enum F24FileStatus {
         return value;
     }
 
-    static public final F24FileStatus[] values = values();
+    private static final F24FileStatus[] statuses = values();
 
     public F24FileStatus prev() {
-        return values[(ordinal() - 1  + values.length) % values.length];
+        return statuses[(ordinal() - 1  + statuses.length) % statuses.length];
     }
 
     public F24FileStatus next() {
-        return values[(ordinal() + 1) % values.length];
+        return statuses[(ordinal() + 1) % statuses.length];
     }
 }

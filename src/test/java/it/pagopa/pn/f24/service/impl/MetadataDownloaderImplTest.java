@@ -3,7 +3,6 @@ package it.pagopa.pn.f24.service.impl;
 import it.pagopa.pn.commons.exceptions.PnInternalException;
 import it.pagopa.pn.f24.dto.safestorage.FileDownloadInfoInt;
 import it.pagopa.pn.f24.dto.safestorage.FileDownloadResponseInt;
-import it.pagopa.pn.f24.exception.PnF24RuntimeException;
 import it.pagopa.pn.f24.generated.openapi.server.v1.dto.F24Metadata;
 import it.pagopa.pn.f24.generated.openapi.server.v1.dto.F24Standard;
 import it.pagopa.pn.f24.service.JsonService;
@@ -25,7 +24,7 @@ import static org.mockito.Mockito.*;
 
 @ContextConfiguration(classes = {MetadataDownloaderImpl.class})
 @ExtendWith(SpringExtension.class)
-public class MetadataDownloaderImplTest {
+class MetadataDownloaderImplTest {
 
     @MockBean
     private SafeStorageService safeStorageService;
@@ -36,7 +35,7 @@ public class MetadataDownloaderImplTest {
 
 
     @Test
-    public void testDownloadMetadata() {
+    void testDownloadMetadata() {
 
         F24Metadata f24Metadata = new F24Metadata();
 
@@ -66,7 +65,7 @@ public class MetadataDownloaderImplTest {
     }
 
     @Test
-    public void testDownloadMetadataInternalException() {
+    void testDownloadMetadataInternalException() {
 
         String fileKey = "testFileKey";
 
@@ -86,7 +85,7 @@ public class MetadataDownloaderImplTest {
     }
 
     @Test
-    public void testDownloadMetadataRetry() {
+    void testDownloadMetadataRetry() {
 
         F24Metadata f24Metadata = new F24Metadata();
         f24Metadata.setF24Standard(new F24Standard());
@@ -122,7 +121,7 @@ public class MetadataDownloaderImplTest {
     }
 
     @Test
-    public void testDownloadMetadataRetryError() {
+    void testDownloadMetadataRetryError() {
 
         F24Metadata f24Metadata = new F24Metadata();
         f24Metadata.setF24Standard(new F24Standard());

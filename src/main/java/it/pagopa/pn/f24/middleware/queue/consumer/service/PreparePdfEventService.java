@@ -187,7 +187,6 @@ public class PreparePdfEventService {
         log.debug("F24File with cxId: {}, setId: {}, cost: {}, pathTokens: {} doesn't exist, creating a new one", cxId, setId, cost, pathTokensInString);
 
         F24File f24File = new F24File();
-        //TODO trovare un sistema migliore per generare la PK.
         f24File.setPk(new F24FileCacheEntity(setId, cost, pathTokensInString).getPk());
         f24File.setSetId(setId);
         f24File.setCost(cost);

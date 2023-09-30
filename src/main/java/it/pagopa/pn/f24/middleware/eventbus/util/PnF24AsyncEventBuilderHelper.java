@@ -80,7 +80,6 @@ public class PnF24AsyncEventBuilderHelper {
     }
 
     private static String extractPathTokensFromFilePk(String pk) {
-         //TODO Trovare modo migliore di gestire chiave
          F24FileCacheEntity entity = new F24FileCacheEntity();
          entity.setPk(pk);
          return entity.getPathTokens();

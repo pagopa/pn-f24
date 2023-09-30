@@ -81,7 +81,7 @@ class F24ServiceImplTest {
     private F24FileRequestDao f24FileRequestDao;
 
     @Test
-    public void generatePDFFromCache() {
+    void generatePDFFromCache() {
 
         //Mock for f24FileDao.getItem
         F24File f24File = new F24File();
@@ -111,7 +111,7 @@ class F24ServiceImplTest {
     }
 
     @Test
-    public void generatePdfFromCacheFailWithRuntimeException() {
+    void generatePdfFromCacheFailWithRuntimeException() {
 
         //Mock for f24FileDao.getItem
         //todo check
@@ -364,7 +364,7 @@ class F24ServiceImplTest {
     }
 
     @Test
-    public void generatePdfFromCacheSuccessWithRetryAfter() {
+    void generatePdfFromCacheSuccessWithRetryAfter() {
 
         //Mock for f24FileDao.getItem
         F24File f24File = new F24File();
@@ -392,7 +392,7 @@ class F24ServiceImplTest {
     }
 
     @Test
-    public void generatePdfSuccessWhenFileIsNotInCache() {
+    void generatePdfSuccessWhenFileIsNotInCache() {
 
         List<String> pathTokens = List.of("key");
 
@@ -446,7 +446,7 @@ class F24ServiceImplTest {
     }
 
     @Test
-    public void generatePdfErrorWhenGivenPathTokensDoesNotExistInMetadataSet() {
+    void generatePdfErrorWhenGivenPathTokensDoesNotExistInMetadataSet() {
 
         List<String> pathTokens = List.of("Notkey");
 
@@ -470,7 +470,7 @@ class F24ServiceImplTest {
     }
 
     @Test
-    public void generatePdfFailOnMetadataWithoutApplyCostWhenRequestCostIsNotNull() {
+    void generatePdfFailOnMetadataWithoutApplyCostWhenRequestCostIsNotNull() {
 
         List<String> pathTokens = List.of("key");
 
@@ -514,7 +514,7 @@ class F24ServiceImplTest {
     }
 
     @Test
-    public void generatePdfFailOnMetadataWithApplyCostWhenRequestCostIsNull() {
+    void generatePdfFailOnMetadataWithApplyCostWhenRequestCostIsNull() {
 
         List<String> pathTokens = List.of("key");
 

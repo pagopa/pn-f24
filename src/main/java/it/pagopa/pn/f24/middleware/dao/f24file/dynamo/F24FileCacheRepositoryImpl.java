@@ -48,9 +48,8 @@ public class F24FileCacheRepositoryImpl implements F24FileCacheDao {
 
     @Override
     public Mono<F24File> getItem(String filePk, boolean isConsistentRead) {
-        Key pk = Key.builder().partitionValue(filePk).build();
         GetItemEnhancedRequest getItemEnhancedRequest = GetItemEnhancedRequest.builder()
-                .key(pk)
+                .key(k -> k.partitionValue(filePk))
                 .consistentRead(isConsistentRead)
                 .build();
 

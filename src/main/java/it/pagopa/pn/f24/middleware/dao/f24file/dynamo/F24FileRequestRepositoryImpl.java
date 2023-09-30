@@ -178,15 +178,11 @@ public class F24FileRequestRepositoryImpl implements F24FileRequestDao {
                                                                        List<TransactUpdateItemEnhancedRequest<F24FileCacheEntity>> fileCacheUpdateItemRequests) {
         TransactWriteItemsEnhancedRequest.Builder requestBuilder = TransactWriteItemsEnhancedRequest.builder();
 
-        fileCachePutItemRequests.forEach(putItemRequest -> {
-            requestBuilder.addPutItem(f24FileCacheTable, putItemRequest);
-        });
+        fileCachePutItemRequests.forEach(putItemRequest -> requestBuilder.addPutItem(f24FileCacheTable, putItemRequest));
 
         requestBuilder.addUpdateItem(f24FileRequestTable, fileRequestUpdate);
 
-        fileCacheUpdateItemRequests.forEach(fileUpdateRequest -> {
-            requestBuilder.addUpdateItem(f24FileCacheTable, fileUpdateRequest);
-        });
+        fileCacheUpdateItemRequests.forEach(fileUpdateRequest -> requestBuilder.addUpdateItem(f24FileCacheTable, fileUpdateRequest));
 
         return requestBuilder.build();
     }

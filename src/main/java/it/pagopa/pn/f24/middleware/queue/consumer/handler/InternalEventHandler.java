@@ -45,7 +45,7 @@ public class InternalEventHandler {
     @Bean
     public Consumer<Message<PreparePdfEvent.Payload>> pnF24PreparePdfEventInboundConsumer() {
         return message -> {
-            log.debug("Handle validate metadata message with content {}", message);
+            log.debug("Prepare pdf for message with content {}", message);
             try {
                 PreparePdfEvent.Payload payload = message.getPayload();
                 HandleEventUtils.addRequestIdToMdc(payload.getRequestId());
@@ -61,7 +61,7 @@ public class InternalEventHandler {
     @Bean
     public Consumer<Message<GeneratePdfEvent.Payload>> pnF24GeneratePdfEventInboundConsumer() {
         return message -> {
-            log.debug("Handle validate metadata message with content {}", message);
+            log.debug("Generate pdf for message with content {}", message);
             try {
                 GeneratePdfEvent.Payload payload = message.getPayload();
                 HandleEventUtils.addSetIdToMdc(payload.getSetId());

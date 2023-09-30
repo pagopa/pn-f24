@@ -36,7 +36,7 @@ import java.util.Map;
 @ExtendWith(SpringExtension.class)
 @TestPropertySource("classpath:/application-test.properties")
 @EnableConfigurationProperties(value = F24Config.class)
-public class SafeStorageEventServiceTest {
+class SafeStorageEventServiceTest {
     @Autowired
     private F24Config f24Config;
     @MockBean

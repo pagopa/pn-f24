@@ -8,6 +8,7 @@ import it.pagopa.pn.f24.middleware.queue.producer.events.PreparePdfEvent;
 import java.time.Instant;
 
 public class PreparePdfEventBuilder {
+    private PreparePdfEventBuilder() { }
     private static final String PREPARE_PDF_EVENT_ID_DESCRIPTOR = "prepare_pdf_request_";
 
     public static PreparePdfEvent buildPreparePdfEvent(String requestId) {

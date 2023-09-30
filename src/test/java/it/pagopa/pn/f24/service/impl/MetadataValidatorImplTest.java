@@ -23,7 +23,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 @ContextConfiguration(classes = {MetadataValidatorImpl.class})
 @ExtendWith(SpringExtension.class)
-public class MetadataValidatorImplTest {
+class MetadataValidatorImplTest {
     @MockBean
     private JsonService jsonService;
 
@@ -31,7 +31,7 @@ public class MetadataValidatorImplTest {
     private MetadataValidatorImpl metadataValidatorImpl;
 
     @Test
-    public void testValidateMetadata() {
+    void testValidateMetadata() {
 
         F24MetadataRef f24MetadataRef = new F24MetadataRef();
         f24MetadataRef.setApplyCost(true);
@@ -88,7 +88,7 @@ public class MetadataValidatorImplTest {
     }
 
     @Test
-    public void testValidateMetadataCheckApplyCostFalse() {
+    void testValidateMetadataCheckApplyCostFalse() {
 
         F24MetadataRef f24MetadataRef = new F24MetadataRef();
         f24MetadataRef.setApplyCost(true);
@@ -145,7 +145,7 @@ public class MetadataValidatorImplTest {
     }
 
     @Test
-    public void testValidateMetadataSha256Error() {
+    void testValidateMetadataSha256Error() {
 
         F24MetadataRef f24MetadataRef = new F24MetadataRef();
         f24MetadataRef.setApplyCost(true);
@@ -202,7 +202,7 @@ public class MetadataValidatorImplTest {
     }
 
     @Test
-    public void testValidateMetadataCheckApplyCostNoApplyCost() {
+    void testValidateMetadataCheckApplyCostNoApplyCost() {
 
         F24MetadataRef f24MetadataRef = new F24MetadataRef();
         f24MetadataRef.setApplyCost(false);
@@ -262,7 +262,7 @@ public class MetadataValidatorImplTest {
     }
 
     @Test
-    public void testValidateMetadataParseJsonError() {
+    void testValidateMetadataParseJsonError() {
 
         F24MetadataRef f24MetadataRef = new F24MetadataRef();
         f24MetadataRef.setApplyCost(true);

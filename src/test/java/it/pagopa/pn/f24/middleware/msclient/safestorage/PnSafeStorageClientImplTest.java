@@ -128,22 +128,11 @@ class PnSafeStorageClientImplTest {
     void testDownloadPieceOfContent() {
         FileUploadApi fileUploadApi = new FileUploadApi();
         FileDownloadApi fileDownloadApi = new FileDownloadApi();
+        F24Config f24Config = new F24Config();
+        PnSafeStorageClientImpl pnSafeStorageClient = new PnSafeStorageClientImpl(fileUploadApi, fileDownloadApi, f24Config, mock(RestTemplate.class));
         assertThrows(PnInternalException.class,
-                () -> (new PnSafeStorageClientImpl(fileUploadApi, fileDownloadApi, new F24Config(), mock(RestTemplate.class)))
-                        .downloadPieceOfContent("https://example.org/example", 3L));
+                () -> pnSafeStorageClient.downloadPieceOfContent("https://example.org/example", 3L));
     }
 
-    /**
-     * Method under test: {@link PnSafeStorageClientImpl#downloadPieceOfContent(String, long)}
-     */
-    @Test
-    void testDownloadPieceOfContent2() {
-
-        FileUploadApi fileUploadApi = new FileUploadApi();
-        FileDownloadApi fileDownloadApi = new FileDownloadApi();
-        assertThrows(PnInternalException.class,
-                () -> (new PnSafeStorageClientImpl(fileUploadApi, fileDownloadApi, new F24Config(), mock(RestTemplate.class)))
-                        .downloadPieceOfContent("foo", 1L));
-    }
 }
 

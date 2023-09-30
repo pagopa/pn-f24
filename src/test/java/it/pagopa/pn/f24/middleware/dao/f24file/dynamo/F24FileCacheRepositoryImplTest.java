@@ -101,7 +101,7 @@ class F24FileCacheRepositoryImplTest {
 
 
     @Test
-    @Disabled
+    @Disabled("to repair")
     void putItemIfAbsent() {
         when(dynamoDbEnhancedAsyncClient.table(any(),any())).thenReturn(dynamoDbAsyncTable);
 
