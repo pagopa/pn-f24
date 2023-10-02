@@ -44,9 +44,8 @@ public class HandleEventUtils {
         return createdAt != null ? Instant.parse((CharSequence) createdAt) : null;
     }
 
-    //TODO sostituire con MDCUtils.MDC_PN_SET_ID
     public static void addSetIdToMdc(String setId) {
-        MDC.put("setId", setId);
+        MDC.put(MDCUtils.MDC_PN_SET_ID, setId);
     }
 
     public static void addRequestIdToMdc(String requestId) {
