@@ -36,6 +36,15 @@ public class F24RequestStatusEntityConverterTest {
     }
 
     @Test
+    public void testTransformFrom2() {
+        AttributeValue actualTransformFromResult = (new F24RequestStatusEntityConverter())
+                .transformFrom(null);
+        assertNull(actualTransformFromResult.b());
+        assertEquals(AttributeValue.Type.S, actualTransformFromResult.type());
+        assertEquals("", actualTransformFromResult.s());
+    }
+
+    @Test
     public void testType() {
         EnhancedType<F24RequestStatusEntity> actualTypeResult = (new F24RequestStatusEntityConverter()).type();
         assertFalse(actualTypeResult.isWildcard());

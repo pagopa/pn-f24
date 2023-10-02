@@ -20,6 +20,7 @@ import reactor.core.publisher.Mono;
 import java.util.HashMap;
 import java.util.function.Consumer;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -51,6 +52,16 @@ class InternalEventHandlerTest {
         verify(validateMetadataEventService).handleMetadataValidation(any());
     }
 
+    @Test
+    void testErrorPnF24ValidateMetadataEventInboundConsumer() {
+        Message<ValidateMetadataSetEvent.Payload> message = getValidateMetadataSetMessage();
+
+        when(validateMetadataEventService.handleMetadataValidation(any())).thenThrow(RuntimeException.class);
+        Consumer<Message<ValidateMetadataSetEvent.Payload>> consumer = internalEventHandler.pnF24ValidateMetadataEventInboundConsumer();
+
+        assertThrows(RuntimeException.class, () -> consumer.accept(message));
+    }
+
     private Message<ValidateMetadataSetEvent.Payload> getValidateMetadataSetMessage() {
         return new Message<>() {
             @Override
@@ -78,6 +89,16 @@ class InternalEventHandlerTest {
 
 
         verify(preparePdfEventService).preparePdf(any());
+    }
+
+    @Test
+    void testErrorPnF24PreparePdfEventInboundConsumer() {
+        Message<PreparePdfEvent.Payload> message = getPreparePdfMessage();
+
+        when(preparePdfEventService.preparePdf(any())).thenThrow(RuntimeException.class);
+        Consumer<Message<PreparePdfEvent.Payload>> consumer = internalEventHandler.pnF24PreparePdfEventInboundConsumer();
+
+        assertThrows(RuntimeException.class, () -> consumer.accept(message));
     }
 
     private Message<PreparePdfEvent.Payload> getPreparePdfMessage() {
@@ -108,6 +129,16 @@ class InternalEventHandlerTest {
 
 
         verify(generatePdfEventService).generatePdf(any());
+    }
+
+    @Test
+    void testErrorPnF24GeneratePdfEventInboundConsumer() {
+        Message<GeneratePdfEvent.Payload> message = getGeneratePdfMessage();
+
+        when(generatePdfEventService.generatePdf(any())).thenThrow(RuntimeException.class);
+        Consumer<Message<GeneratePdfEvent.Payload>> consumer = internalEventHandler.pnF24GeneratePdfEventInboundConsumer();
+
+        assertThrows(RuntimeException.class, () -> consumer.accept(message));
     }
 
     private Message<GeneratePdfEvent.Payload> getGeneratePdfMessage() {

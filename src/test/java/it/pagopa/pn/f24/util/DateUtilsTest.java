@@ -1,12 +1,13 @@
 package it.pagopa.pn.f24.util;
 
-import static org.junit.Assert.assertEquals;
 
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class DateUtilsTest {
     /**
