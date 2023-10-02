@@ -16,7 +16,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 @ContextConfiguration(classes = {F24GeneratorImpl.class})
 @ExtendWith(SpringExtension.class)
-public class F24GeneratorImplTest {
+class F24GeneratorImplTest {
     @Autowired
     private F24GeneratorImpl f24GeneratorImpl;
     @MockBean
@@ -25,7 +25,7 @@ public class F24GeneratorImplTest {
     PDFCreator pdfCreator;
 
     @Test
-    public void testGenerate() {
+    void testGenerate() {
         F24Metadata metadata = mock(F24Metadata.class);
         when(metadata.getF24Simplified()).thenReturn(new F24Simplified());
         when(metadata.getF24Standard()).thenReturn(null);

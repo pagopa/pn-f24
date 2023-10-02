@@ -28,7 +28,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 @ContextConfiguration(classes = {JsonServiceImpl.class})
 @ExtendWith(SpringExtension.class)
-public class JsonServiceImplTest {
+class JsonServiceImplTest {
     @Autowired
     private JsonServiceImpl jsonServiceImpl;
 
@@ -40,7 +40,7 @@ public class JsonServiceImplTest {
 
 
     @Test
-    public void testParseMetadataFile() throws IOException {
+    void testParseMetadataFile() throws IOException {
         F24Metadata f24Metadata = new F24Metadata();
         when(objectMapper.readValue(Mockito.<byte[]>any(), Mockito.<Class<F24Metadata>>any())).thenReturn(f24Metadata);
         assertSame(f24Metadata, jsonServiceImpl.parseMetadataFile("AXAXAXAX".getBytes(StandardCharsets.UTF_8)));
@@ -48,7 +48,7 @@ public class JsonServiceImplTest {
     }
 
     @Test
-    public void testParseMetadataFile2() throws IOException {
+    void testParseMetadataFile2() throws IOException {
         when(objectMapper.readValue(Mockito.<byte[]>any(), Mockito.<Class<F24Metadata>>any()))
                 .thenThrow(new IOException("foo"));
         byte[] jsonMetadata = "AXAXAXAX".getBytes(StandardCharsets.UTF_8);
@@ -57,14 +57,14 @@ public class JsonServiceImplTest {
     }
 
     @Test
-    public void testStringifyObject() throws JsonProcessingException {
+    void testStringifyObject() throws JsonProcessingException {
         when(objectMapper.writeValueAsString(Mockito.<Object>any())).thenReturn("42");
         assertEquals("42", jsonServiceImpl.stringifyObject("Object"));
         verify(objectMapper).writeValueAsString(Mockito.<Object>any());
     }
 
     @Test
-    public void stringifyObjectError() throws JsonProcessingException {
+    void stringifyObjectError() throws JsonProcessingException {
 
 
         // Configura il comportamento del mock per generare una JsonProcessingException
@@ -80,7 +80,7 @@ public class JsonServiceImplTest {
     }
 
     @Test
-    public void testValidate() {
+    void testValidate() {
         HashSet<ConstraintViolation<String>> constraintViolationSet = new HashSet<>();
         when(validator.validate(Mockito.<String>any(), (Class[]) any())).thenReturn(constraintViolationSet);
         Set<ConstraintViolation<Object>> actualValidateResult = jsonServiceImpl.validate("Object");

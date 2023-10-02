@@ -36,7 +36,7 @@ import java.util.Map;
 @ExtendWith(SpringExtension.class)
 @TestPropertySource("classpath:/application-test.properties")
 @EnableConfigurationProperties(value = F24Config.class)
-public class ValidateMetadataEventServiceTest {
+class ValidateMetadataEventServiceTest {
     @MockBean
     private EventBridgeProducer<PnF24MetadataValidationEndEvent> eventBridgeProducer;
 
@@ -53,7 +53,7 @@ public class ValidateMetadataEventServiceTest {
     private ValidateMetadataEventService validateMetadataEventService;
 
     @Test
-    public void testHandleMetadataValidation() {
+    void testHandleMetadataValidation() {
 
         F24MetadataSet f24MetadataSet = new F24MetadataSet();
         f24MetadataSet.setStatus(F24MetadataStatus.VALIDATION_ENDED);
@@ -67,7 +67,7 @@ public class ValidateMetadataEventServiceTest {
     }
 
     @Test
-    public void testStartMetadataValidationValidateMetadataList() {
+    void testStartMetadataValidationValidateMetadataList() {
 
         F24MetadataSet f24MetadataSet = new F24MetadataSet();
         F24MetadataRef f24MetadataRef = new F24MetadataRef();
@@ -114,7 +114,7 @@ public class ValidateMetadataEventServiceTest {
     }
 
     @Test
-    public void testStartMetadataValidationgetHaveToSendValidationEventFalse() {
+    void testStartMetadataValidationgetHaveToSendValidationEventFalse() {
 
         F24MetadataSet f24MetadataSet = new F24MetadataSet();
         F24MetadataRef f24MetadataRef = new F24MetadataRef();
@@ -161,7 +161,7 @@ public class ValidateMetadataEventServiceTest {
     }
 
     @Test
-    public void testStartMetadataValidationConditionalCheckFailedException() {
+    void testStartMetadataValidationConditionalCheckFailedException() {
 
         F24MetadataSet f24MetadataSet = new F24MetadataSet();
         F24MetadataRef f24MetadataRef = new F24MetadataRef();
@@ -208,7 +208,7 @@ public class ValidateMetadataEventServiceTest {
     }
 
     @Test
-    public void getMetadataSet() {
+    void getMetadataSet() {
 
         F24MetadataSet f24MetadataSet = new F24MetadataSet();
         f24MetadataSet.setStatus(F24MetadataStatus.VALIDATION_ENDED);
