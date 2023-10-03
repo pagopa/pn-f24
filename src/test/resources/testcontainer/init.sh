@@ -1,3 +1,25 @@
+echo "### CREATE TABLES FOR F24 ###"
+
+aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
+    dynamodb create-table \
+    --table-name pn-F24Metadata \
+    --attribute-definitions \
+        AttributeName=setId,AttributeType=S \
+    --key-schema \
+        AttributeName=setId,KeyType=HASH \
+    --provisioned-throughput \
+        ReadCapacityUnits=10,WriteCapacityUnits=5
+
+aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
+    dynamodb create-table \
+    --table-name pn-F24File \
+    --attribute-definitions \
+        AttributeName=pk,AttributeType=S \
+    --key-schema \
+        AttributeName=pk,KeyType=HASH \
+    --provisioned-throughput \
+        ReadCapacityUnits=10,WriteCapacityUnits=5
+
 echo "### CREATE QUEUES FOR F24 ###"
 queues="pn-f24_internal pn-safestore_to_f24"
 for qn in $(echo $queues | tr " " "\n"); do
@@ -72,3 +94,6 @@ aws --profile default --region us-east-1 --endpoint-url http://localstack:4566 \
     events put-targets --rule $rule_name_paper_channel \
     --targets "Id"="1","Arn"="$target_arn" \
     --event-bus-name $event_bus_name
+
+
+echo "Initialization terminated"
