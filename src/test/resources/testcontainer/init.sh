@@ -2,7 +2,7 @@ echo "### CREATE TABLES FOR F24 ###"
 
 aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
     dynamodb create-table \
-    --table-name pn-F24Metadata \
+    --table-name pn-F24Metadata-test \
     --attribute-definitions \
         AttributeName=setId,AttributeType=S \
     --key-schema \
@@ -12,7 +12,7 @@ aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
 
 aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
     dynamodb create-table \
-    --table-name pn-F24File \
+    --table-name pn-F24File-test \
     --attribute-definitions \
         AttributeName=pk,AttributeType=S \
     --key-schema \
