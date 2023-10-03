@@ -42,7 +42,7 @@ public class AwsServicesClientsConfig {
     public AmazonEventBridgeAsync amazonEventBridgeAsync() {
         return AmazonEventBridgeAsyncClientBuilder.standard()
                 .withCredentials(DefaultAWSCredentialsProviderChain.getInstance())
-                //.withRegion(configs.getRegionCode())
+                .withRegion(configs.getRegionCode())
                 .build();
     }
 
