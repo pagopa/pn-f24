@@ -38,7 +38,7 @@ aws --profile default --region us-east-1 --endpoint-url http://localstack:4566 \
 
 echo "### CREATE RULE FOR DELIVERY-PUSH ###"
 rule_name_delivery_push="f24_to_deliverypush"
-pattern='{"source": ["pn-f24"], "detail-type": ["F24OutcomeEvent"], "detail":[ "clientId": ["pn-delivery-push-f24"]]}'
+pattern='{"source": ["pn-f24"], "detail-type": ["F24OutcomeEvent"], "detail": {"clientId": "pn-delivery-push-f24"}}'
 aws --profile default --region us-east-1 --endpoint-url http://localstack:4566 \
   events put-rule --name $rule_name_delivery_push --event-pattern "$pattern" \
   --event-bus-name $event_bus_name
@@ -58,10 +58,10 @@ echo "### ADD TARGET TO RULE DELIVERY-PUSH ###"
 
 echo "### CREATE RULE FOR PAPER-CHANNEL ###"
       rule_name_paper_channel="f24_to_paperchannel"
-      pattern='{"source": ["pn-f24"],"detail": {"clientId": ["pn-paper-channel-f24"]}, "detail-type": ["F24OutcomeEvent"]}'
+      pattern='{"source": ["pn-f24"],"detail": {"clientId": "pn-paper-channel-f24"}, "detail-type": ["F24OutcomeEvent"]}'
  aws --profile default --region us-east-1 --endpoint-url http://localstack:4566 \
         events put-rule --name $rule_name_paper_channel --event-pattern "$pattern" \
-        --event-bus-name $event_bus_name
+        --event-bus-name $event_bus_name-
 
 echo "### ENABLE RULE PAPER-CHANNEL ###"
 aws --profile default --region us-east-1 --endpoint-url http://localstack:4566 \
