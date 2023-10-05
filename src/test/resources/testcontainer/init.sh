@@ -67,7 +67,7 @@ echo "### ADD TARGET TO RULE DELIVERY-PUSH ###"
 target_arn="arn:aws:sqs:us-east-1:000000000000:pn-f24_to_deliverypush"
 aws --profile default --region us-east-1 --endpoint-url http://localstack:4566 \
     events put-targets --rule $rule_name_delivery_push \
-    --targets "Id"="1","Arn"="$target_arn" \
+    --targets "Id"="1","Arn"="$target_arn","InputPath"="$.detail" \
     --event-bus-name $event_bus_name
 
 echo "### CREATE RULE FOR PAPER-CHANNEL ###"
@@ -86,7 +86,7 @@ echo "### ADD TARGET TO RULE ###"
 target_arn="arn:aws:sqs:us-east-1:000000000000:pn-f24_to_paperchannel"
 aws --profile default --region us-east-1 --endpoint-url http://localstack:4566 \
     events put-targets --rule $rule_name_paper_channel \
-    --targets "Id"="1","Arn"="$target_arn" \
+    --targets "Id"="1","Arn"="$target_arn","InputPath"="$.detail" \
     --event-bus-name $event_bus_name
 
 
