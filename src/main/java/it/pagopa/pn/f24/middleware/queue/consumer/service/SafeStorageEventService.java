@@ -3,6 +3,7 @@ package it.pagopa.pn.f24.middleware.queue.consumer.service;
 import it.pagopa.pn.api.dto.events.PnF24PdfSetReadyEvent;
 import it.pagopa.pn.f24.config.F24Config;
 import it.pagopa.pn.f24.dto.*;
+import it.pagopa.pn.f24.exception.PnDbConflictException;
 import it.pagopa.pn.f24.exception.PnF24ExceptionCodes;
 import it.pagopa.pn.f24.exception.PnNotFoundException;
 import it.pagopa.pn.f24.generated.openapi.msclient.safestorage.model.FileDownloadResponse;
@@ -18,9 +19,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import software.amazon.awssdk.services.dynamodb.model.ConditionalCheckFailedException;
 
-import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
@@ -115,7 +114,6 @@ public class SafeStorageEventService {
     private F24Request setFileKeyInRequestFileMap(F24Request f24Request, F24File f24File) {
         f24Request.setFiles(updateFileMap(f24Request, f24File));
         f24Request.setRecordVersion(f24Request.getRecordVersion() + 1);
-        f24Request.setUpdated(Instant.now());
         return f24Request;
     }
 
@@ -167,7 +165,7 @@ public class SafeStorageEventService {
 
     private Mono<Void> sendPdfSetReadyEvent(F24Request consistentF24Request) {
         log.debug("F24Request with pk: {} has all file with status DONE. Sending PdfSetReady event", consistentF24Request.getPk());
-        return Mono.fromRunnable(() -> pdfSetReadyProducer.sendEvent(PnF24AsyncEventBuilderHelper.buildPdfSetReadyEvent(consistentF24Request)))
+        return pdfSetReadyProducer.sendEvent(PnF24AsyncEventBuilderHelper.buildPdfSetReadyEvent(consistentF24Request))
                 .doOnError(throwable -> log.warn("Error sending PdfSetReady event"))
                 .then(updateF24RequestStatusInDone(consistentF24Request))
                 .then();
@@ -178,10 +176,9 @@ public class SafeStorageEventService {
 
         f24Request.setStatus(F24RequestStatus.DONE);
         f24Request.setRecordVersion(f24Request.getRecordVersion() + 1);
-        f24Request.setUpdated(Instant.now());
         return f24RequestDao.setRequestStatusDone(f24Request)
                 .doOnError(throwable -> log.warn("Error updating f24Request status to DONE"))
-                .onErrorResume(ConditionalCheckFailedException.class, e -> {
+                .onErrorResume(PnDbConflictException.class, e -> {
                     log.debug("F24 Request with requestId {} already in status DONE", f24Request.getRequestId());
                     return Mono.empty();
                 });

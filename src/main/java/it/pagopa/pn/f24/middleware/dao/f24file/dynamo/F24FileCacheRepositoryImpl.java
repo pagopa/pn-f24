@@ -3,6 +3,7 @@ package it.pagopa.pn.f24.middleware.dao.f24file.dynamo;
 import it.pagopa.pn.f24.config.F24Config;
 import it.pagopa.pn.f24.dto.F24File;
 import it.pagopa.pn.f24.dto.F24FileStatus;
+import it.pagopa.pn.f24.exception.PnDbConflictException;
 import it.pagopa.pn.f24.middleware.dao.f24file.F24FileCacheDao;
 import it.pagopa.pn.f24.middleware.dao.f24file.dynamo.entity.F24FileCacheEntity;
 import it.pagopa.pn.f24.middleware.dao.f24file.dynamo.mapper.F24FileCacheMapper;
@@ -12,8 +13,8 @@ import reactor.core.publisher.Mono;
 import software.amazon.awssdk.enhanced.dynamodb.*;
 import software.amazon.awssdk.enhanced.dynamodb.model.*;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
+import software.amazon.awssdk.services.dynamodb.model.ConditionalCheckFailedException;
 
-import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -65,7 +66,6 @@ public class F24FileCacheRepositoryImpl implements F24FileCacheDao {
     @Override
     public Mono<F24File> setFileKey(F24File f24File, String fileKey) {
         f24File.setFileKey(fileKey);
-        f24File.setUpdated(Instant.now());
         f24File.setStatus(F24FileStatus.GENERATED);
 
         Map<String, String> expressionNames = new HashMap<>();
@@ -82,13 +82,13 @@ public class F24FileCacheRepositoryImpl implements F24FileCacheDao {
                 .build();
 
         return Mono.fromFuture(table.updateItem(updateItemEnhancedRequest))
-                .map(F24FileCacheMapper::entityToDto);
+                .map(F24FileCacheMapper::entityToDto)
+                .onErrorResume(ConditionalCheckFailedException.class, t -> Mono.error(new PnDbConflictException(t.getMessage())));
     }
 
     @Override
     public Mono<F24File> setStatusDone(F24File f24File) {
         f24File.setStatus(F24FileStatus.DONE);
-        f24File.setUpdated(Instant.now());
 
         Map<String, String> expressionNames = new HashMap<>();
         expressionNames.put("#status", COL_STATUS);
@@ -109,8 +109,9 @@ public class F24FileCacheRepositoryImpl implements F24FileCacheDao {
 
     @Override
     public Mono<F24File> putItemIfAbsent(F24File f24File) {
+        F24FileCacheEntity entity = F24FileCacheMapper.dtoToEntity(f24File);
         PutItemEnhancedRequest<F24FileCacheEntity> putItemEnhancedRequest = PutItemEnhancedRequest.builder(F24FileCacheEntity.class)
-                .item(F24FileCacheMapper.dtoToEntity(f24File))
+                .item(entity)
                 .conditionExpression(
                         Expression.builder()
                                 .expression("attribute_not_exists(pk)")
@@ -118,7 +119,7 @@ public class F24FileCacheRepositoryImpl implements F24FileCacheDao {
                 )
                 .build();
         return Mono.fromFuture(table.putItem(putItemEnhancedRequest))
-                .thenReturn(f24File);
+                .thenReturn(F24FileCacheMapper.entityToDto(entity));
     }
 
     private UpdateItemEnhancedRequest<F24FileCacheEntity> createUpdateItemEnhancedRequest(F24FileCacheEntity entity) {

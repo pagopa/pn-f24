@@ -23,6 +23,7 @@ public class F24FileRequestMapper {
         f24Request.setStatus(f24FileRequestEntity.getStatus() != null ? F24RequestStatus.valueOf(f24FileRequestEntity.getStatus().getValue()) : null);
         f24Request.setPathTokens(f24FileRequestEntity.getPathTokens());
         f24Request.setCreated(f24FileRequestEntity.getCreated());
+        f24Request.setUpdated(f24FileRequestEntity.getUpdated());
         f24Request.setTtl(f24FileRequestEntity.getTtl());
         return f24Request;
     }
@@ -44,7 +45,6 @@ public class F24FileRequestMapper {
         f24FileRequestEntity.setStatus(f24Request.getStatus() != null ? F24RequestStatusEntity.valueOf(f24Request.getStatus().getValue()) : null);
         f24FileRequestEntity.setRecordVersion(f24Request.getRecordVersion());
         f24FileRequestEntity.setPathTokens(f24Request.getPathTokens());
-        f24FileRequestEntity.setCreated(f24Request.getCreated());
         f24FileRequestEntity.setTtl(f24Request.getTtl());
         return f24FileRequestEntity;
     }

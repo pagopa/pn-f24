@@ -92,9 +92,9 @@ Resources:
         QueueName: !Sub '${ProjectName}-f24_internal'
         HasDLQ:  "true"
         AlarmSNSTopicName: !Ref AlarmSNSTopicName
-        VisibilityTimeout: 900 # the maximum lambda timeout
-        QueueHasAlarm: "false"
-        DelaySeconds: 2
+        VisibilityTimeout: 60
+        MaxReceiveCount: 10
+        DelaySeconds: 1
 
   PnF24LogGroup:
     Type: AWS::CloudFormation::Stack

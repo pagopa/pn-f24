@@ -4,6 +4,7 @@ import it.pagopa.pn.api.dto.events.MomProducer;
 import it.pagopa.pn.api.dto.events.PnF24PdfSetReadyEvent;
 import it.pagopa.pn.f24.config.F24Config;
 import it.pagopa.pn.f24.dto.*;
+import it.pagopa.pn.f24.exception.PnDbConflictException;
 import it.pagopa.pn.f24.exception.PnF24ExceptionCodes;
 import it.pagopa.pn.f24.exception.PnNotFoundException;
 import it.pagopa.pn.f24.middleware.dao.f24file.F24FileCacheDao;
@@ -19,7 +20,6 @@ import lombok.CustomLog;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import software.amazon.awssdk.services.dynamodb.model.ConditionalCheckFailedException;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -215,7 +215,8 @@ public class PreparePdfEventService {
         } else {
             log.debug("All files ({}) are already processed, sending PdfSetReady Event", f24FilesReady.size());
 
-            return Mono.fromRunnable(() -> pdfSetReadyEventProducer.sendEvent(PnF24AsyncEventBuilderHelper.buildPdfSetReadyEvent(f24Request)))
+            f24Request.setFiles(buildF24RequestFiles(preparePdfLists));
+            return pdfSetReadyEventProducer.sendEvent(PnF24AsyncEventBuilderHelper.buildPdfSetReadyEvent(f24Request))
                     .doOnError(throwable -> log.warn("Error sending PdfSetReady event"))
                     .then(updateF24RequestStatus(preparePdfLists))
                     .then();
@@ -237,7 +238,6 @@ public class PreparePdfEventService {
     private Mono<Void> updateF24RequestAndF24File(PreparePdfLists preparePdfLists) {
         preparePdfLists.getF24Request().setFiles(buildF24RequestFiles(preparePdfLists));
         preparePdfLists.getF24Request().setRecordVersion(preparePdfLists.getF24Request().getRecordVersion() + 1);
-        preparePdfLists.getF24Request().setUpdated(Instant.now());
         return f24FileRequestDao.updateRequestAndRelatedFiles(preparePdfLists)
                 .doOnError(t -> log.warn("Error updating Request and Files", t));
     }
@@ -262,12 +262,10 @@ public class PreparePdfEventService {
 
         log.debug("setting f24Request with pk: {} status to DONE", f24Request.getPk());
         f24Request.setStatus(F24RequestStatus.DONE);
-        f24Request.setUpdated(Instant.now());
-        f24Request.setFiles(buildF24RequestFiles(preparePdfLists));
         f24Request.setRecordVersion(f24Request.getRecordVersion() + 1);
         return f24FileRequestDao.setRequestStatusDone(f24Request)
                 .doOnError(throwable -> log.warn("Error updating f24Request status to DONE"))
-                .onErrorResume(ConditionalCheckFailedException.class, e -> {
+                .onErrorResume(PnDbConflictException.class, e -> {
                     log.debug("F24 Request with requestId {} already in status DONE", f24Request.getRequestId());
                     return Mono.empty();
                 });

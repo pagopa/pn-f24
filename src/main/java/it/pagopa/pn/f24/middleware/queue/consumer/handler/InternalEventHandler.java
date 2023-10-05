@@ -1,5 +1,6 @@
 package it.pagopa.pn.f24.middleware.queue.consumer.handler;
 
+import it.pagopa.pn.commons.utils.MDCUtils;
 import it.pagopa.pn.f24.middleware.queue.consumer.handler.utils.HandleEventUtils;
 import it.pagopa.pn.f24.middleware.queue.consumer.service.GeneratePdfEventService;
 import it.pagopa.pn.f24.middleware.queue.consumer.service.PreparePdfEventService;
@@ -33,8 +34,9 @@ public class InternalEventHandler {
             try {
                 ValidateMetadataSetEvent.Payload payload = message.getPayload();
                 HandleEventUtils.addSetIdToMdc(payload.getSetId());
-                validateMetadataEventService.handleMetadataValidation(payload)
-                        .block();
+                MDCUtils.addMDCToContextAndExecute(
+                        validateMetadataEventService.handleMetadataValidation(payload)
+                ).block();
             } catch (Exception ex) {
                 HandleEventUtils.handleException(message.getHeaders(), ex);
                 throw ex;
@@ -49,8 +51,9 @@ public class InternalEventHandler {
             try {
                 PreparePdfEvent.Payload payload = message.getPayload();
                 HandleEventUtils.addRequestIdToMdc(payload.getRequestId());
-                preparePdfEventService.preparePdf(payload)
-                        .block();
+                MDCUtils.addMDCToContextAndExecute(
+                    preparePdfEventService.preparePdf(payload)
+                ).block();
             } catch (Exception ex) {
                 HandleEventUtils.handleException(message.getHeaders(), ex);
                 throw ex;
@@ -65,8 +68,9 @@ public class InternalEventHandler {
             try {
                 GeneratePdfEvent.Payload payload = message.getPayload();
                 HandleEventUtils.addSetIdToMdc(payload.getSetId());
-                generatePdfEventService.generatePdf(payload)
-                        .block();
+                MDCUtils.addMDCToContextAndExecute(
+                    generatePdfEventService.generatePdf(payload)
+                ).block();
             } catch (Exception ex) {
                 HandleEventUtils.handleException(message.getHeaders(), ex);
                 throw ex;

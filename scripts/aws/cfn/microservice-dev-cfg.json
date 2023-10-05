@@ -1,4 +1,11 @@
 {
   "Parameters" : {
+    "PollingIntervalInSec": "1",
+    "SafeStorageExecutionLimitMin": "2",
+    "DefaultRetryAfterMilliSec": "10000",
+    "PollingTimeoutInSec": "5",
+    "RetentionForF24RequestsInDays": "120",
+    "RetentionForF24FilesInDays": "120",
+    "MetadataSetTtlInDaysUntilValidation": "3"
   }
 }

@@ -1,6 +1,7 @@
 package it.pagopa.pn.f24.middleware.queue.consumer.service;
 
 import it.pagopa.pn.api.dto.events.PnF24MetadataValidationEndEvent;
+import it.pagopa.pn.f24.exception.PnDbConflictException;
 import it.pagopa.pn.f24.service.MetadataValidator;
 import it.pagopa.pn.f24.dto.*;
 import it.pagopa.pn.f24.exception.PnF24ExceptionCodes;
@@ -14,7 +15,6 @@ import lombok.CustomLog;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import software.amazon.awssdk.services.dynamodb.model.ConditionalCheckFailedException;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -126,7 +126,7 @@ public class ValidateMetadataEventService {
         String validatorCxId = f24MetadataSet.getValidatorCxId();
         log.debug("MetadataSet with setId {} and validatorCxId {} has to send validation end event", setId, validatorCxId);
         PnF24MetadataValidationEndEvent event = PnF24AsyncEventBuilderHelper.buildMetadataValidationEndEvent(validatorCxId, setId, f24MetadataValidationIssues);
-        return Mono.fromRunnable(() -> eventBridgeProducer.sendEvent(event))
+        return eventBridgeProducer.sendEvent(event)
                 .doOnError(throwable -> log.warn("Error sending validation end event", throwable))
                 .then(updateMetadataSetWithValidation(f24MetadataSet, f24MetadataValidationIssues, true));
     }
@@ -140,7 +140,7 @@ public class ValidateMetadataEventService {
         f24MetadataSet.setStatus(F24MetadataStatus.VALIDATION_ENDED);
 
         return f24MetadataSetDao.setF24MetadataSetStatusValidationEnded(f24MetadataSet)
-                .onErrorResume(ConditionalCheckFailedException.class, e -> {
+                .onErrorResume(PnDbConflictException.class, e -> {
                     log.debug("MetadataSet with setId: {} already with status VALIDATION_ENDED ", f24MetadataSet.getSetId());
                     return Mono.empty();
                 })

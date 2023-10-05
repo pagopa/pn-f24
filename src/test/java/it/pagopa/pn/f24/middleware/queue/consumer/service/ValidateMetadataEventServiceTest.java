@@ -11,6 +11,7 @@ import it.pagopa.pn.f24.dto.F24MetadataStatus;
 import it.pagopa.pn.f24.dto.MetadataToValidate;
 import it.pagopa.pn.f24.dto.safestorage.FileDownloadInfoInt;
 import it.pagopa.pn.f24.dto.safestorage.FileDownloadResponseInt;
+import it.pagopa.pn.f24.exception.PnDbConflictException;
 import it.pagopa.pn.f24.exception.PnNotFoundException;
 import it.pagopa.pn.f24.generated.openapi.server.v1.dto.F24Metadata;
 import it.pagopa.pn.f24.middleware.dao.f24metadataset.F24MetadataSetDao;
@@ -28,7 +29,6 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
-import software.amazon.awssdk.services.dynamodb.model.ConditionalCheckFailedException;
 
 import java.util.Map;
 
@@ -104,7 +104,7 @@ class ValidateMetadataEventServiceTest {
                 .thenReturn(Mono.just(fileDownloadResponseInt));
         when(safeStorageService.downloadPieceOfContent(f24MetadataRef.getFileKey(), fileDownloadInfoInt.getUrl(), maxSize))
                 .thenReturn(Mono.just("test".getBytes()));
-        doNothing().when(eventBridgeProducer).sendEvent(any());
+        when(eventBridgeProducer.sendEvent((PnF24MetadataValidationEndEvent) any())).thenReturn(Mono.empty());
         when(f24MetadataSetDao.setF24MetadataSetStatusValidationEnded(f24MetadataSet))
                 .thenReturn(Mono.just(f24MetadataSet));
 
@@ -151,7 +151,7 @@ class ValidateMetadataEventServiceTest {
                 .thenReturn(Mono.just(fileDownloadResponseInt));
         when(safeStorageService.downloadPieceOfContent(f24MetadataRef.getFileKey(), fileDownloadInfoInt.getUrl(), maxSize))
                 .thenReturn(Mono.just("test".getBytes()));
-        doNothing().when(eventBridgeProducer).sendEvent(any());
+        when(eventBridgeProducer.sendEvent((PnF24MetadataValidationEndEvent) any())).thenReturn(Mono.empty());
         when(f24MetadataSetDao.setF24MetadataSetStatusValidationEnded(f24MetadataSet))
                 .thenReturn(Mono.just(f24MetadataSet));
 
@@ -198,9 +198,9 @@ class ValidateMetadataEventServiceTest {
                 .thenReturn(Mono.just(fileDownloadResponseInt));
         when(safeStorageService.downloadPieceOfContent(f24MetadataRef.getFileKey(), fileDownloadInfoInt.getUrl(), maxSize))
                 .thenReturn(Mono.just("test".getBytes()));
-        doNothing().when(eventBridgeProducer).sendEvent(any());
+        when(eventBridgeProducer.sendEvent((PnF24MetadataValidationEndEvent) any())).thenReturn(Mono.empty());
         when(f24MetadataSetDao.setF24MetadataSetStatusValidationEnded(any()))
-                .thenReturn(Mono.error(ConditionalCheckFailedException.builder().build()));
+                .thenReturn(Mono.error(new PnDbConflictException("")));
 
 
         StepVerifier.create(validateMetadataEventService.handleMetadataValidation(new ValidateMetadataSetEvent.Payload("42")))

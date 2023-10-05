@@ -2,6 +2,7 @@ package it.pagopa.pn.f24.middleware.dao.f24metadataset.dynamo;
 
 import it.pagopa.pn.f24.config.F24Config;
 import it.pagopa.pn.f24.dto.F24MetadataSet;
+import it.pagopa.pn.f24.exception.PnDbConflictException;
 import it.pagopa.pn.f24.middleware.dao.f24metadataset.F24MetadataSetDao;
 import it.pagopa.pn.f24.middleware.dao.f24metadataset.dynamo.entity.F24MetadataSetEntity;
 import it.pagopa.pn.f24.middleware.dao.f24metadataset.dynamo.entity.F24MetadataSetStatusEntity;
@@ -14,6 +15,7 @@ import software.amazon.awssdk.enhanced.dynamodb.model.GetItemEnhancedRequest;
 import software.amazon.awssdk.enhanced.dynamodb.model.PutItemEnhancedRequest;
 import software.amazon.awssdk.enhanced.dynamodb.model.UpdateItemEnhancedRequest;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
+import software.amazon.awssdk.services.dynamodb.model.ConditionalCheckFailedException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -55,7 +57,8 @@ public class F24MetadataSetRepositoryImpl implements F24MetadataSetDao {
                 )
                 .build();
 
-        return Mono.fromFuture(table.putItem(putItemEnhancedRequest));
+        return Mono.fromFuture(table.putItem(putItemEnhancedRequest))
+                .onErrorResume(ConditionalCheckFailedException.class, t -> Mono.error(new PnDbConflictException(t.getMessage())));
     }
 
     @Override
@@ -73,7 +76,8 @@ public class F24MetadataSetRepositoryImpl implements F24MetadataSetDao {
                 .build();
 
         return Mono.fromFuture(table.updateItem(updateItemEnhancedRequest))
-                .map(F24MetadataSetMapper::entityToDto);
+                .map(F24MetadataSetMapper::entityToDto)
+                .onErrorResume(ConditionalCheckFailedException.class, t -> Mono.error(new PnDbConflictException(t.getMessage())));
     }
 
     @Override

@@ -1,6 +1,7 @@
 package it.pagopa.pn.f24.service.impl;
 
 import it.pagopa.pn.commons.exceptions.PnInternalException;
+import it.pagopa.pn.f24.config.F24Config;
 import it.pagopa.pn.f24.dto.safestorage.FileDownloadInfoInt;
 import it.pagopa.pn.f24.dto.safestorage.FileDownloadResponseInt;
 import it.pagopa.pn.f24.generated.openapi.server.v1.dto.F24Metadata;
@@ -11,8 +12,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -24,6 +27,8 @@ import static org.mockito.Mockito.*;
 
 @ContextConfiguration(classes = {MetadataDownloaderImpl.class})
 @ExtendWith(SpringExtension.class)
+@TestPropertySource("classpath:/application-test.properties")
+@EnableConfigurationProperties(value = F24Config.class)
 class MetadataDownloaderImplTest {
 
     @MockBean
@@ -31,7 +36,7 @@ class MetadataDownloaderImplTest {
     @Autowired
     private MetadataDownloaderImpl metadataDownloader;
     @MockBean
-    JsonService jsonService;
+    private JsonService jsonService;
 
 
     @Test

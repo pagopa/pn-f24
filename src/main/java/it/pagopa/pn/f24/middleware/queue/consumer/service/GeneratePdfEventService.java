@@ -8,6 +8,7 @@ import it.pagopa.pn.f24.dto.F24FileStatus;
 import it.pagopa.pn.f24.dto.F24Type;
 import it.pagopa.pn.f24.dto.safestorage.FileCreationResponseInt;
 import it.pagopa.pn.f24.dto.safestorage.FileCreationWithContentRequest;
+import it.pagopa.pn.f24.exception.PnDbConflictException;
 import it.pagopa.pn.f24.exception.PnF24ExceptionCodes;
 import it.pagopa.pn.f24.exception.PnNotFoundException;
 import it.pagopa.pn.f24.generated.openapi.server.v1.dto.F24Metadata;
@@ -22,7 +23,6 @@ import lombok.CustomLog;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
-import software.amazon.awssdk.services.dynamodb.model.ConditionalCheckFailedException;
 
 @Service
 @CustomLog
@@ -116,7 +116,7 @@ public class GeneratePdfEventService {
 
         return f24FileCacheDao.setFileKey(f24File, fileCreationResponseInt.getKey())
                 .doOnError(throwable -> log.warn("Error updating record f24File with pk {}", f24File.getPk()))
-                .onErrorResume(ConditionalCheckFailedException.class, e -> {
+                .onErrorResume(PnDbConflictException.class, e -> {
                     log.debug("f24File with pk {} already in status GENERATED", f24File.getPk());
                     return Mono.empty();
                 })

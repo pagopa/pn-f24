@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.anyBoolean;
 
 import it.pagopa.pn.api.dto.events.MomProducer;
 import it.pagopa.pn.api.dto.events.PnF24MetadataValidationEndEvent;
+import it.pagopa.pn.commons.log.PnAuditLogEvent;
 import it.pagopa.pn.f24.config.F24Config;
 import it.pagopa.pn.f24.dto.*;
 import it.pagopa.pn.f24.dto.safestorage.FileCreationResponseInt;
@@ -22,13 +23,11 @@ import it.pagopa.pn.f24.middleware.eventbus.EventBridgeProducer;
 import it.pagopa.pn.f24.middleware.msclient.safestorage.PnSafeStorageClientImpl;
 import it.pagopa.pn.f24.middleware.queue.producer.events.PreparePdfEvent;
 import it.pagopa.pn.f24.middleware.queue.producer.events.ValidateMetadataSetEvent;
-import it.pagopa.pn.f24.service.F24Generator;
-import it.pagopa.pn.f24.service.JsonService;
-import it.pagopa.pn.f24.service.MetadataDownloader;
-import it.pagopa.pn.f24.service.SafeStorageService;
+import it.pagopa.pn.f24.service.*;
 import it.pagopa.pn.f24.util.Sha256Handler;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -79,6 +78,8 @@ class F24ServiceImplTest {
     private MetadataDownloader metadataDownloader;
     @MockBean
     private F24FileRequestDao f24FileRequestDao;
+    @MockBean
+    private AuditLogService auditLogService;
 
     @Test
     void generatePDFFromCache() {
@@ -346,7 +347,7 @@ class F24ServiceImplTest {
         when(f24MetadataSetDao.getItem(any(), anyBoolean()))
                 .thenReturn(Mono.just(f24MetadataSetUpdated));
 
-        doNothing().when(metadataValidationEndedEventProducer).sendEvent(any());
+        when(metadataValidationEndedEventProducer.sendEvent((PnF24MetadataValidationEndEvent) any())).thenReturn(Mono.empty());
 
         //Update finale con eventSent = true
         F24MetadataSet f24MetadataSetUpdated2 = new F24MetadataSet();
@@ -419,7 +420,14 @@ class F24ServiceImplTest {
         f24Metadata.setF24Standard(new F24Standard());
 
         F24File f24File = new F24File();
+        f24File.setPk("CACHE#setId#10#0_0");
+        f24File.setStatus(F24FileStatus.GENERATED);
         f24File.setFileKey("key");
+
+        F24File f24FilePolling = new F24File();
+        f24FilePolling.setPk("CACHE#setId#10#0_0");
+        f24FilePolling.setStatus(F24FileStatus.DONE);
+        f24FilePolling.setFileKey("key");
 
         when(f24FileCacheDao.getItem(anyString(), anyInt(), anyString()))
                 .thenReturn(Mono.empty());
@@ -431,12 +439,18 @@ class F24ServiceImplTest {
                 .thenReturn(new byte[0]);
         when(safeStorageService.createAndUploadContent(any()))
                 .thenReturn(Mono.just(fileCreationResponseInt));
-        when(safeStorageService.getFilePolling(anyString(), any(), any(), any()))
-                .thenReturn(Mono.just(fileDownloadResponseInt));
         when(f24FileCacheDao.putItemIfAbsent(any()))
                 .thenReturn(Mono.just(f24File));
-        when(f24FileCacheDao.updateItem(any()))
-                .thenReturn(Mono.empty());
+        PnAuditLogEvent auditLogEvent = Mockito.mock(PnAuditLogEvent.class);
+        when(auditLogService.buildAuditLogEvent(any(), any(), any(), any()))
+                .thenReturn(auditLogEvent);
+        when(auditLogEvent.generateSuccess()).thenReturn(auditLogEvent);
+        //Polling
+        when(f24FileCacheDao.getItem(anyString()))
+                .thenReturn(Mono.just(f24FilePolling));
+        when(safeStorageService.getFile(any(), any()))
+                .thenReturn(Mono.just(fileDownloadResponseInt));
+
 
         // Assert
         StepVerifier.create(f24ServiceImpl.generatePDF("xPagopaF24CxId", "setId", pathTokens, 10))

@@ -7,10 +7,6 @@ Parameters:
     Description: 'Usually pn can be pnXYZ where XYZ are the feature number, useful to create
       experimental environments without crash official development environment'
 
-  CorsAllowedDomains:
-    Type: String
-    Description: 'Comma separated list of domains allowed to make cross origin request'
-
   ContainerImageUri:
     Type: String
     Description: 'Exact container image URI with full repository and image digest'
@@ -198,6 +194,34 @@ Parameters:
   F24InternalAgeAlarmARN:
     Type: String
 
+  PollingIntervalInSec:
+    Type: String
+    Description: Interval seconds between polling requests
+
+  SafeStorageExecutionLimitMin:
+    Type: String
+    Description: Threshold expressed in minutes in which an upload to safestorage is considered still being processed
+
+  DefaultRetryAfterMilliSec:
+    Type: String
+    Description: Default retryAfter expressed in millisec
+
+  PollingTimeoutInSec:
+    Type: String
+    Description: Time expressed in seconds allowed for polling
+
+  RetentionForF24RequestsInDays:
+    Type: String
+    Description: Time of retention expressed in days for async pdf requests records on dynamo
+
+  RetentionForF24FilesInDays:
+    Type: String
+    Description: Time of retention expressed in days for f24 pdf files records on dynamo
+  
+  MetadataSetTtlInDaysUntilValidation:
+    Type: String
+    Description: TTL for metadata set records until validation request occurs
+
 Resources:
 
   # PN-F24 microservice
@@ -224,15 +248,24 @@ Resources:
         AlarmSNSTopicArn: !Ref AlarmSNSTopicArn
         ContainerImageURI: !Sub '${ContainerImageUri}'
         ContainerEnvEntry1: !Sub 'AWS_REGIONCODE=${AWS::Region}'
-        ContainerEnvEntry2: !Sub 'CORS_ALLOWED_DOMAINS=${CorsAllowedDomains}'
-        ContainerEnvEntry3: !Sub 'PN_DELIVERY_PUSH_BASE_URL=http://${ApplicationLoadBalancerDomain}:8080'
-        ContainerEnvEntry4: !Sub 'PN_F24_METADATA_SET_TABLE_NAME=${F24MetadataSetTableName}'
-        ContainerEnvEntry5: !Sub 'PN_F24_FILE_TABLE_NAME=${F24FileTableName}'
-        ContainerEnvEntry6: !Sub 'SPRING_CLOUD_FUNCTIONROUTER_QUEUES_LIST=${PnF24InternalQueueName},${SafeStorageToF24QueueName}'
-        ContainerEnvEntry8: !Sub 'PN_SAFESTORAGE_BASE_URL=${SandboxSafeStorageBaseUrl}'
-        ContainerEnvEntry9: !Sub 'PN_F24_TOPICS_INTERNAL=${PnF24InternalQueueName}'
-        ContainerEnvEntry10: !Sub 'PN_F24_TOPICS_FROM_SAFE_STORAGE=${SafeStorageToF24QueueName}'
-        ContainerEnvEntry11: !Sub 'PN_F24_EVENTBUS_NAME=arn:aws:events:${AWS::Region}:${AWS::AccountId}:event-bus/${ProjectName}-CoreEventBus'
+        ContainerEnvEntry2: !Sub 'PN_F24_SAFESTORAGEBASEURL=${SandboxSafeStorageBaseUrl}'
+        ContainerEnvEntry3: !Sub 'PN_F24_POLLINGINTERVALSEC=${PollingIntervalInSec}'
+        ContainerEnvEntry4: !Sub 'PN_F24_SAFESTORAGEEXECUTIONLIMITMIN=${SafeStorageExecutionLimitMin}'
+        ContainerEnvEntry5: !Sub 'PN_F24_DEFAULTRETRYAFTERMILLISEC=${DefaultRetryAfterMilliSec}'
+        ContainerEnvEntry6: !Sub 'PN_F24_POLLINGTIMEOUTSEC=${PollingTimeoutInSec}'
+        ContainerEnvEntry7: 'PN_F24_SAFESTORAGECXID=pn-f24'
+        ContainerEnvEntry8: 'PN_F24_SAFESTORAGEF24DOCTYPE=F24_FILE'
+        ContainerEnvEntry9: !Sub 'PN_F24_METADATASETTABLENAME=${F24MetadataSetTableName}'
+        ContainerEnvEntry10: !Sub 'PN_F24_FILETABLENAME=${F24FileTableName}'
+        ContainerEnvEntry11: !Sub 'PN_F24_INTERNALQUEUENAME=${PnF24InternalQueueName}'
+        ContainerEnvEntry12: !Sub 'PN_F24_SAFESTORAGEQUEUENAME=${SafeStorageToF24QueueName}'
+        ContainerEnvEntry13: !Sub 'PN_F24_EVENTBUS_NAME=arn:aws:events:${AWS::Region}:${AWS::AccountId}:event-bus/${ProjectName}-CoreEventBus'
+        ContainerEnvEntry14: 'PN_F24_EVENTBUS_SOURCE=f24'
+        ContainerEnvEntry15: 'PN_F24_EVENTBUS_OUTCOMEEVENTDETAIL=F24OutcomeEvent'
+        ContainerEnvEntry16: 'PN_F24_RETENTIONFORF24REQUESTSINDAYS={RetentionForF24RequestsInDays}'
+        ContainerEnvEntry17: 'PN_F24_RETENTIONFORF24FILESINDAYS={RetentionForF24FilesInDays}'
+        ContainerEnvEntry18: 'PN_F24_METADATASETTTLINDAYSUNTILVALDIATION={MetadataSetTtlInDaysUntilValidation}'
+        ContainerEnvEntry19: !Sub 'SPRING_CLOUD_FUNCTIONROUTER_QUEUES_LIST=${PnF24InternalQueueName},${SafeStorageToF24QueueName}'
         MicroServiceSecretPrefix: pn-f24-Secrets
         JavaToolOptions: '-Dreactor.netty.ioWorkerCount=120 -XX:MaxMetaspaceSize=512M'
         MappedPaths: '/f24-private/*'
@@ -273,6 +306,7 @@ Resources:
               - dynamodb:GetItem
               - dynamodb:Query
               - dynamodb:PutItem
+              - dynamodb:UpdateItem
               - dynamodb:TransactWriteItems
               - dynamodb:ExecuteTransaction
             Resource:

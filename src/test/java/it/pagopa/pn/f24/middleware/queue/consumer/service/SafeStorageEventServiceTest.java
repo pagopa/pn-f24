@@ -114,7 +114,7 @@ class SafeStorageEventServiceTest {
         when(f24FileRequestDao.getItem(any(), anyBoolean()))
                 .thenReturn(Mono.just(updatedF24Request));
 
-        doNothing().when(pdfSetReadyEventProducer).sendEvent(any());
+        when(pdfSetReadyEventProducer.sendEvent((PnF24PdfSetReadyEvent) any())).thenReturn(Mono.empty());
 
         f24Request.setStatus(F24RequestStatus.DONE);
         when(f24FileRequestDao.setRequestStatusDone(any()))

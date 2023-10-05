@@ -1,5 +1,14 @@
 package it.pagopa.pn.f24.middleware.eventbus;
 
+import reactor.core.publisher.Mono;
+
+import java.util.Collections;
+import java.util.List;
+
 public interface EventBridgeProducer<T> {
-    void sendEvent(T event);
+    default Mono<Void> sendEvent(T event) {
+        return this.sendEvent(Collections.singletonList(event));
+    }
+
+    Mono<Void> sendEvent(List<T> events);
 }

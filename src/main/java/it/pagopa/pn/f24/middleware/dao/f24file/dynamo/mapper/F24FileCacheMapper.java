@@ -28,8 +28,6 @@ public class F24FileCacheMapper {
         f24FileCacheEntity.setFileKey(f24File.getFileKey());
         f24FileCacheEntity.setRequestIds(f24File.getRequestIds());
         f24FileCacheEntity.setTtl(f24File.getTtl());
-        f24FileCacheEntity.setCreated(f24File.getCreated());
-        f24FileCacheEntity.setUpdated(f24File.getUpdated());
         return f24FileCacheEntity;
     }
 }

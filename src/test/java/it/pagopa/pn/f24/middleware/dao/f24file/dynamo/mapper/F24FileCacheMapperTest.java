@@ -22,14 +22,12 @@ public class F24FileCacheMapperTest {
     public void testEntityToDto() {
         F24File actualEntityToDtoResult = F24FileCacheMapper.entityToDto(F24FileCacheMapper.dtoToEntity(new F24File()));
         assertNull(actualEntityToDtoResult.getCost());
-        assertNull(actualEntityToDtoResult.getUpdated());
         assertNull(actualEntityToDtoResult.getTtl());
         assertNull(actualEntityToDtoResult.getStatus());
         assertNull(actualEntityToDtoResult.getRequestIds());
         assertEquals("CACHE#null#NO_COST#null", actualEntityToDtoResult.getPk());
         assertEquals("null", actualEntityToDtoResult.getPathTokens());
         assertNull(actualEntityToDtoResult.getFileKey());
-        assertNull(actualEntityToDtoResult.getCreated());
     }
 
     @Test

@@ -127,16 +127,17 @@ class PreparePdfEventServiceTest {
         f24Request.setSetId("setId");
         f24Request.setPathTokens("0_0");
         f24Request.setRecordVersion(0);
+        f24Request.setFiles(new HashMap<>());
         when(f24FileRequestDao.getItem(any()))
                 .thenReturn(Mono.just(f24Request));
 
         F24MetadataSet f24MetadataSet = new F24MetadataSet();
         f24MetadataSet.setSetId("setId");
-        Map<String, F24MetadataRef> fileKeys = new HashMap<>();
         F24MetadataRef f24MetadataRef = new F24MetadataRef();
         f24MetadataRef.setFileKey("metadataFileKey");
         f24MetadataRef.setApplyCost(true);
         f24MetadataRef.setSha256("sha256");
+        Map<String, F24MetadataRef> fileKeys = new HashMap<>();
         fileKeys.put("0_0", f24MetadataRef);
         f24MetadataSet.setFileKeys(fileKeys);
         when(f24MetadataSetDao.getItem(any()))
@@ -154,7 +155,7 @@ class PreparePdfEventServiceTest {
         when(f24FileCacheDao.getItem(any(), any(), any()))
                 .thenReturn(Mono.just(fileInCache));
 
-        doNothing().when(pdfSetReadyEventProducer).sendEvent(any());
+        when(pdfSetReadyEventProducer.sendEvent((PnF24PdfSetReadyEvent) any())).thenReturn(Mono.empty());
 
         when(f24FileRequestDao.setRequestStatusDone(any()))
                 .thenReturn(Mono.empty());

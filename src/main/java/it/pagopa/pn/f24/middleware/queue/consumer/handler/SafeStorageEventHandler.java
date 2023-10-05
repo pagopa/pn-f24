@@ -37,7 +37,9 @@ public class SafeStorageEventHandler {
                 MDC.put(MDCUtils.MDC_PN_CTX_SAFESTORAGE_FILEKEY, response.getKey());
 
                 if(f24Config.getSafeStorageF24DocType().equals(response.getDocumentType())) {
-                    safeStorageEventService.handleSafeStorageResponse(response).subscribe();
+                    MDCUtils.addMDCToContextAndExecute(
+                            safeStorageEventService.handleSafeStorageResponse(response)
+                    ).block();
                 } else {
                     log.debug("Safe storage event received is not handled - documentType={}", response.getDocumentType());
                 }

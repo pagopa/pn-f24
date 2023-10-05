@@ -4,6 +4,7 @@ import it.pagopa.pn.f24.config.F24Config;
 import it.pagopa.pn.f24.dto.F24File;
 import it.pagopa.pn.f24.dto.F24Request;
 import it.pagopa.pn.f24.dto.PreparePdfLists;
+import it.pagopa.pn.f24.exception.PnDbConflictException;
 import it.pagopa.pn.f24.middleware.dao.f24file.F24FileRequestDao;
 import it.pagopa.pn.f24.middleware.dao.f24file.dynamo.entity.F24FileCacheEntity;
 import it.pagopa.pn.f24.middleware.dao.f24file.dynamo.entity.F24FileRequestEntity;
@@ -16,8 +17,8 @@ import reactor.core.publisher.Mono;
 import software.amazon.awssdk.enhanced.dynamodb.*;
 import software.amazon.awssdk.enhanced.dynamodb.model.*;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
+import software.amazon.awssdk.services.dynamodb.model.ConditionalCheckFailedException;
 
-import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -53,7 +54,9 @@ public class F24FileRequestRepositoryImpl implements F24FileRequestDao {
                 .consistentRead(isConsistentRead)
                 .build();
 
-        return Mono.fromFuture(f24FileRequestTable.getItem(getItemEnhancedRequest)).map(F24FileRequestMapper::entityToDto);
+        return Mono.fromFuture(f24FileRequestTable.getItem(getItemEnhancedRequest))
+                .map(F24FileRequestMapper::entityToDto)
+                .onErrorResume(ConditionalCheckFailedException.class, t -> Mono.error(new PnDbConflictException(t.getMessage())));
     }
 
     public Mono<Void> putItemIfAbsent(F24Request f24Request) {
@@ -108,7 +111,8 @@ public class F24FileRequestRepositoryImpl implements F24FileRequestDao {
                 .build();
 
         return Mono.fromFuture(f24FileRequestTable.updateItem(updateItemEnhancedRequest))
-                .map(F24FileRequestMapper::entityToDto);
+                .map(F24FileRequestMapper::entityToDto)
+                .onErrorResume(ConditionalCheckFailedException.class, t -> Mono.error(new PnDbConflictException(t.getMessage())));
     }
 
     @Override
@@ -162,9 +166,6 @@ public class F24FileRequestRepositoryImpl implements F24FileRequestDao {
 
         Map<String, AttributeValue> expressionValues = new HashMap<>();
         expressionValues.put(":updated", AttributeValue.builder().s(f24File.getUpdated().toString()).build());
-
-        // Lo setto qui per permettere il check della condizione sul campo update del record già salvato
-        f24File.setUpdated(Instant.now());
 
         return TransactUpdateItemEnhancedRequest
                 .builder(F24FileCacheEntity.class)
