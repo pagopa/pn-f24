@@ -11,6 +11,7 @@ import it.pagopa.pn.f24.generated.openapi.server.v1.dto.LocalTaxRecord;
 import it.pagopa.pn.f24.generated.openapi.server.v1.dto.LocalTaxSection;
 import it.pagopa.pn.f24.middleware.dao.f24file.F24FileCacheDao;
 import it.pagopa.pn.f24.middleware.queue.producer.events.GeneratePdfEvent;
+import it.pagopa.pn.f24.service.AuditLogService;
 import it.pagopa.pn.f24.service.F24Generator;
 import it.pagopa.pn.f24.service.MetadataDownloader;
 import it.pagopa.pn.f24.service.SafeStorageService;
@@ -29,6 +30,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
 @ContextConfiguration(classes = {GeneratePdfEventService.class, F24Config.class})
@@ -46,6 +48,8 @@ class GeneratePdfEventServiceTest {
     private F24Generator f24Generator;
     @Autowired
     private GeneratePdfEventService generatePdfEventService;
+    @MockBean
+    private AuditLogService auditLogService;
 
     @Test
     void generatePdfFailsIfFileIsNotFound() {
@@ -95,6 +99,8 @@ class GeneratePdfEventServiceTest {
         fileCreationResponseInt.setKey("f24Key");
         when(safeStorageService.createAndUploadContent(any()))
                 .thenReturn(Mono.just(fileCreationResponseInt));
+
+        doNothing().when(auditLogService).buildGeneratePdfAuditLogEvent(any(), any(), any(), any(), any());
 
         when(f24FileCacheDao.setFileKey(any(), any()))
                 .thenReturn(Mono.just(new F24File()));

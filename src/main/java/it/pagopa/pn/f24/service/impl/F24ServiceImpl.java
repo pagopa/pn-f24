@@ -2,8 +2,6 @@
 package it.pagopa.pn.f24.service.impl;
 
 import it.pagopa.pn.api.dto.events.MomProducer;
-import it.pagopa.pn.commons.log.PnAuditLogEvent;
-import it.pagopa.pn.commons.log.PnAuditLogEventType;
 import it.pagopa.pn.f24.business.F24ResponseConverter;
 import it.pagopa.pn.f24.business.MetadataInspector;
 import it.pagopa.pn.f24.business.MetadataInspectorFactory;
@@ -411,9 +409,7 @@ public class F24ServiceImpl implements F24Service {
     }
 
     private void generateAuditLog(String setId, String pathTokensInString, Integer cost, String f24FileKey, String metadataFileKey) {
-        String message = "Generated and uploaded pdf on safe storage with fileKey={} and cost={}, used metadata with setId={}, fileKey={}, pathTokens={}";
-        PnAuditLogEvent logEvent = auditLogService.buildAuditLogEvent(setId, PnAuditLogEventType.AUD_F24_CREATE, message, f24FileKey, cost, setId, metadataFileKey, pathTokensInString);
-        logEvent.generateSuccess();
+        this.auditLogService.buildGeneratePdfAuditLogEvent(setId, pathTokensInString, cost, f24FileKey, metadataFileKey);
     }
 
     private Mono<F24File> pollingF24FileUntilStatusIsDone(String f24FilePk) {

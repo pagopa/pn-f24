@@ -14,6 +14,7 @@ import it.pagopa.pn.f24.exception.PnNotFoundException;
 import it.pagopa.pn.f24.generated.openapi.server.v1.dto.F24Metadata;
 import it.pagopa.pn.f24.middleware.dao.f24file.F24FileCacheDao;
 import it.pagopa.pn.f24.middleware.queue.producer.events.GeneratePdfEvent;
+import it.pagopa.pn.f24.service.AuditLogService;
 import it.pagopa.pn.f24.service.F24Generator;
 import it.pagopa.pn.f24.service.MetadataDownloader;
 import it.pagopa.pn.f24.service.SafeStorageService;
@@ -35,6 +36,8 @@ public class GeneratePdfEventService {
     private MetadataDownloader metadataDownloader;
     private SafeStorageService safeStorageService;
     private F24Generator f24Generator;
+
+    private AuditLogService auditLogService;
 
     public Mono<Void> generatePdf(GeneratePdfEvent.Payload payload) {
 
@@ -86,6 +89,7 @@ public class GeneratePdfEventService {
                 .doOnError(throwable -> log.warn("Error generating pdf for file with pk: {}", f24File.getPk(), throwable))
                 .map(this::buildFileCreationRequest)
                 .flatMap(safeStorageService::createAndUploadContent)
+                .doOnNext(fileCreationResponseInt -> generateAuditLog(fileCreationResponseInt, f24File, metadataFileKey))
                 .doOnError(throwable -> log.warn("Couldn't upload F24File with pk {} on safe storage", f24File.getPk(), throwable))
                 .flatMap(fileCreationResponseInt -> setFileKeyToF24File(fileCreationResponseInt, f24File));
     }
@@ -109,6 +113,10 @@ public class GeneratePdfEventService {
         fileCreationWithContentRequest.setStatus(SAVED);
         fileCreationWithContentRequest.setContent(pdfContent);
         return fileCreationWithContentRequest;
+    }
+
+    private void generateAuditLog(FileCreationResponseInt fileCreationResponseInt, F24File f24File, String metadataFileKey) {
+        this.auditLogService.buildGeneratePdfAuditLogEvent(f24File.getSetId(), f24File.getPathTokens(), f24File.getCost(), fileCreationResponseInt.getKey(), metadataFileKey);
     }
 
     private Mono<Void> setFileKeyToF24File(FileCreationResponseInt fileCreationResponseInt, F24File f24File) {

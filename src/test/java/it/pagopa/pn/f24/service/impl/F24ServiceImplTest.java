@@ -5,7 +5,6 @@ import static org.mockito.ArgumentMatchers.anyBoolean;
 
 import it.pagopa.pn.api.dto.events.MomProducer;
 import it.pagopa.pn.api.dto.events.PnF24MetadataValidationEndEvent;
-import it.pagopa.pn.commons.log.PnAuditLogEvent;
 import it.pagopa.pn.f24.config.F24Config;
 import it.pagopa.pn.f24.dto.*;
 import it.pagopa.pn.f24.dto.safestorage.FileCreationResponseInt;
@@ -27,7 +26,6 @@ import it.pagopa.pn.f24.service.*;
 import it.pagopa.pn.f24.util.Sha256Handler;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -441,10 +439,9 @@ class F24ServiceImplTest {
                 .thenReturn(Mono.just(fileCreationResponseInt));
         when(f24FileCacheDao.putItemIfAbsent(any()))
                 .thenReturn(Mono.just(f24File));
-        PnAuditLogEvent auditLogEvent = Mockito.mock(PnAuditLogEvent.class);
-        when(auditLogService.buildAuditLogEvent(any(), any(), any(), any()))
-                .thenReturn(auditLogEvent);
-        when(auditLogEvent.generateSuccess()).thenReturn(auditLogEvent);
+        // PnAuditLogEvent auditLogEvent = Mockito.mock(PnAuditLogEvent.class);
+        doNothing().when(auditLogService).buildGeneratePdfAuditLogEvent(any(), any(), any(), any(), any());
+        // when(auditLogEvent.generateSuccess()).thenReturn(auditLogEvent);
         //Polling
         when(f24FileCacheDao.getItem(anyString()))
                 .thenReturn(Mono.just(f24FilePolling));

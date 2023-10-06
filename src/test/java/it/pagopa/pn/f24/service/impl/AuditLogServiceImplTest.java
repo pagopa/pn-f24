@@ -5,6 +5,7 @@ import it.pagopa.pn.commons.log.PnAuditLogEventType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class AuditLogServiceImplTest {
@@ -22,6 +23,11 @@ class AuditLogServiceImplTest {
         PnAuditLogEvent event = auditLogService.buildAuditLogEvent("iun1", PnAuditLogEventType.AUD_DD_SEND,"messaggio par1={} par2={}", "parametro1", 2);
         assertNotNull(event);
         event.generateSuccess().log();
+    }
+
+    @Test
+    void buildGeneratePdfAuditLogEvent() {
+        assertDoesNotThrow(() -> auditLogService.buildGeneratePdfAuditLogEvent("iun1", "0_0",100, "f24FileKey", "metadataFileKey"));
     }
 
 }
