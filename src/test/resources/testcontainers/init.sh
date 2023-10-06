@@ -75,7 +75,7 @@ rule_name_paper_channel="f24_to_paperchannel"
 paper_channel_pattern='{"source": ["pn-f24"], "detail-type": ["F24OutcomeEvent"], "detail": {"clientId":["pn-paper-channel-f24"]}}'
 aws --profile default --region us-east-1 --endpoint-url http://localstack:4566 \
         events put-rule --name $rule_name_paper_channel --event-pattern "$paper_channel_pattern" \
-        --event-bus-name $event_bus_name-
+        --event-bus-name $event_bus_name
 
 echo "### ENABLE RULE PAPER-CHANNEL ###"
 aws --profile default --region us-east-1 --endpoint-url http://localstack:4566 \
