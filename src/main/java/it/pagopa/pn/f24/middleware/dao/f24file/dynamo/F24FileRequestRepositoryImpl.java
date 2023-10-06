@@ -147,11 +147,11 @@ public class F24FileRequestRepositoryImpl implements F24FileRequestDao {
         expressionNames.put("#recordVersion", COL_RECORD_VERSION);
 
         Map<String, AttributeValue> expressionValues = new HashMap<>();
-        int previousRecordVersion = f24Request.getRecordVersion() - 1;
         expressionValues.put(":status", AttributeValue.builder().s(F24RequestStatusEntity.TO_PROCESS.getValue()).build());
-        expressionValues.put(":recordVersion", AttributeValue.builder().n(Integer.toString(previousRecordVersion)).build());
-
+        expressionValues.put(":recordVersion", AttributeValue.builder().n(Integer.toString(f24Request.getRecordVersion())).build());
         String expression = "#status = :status AND #recordVersion = :recordVersion";
+
+        f24Request.setRecordVersion(f24Request.getRecordVersion() + 1);
 
         return TransactUpdateItemEnhancedRequest
                 .builder(F24FileRequestEntity.class)

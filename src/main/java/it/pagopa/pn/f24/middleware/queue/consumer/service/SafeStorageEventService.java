@@ -113,7 +113,6 @@ public class SafeStorageEventService {
 
     private F24Request setFileKeyInRequestFileMap(F24Request f24Request, F24File f24File) {
         f24Request.setFiles(updateFileMap(f24Request, f24File));
-        f24Request.setRecordVersion(f24Request.getRecordVersion() + 1);
         return f24Request;
     }
 

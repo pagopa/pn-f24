@@ -237,7 +237,6 @@ public class PreparePdfEventService {
 
     private Mono<Void> updateF24RequestAndF24File(PreparePdfLists preparePdfLists) {
         preparePdfLists.getF24Request().setFiles(buildF24RequestFiles(preparePdfLists));
-        preparePdfLists.getF24Request().setRecordVersion(preparePdfLists.getF24Request().getRecordVersion() + 1);
         return f24FileRequestDao.updateRequestAndRelatedFiles(preparePdfLists)
                 .doOnError(t -> log.warn("Error updating Request and Files", t));
     }

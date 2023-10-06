@@ -79,8 +79,7 @@ public class MetadataValidatorImpl implements MetadataValidator {
 
     private void checkSha256(MetadataToValidate metadataToValidate, List<F24MetadataValidationIssue> metadataValidationIssues) {
         log.info("Start checkSha256");
-        String f24MetadataToJson = jsonService.stringifyObject(metadataToValidate.getF24Metadata());
-        String checksum = Sha256Handler.computeSha256(f24MetadataToJson);
+        String checksum = Sha256Handler.computeSha256(metadataToValidate.getMetadataFile());
 
         String sha256 = metadataToValidate.getRef().getSha256();
 
