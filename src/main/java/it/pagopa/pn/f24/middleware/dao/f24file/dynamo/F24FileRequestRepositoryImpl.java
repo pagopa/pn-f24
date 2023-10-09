@@ -18,6 +18,7 @@ import software.amazon.awssdk.enhanced.dynamodb.*;
 import software.amazon.awssdk.enhanced.dynamodb.model.*;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.dynamodb.model.ConditionalCheckFailedException;
+import software.amazon.awssdk.services.dynamodb.model.TransactionCanceledException;
 
 import java.util.HashMap;
 import java.util.List;
@@ -69,7 +70,8 @@ public class F24FileRequestRepositoryImpl implements F24FileRequestDao {
                 )
                 .build();
 
-        return Mono.fromFuture(f24FileRequestTable.putItem(putItemEnhancedRequest));
+        return Mono.fromFuture(f24FileRequestTable.putItem(putItemEnhancedRequest))
+                .onErrorMap(ConditionalCheckFailedException.class, t -> new PnDbConflictException(t.getMessage()));
     }
 
     @Override
@@ -112,7 +114,7 @@ public class F24FileRequestRepositoryImpl implements F24FileRequestDao {
 
         return Mono.fromFuture(f24FileRequestTable.updateItem(updateItemEnhancedRequest))
                 .map(F24FileRequestMapper::entityToDto)
-                .onErrorResume(ConditionalCheckFailedException.class, t -> Mono.error(new PnDbConflictException(t.getMessage())));
+                .onErrorMap(ConditionalCheckFailedException.class, t -> new PnDbConflictException(t.getMessage()));
     }
 
     @Override
@@ -128,6 +130,7 @@ public class F24FileRequestRepositoryImpl implements F24FileRequestDao {
         TransactWriteItemsEnhancedRequest transaction = createTransactWriteItems(fileCachePutItemRequests, requestUpdate, fileCacheUpdateItemRequests);
 
         return Mono.fromFuture(dynamoDbEnhancedAsyncClient.transactWriteItems(transaction))
+                .onErrorMap(TransactionCanceledException.class, t -> new PnDbConflictException(t.getMessage()))
                 .then();
     }
 
@@ -202,6 +205,7 @@ public class F24FileRequestRepositoryImpl implements F24FileRequestDao {
         TransactWriteItemsEnhancedRequest transactWriteItemsEnhancedRequest = requestBuilder.build();
 
         return Mono.fromFuture(dynamoDbEnhancedAsyncClient.transactWriteItems(transactWriteItemsEnhancedRequest))
+                .onErrorMap(TransactionCanceledException.class, t -> new PnDbConflictException(t.getMessage()))
                 .then();
     }
 

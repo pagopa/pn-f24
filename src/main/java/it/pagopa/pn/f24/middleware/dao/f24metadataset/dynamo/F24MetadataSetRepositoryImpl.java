@@ -58,7 +58,7 @@ public class F24MetadataSetRepositoryImpl implements F24MetadataSetDao {
                 .build();
 
         return Mono.fromFuture(table.putItem(putItemEnhancedRequest))
-                .onErrorResume(ConditionalCheckFailedException.class, t -> Mono.error(new PnDbConflictException(t.getMessage())));
+                .onErrorMap(ConditionalCheckFailedException.class, t -> new PnDbConflictException(t.getMessage()));
     }
 
     @Override
@@ -77,7 +77,7 @@ public class F24MetadataSetRepositoryImpl implements F24MetadataSetDao {
 
         return Mono.fromFuture(table.updateItem(updateItemEnhancedRequest))
                 .map(F24MetadataSetMapper::entityToDto)
-                .onErrorResume(ConditionalCheckFailedException.class, t -> Mono.error(new PnDbConflictException(t.getMessage())));
+                .onErrorMap(ConditionalCheckFailedException.class, t -> new PnDbConflictException(t.getMessage()));
     }
 
     @Override

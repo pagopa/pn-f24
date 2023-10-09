@@ -41,21 +41,27 @@ public class MetadataValidatorImpl implements MetadataValidator {
     public List<F24MetadataValidationIssue> validateMetadata(MetadataToValidate metadataToValidate) {
         log.info("Starting validation on metadata with pathTokens {}", metadataToValidate.getPathTokensKey());
         List<F24MetadataValidationIssue> f24MetadataValidationIssues = new ArrayList<>();
-        metadataToValidate.setF24Metadata(parseJson(metadataToValidate, f24MetadataValidationIssues));
 
-        if(metadataToValidate.getF24Metadata() == null) {
+        F24Metadata f24Metadata = parseJson(metadataToValidate, f24MetadataValidationIssues);
+        if(f24Metadata == null) {
+            log.debug("Couldn't parse successfully metadata with fileKey: {}, skipping other validations", metadataToValidate.getRef().getFileKey());
             return f24MetadataValidationIssues;
         }
 
+        metadataToValidate.setF24Metadata(f24Metadata);
+
         checkMetadataSchema(metadataToValidate, f24MetadataValidationIssues);
+        if(!f24MetadataValidationIssues.isEmpty()) {
+            log.debug("Metadata has syntax errors, skipping other validations.");
+            return f24MetadataValidationIssues;
+        }
+
         checkSha256(metadataToValidate, f24MetadataValidationIssues);
         checkMetadataType(metadataToValidate, f24MetadataValidationIssues);
         checkApplyCost(metadataToValidate, f24MetadataValidationIssues);
         checkMetadata(metadataToValidate, f24MetadataValidationIssues);
         return f24MetadataValidationIssues;
     }
-
-
 
     private F24Metadata parseJson(MetadataToValidate metadataToValidate, List<F24MetadataValidationIssue> metadataValidationIssues) {
         try {
@@ -120,13 +126,13 @@ public class MetadataValidatorImpl implements MetadataValidator {
         F24MetadataRef f24MetadataRef = metadataToValidate.getRef();
         if(f24MetadataRef.isApplyCost() && applyCostCounter == 0) {
             log.debug("Metadata hasn't applyCost in records");
-            metadataValidationIssues.add(createIssue(metadataToValidate,"Metadata hasn't applyCost in records", PnF24ExceptionCodes.ERROR_CODE_F24_METADATA_VALIDATION_INCONSISTENT_APPLY_COST));
+            metadataValidationIssues.add(createIssue(metadataToValidate,"Metadata requires applyCost=true in records", PnF24ExceptionCodes.ERROR_CODE_F24_METADATA_VALIDATION_INCONSISTENT_APPLY_COST));
         } else if(!f24MetadataRef.isApplyCost() && applyCostCounter > 0) {
             log.debug("Metadata shouldn't have applyCost in records");
-            metadataValidationIssues.add(createIssue(metadataToValidate,"Metadata shouldn't have applyCost in records", PnF24ExceptionCodes.ERROR_CODE_F24_METADATA_VALIDATION_INCONSISTENT_APPLY_COST));
+            metadataValidationIssues.add(createIssue(metadataToValidate,"Metadata shouldn't have applyCost=true in records", PnF24ExceptionCodes.ERROR_CODE_F24_METADATA_VALIDATION_INCONSISTENT_APPLY_COST));
         } else if(applyCostCounter > 1) {
             log.debug("Metadata has too many applyCost in records");
-            metadataValidationIssues.add(createIssue(metadataToValidate,"Metadata has too many applyCost in records", PnF24ExceptionCodes.ERROR_CODE_F24_METADATA_VALIDATION_INCONSISTENT_APPLY_COST));
+            metadataValidationIssues.add(createIssue(metadataToValidate,"Metadata has too many applyCost=true in records", PnF24ExceptionCodes.ERROR_CODE_F24_METADATA_VALIDATION_INCONSISTENT_APPLY_COST));
         }
     }
 

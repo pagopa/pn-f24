@@ -21,6 +21,8 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import javax.validation.ConstraintViolation;
+
 @ContextConfiguration(classes = {MetadataValidatorImpl.class})
 @ExtendWith(SpringExtension.class)
 class MetadataValidatorImplTest {
@@ -74,7 +76,7 @@ class MetadataValidatorImplTest {
                 .thenReturn("Stringify Object");
         when(jsonService.validate(Mockito.<F24Metadata>any()))
                 .thenReturn(new HashSet<>());
-        when(jsonService.parseMetadataFile(Mockito.<byte[]>any()))
+        when(jsonService.parseMetadataFile(Mockito.any()))
                 .thenReturn(f24Metadata);
 
         String checksum = Sha256Handler.computeSha256("Stringify Object");
@@ -131,7 +133,7 @@ class MetadataValidatorImplTest {
                 .thenReturn("Stringify Object");
         when(jsonService.validate(Mockito.<F24Metadata>any()))
                 .thenReturn(new HashSet<>());
-        when(jsonService.parseMetadataFile(Mockito.<byte[]>any()))
+        when(jsonService.parseMetadataFile(Mockito.any()))
                 .thenReturn(f24Metadata);
 
         String checksum = Sha256Handler.computeSha256("Stringify Object");
@@ -188,7 +190,7 @@ class MetadataValidatorImplTest {
                 .thenReturn("Stringify Object");
         when(jsonService.validate(Mockito.<F24Metadata>any()))
                 .thenReturn(new HashSet<>());
-        when(jsonService.parseMetadataFile(Mockito.<byte[]>any()))
+        when(jsonService.parseMetadataFile(Mockito.any()))
                 .thenReturn(f24Metadata);
 
 
@@ -248,7 +250,7 @@ class MetadataValidatorImplTest {
                 .thenReturn("Stringify Object");
         when(jsonService.validate(Mockito.<F24Metadata>any()))
                 .thenReturn(new HashSet<>());
-        when(jsonService.parseMetadataFile(Mockito.<byte[]>any()))
+        when(jsonService.parseMetadataFile(Mockito.any()))
                 .thenReturn(f24Metadata);
 
         String checksum = Sha256Handler.computeSha256("Stringify Object");
@@ -274,8 +276,37 @@ class MetadataValidatorImplTest {
         metadataToValidate.setRef(f24MetadataRef);
         metadataToValidate.setPathTokensKey("ABC123");
 
-        when(jsonService.parseMetadataFile(Mockito.<byte[]>any()))
+        when(jsonService.parseMetadataFile(Mockito.any()))
                 .thenThrow(RuntimeException.class);
+
+        List <F24MetadataValidationIssue> result = metadataValidatorImpl.validateMetadata(metadataToValidate);
+
+        Assertions.assertFalse(result.isEmpty());
+
+    }
+
+    @Test
+    void testValidateMetadataSchemaHasErrors() {
+
+        F24MetadataRef f24MetadataRef = new F24MetadataRef();
+        f24MetadataRef.setApplyCost(true);
+        f24MetadataRef.setFileKey("File Key");
+
+        MetadataToValidate metadataToValidate = new MetadataToValidate();
+
+        metadataToValidate.setMetadataFile("byte".getBytes());
+        metadataToValidate.setRef(f24MetadataRef);
+        metadataToValidate.setPathTokensKey("ABC123");
+
+        when(jsonService.parseMetadataFile(Mockito.any()))
+                .thenReturn(new F24Metadata(new F24Standard(), null, null, null));
+
+        HashSet<ConstraintViolation<F24Metadata>> errors = new HashSet<>();
+        ConstraintViolation<F24Metadata> error = Mockito.mock(ConstraintViolation.class);
+        errors.add(error);
+
+        when(jsonService.validate(Mockito.<F24Metadata>any()))
+                .thenReturn(errors);
 
         List <F24MetadataValidationIssue> result = metadataValidatorImpl.validateMetadata(metadataToValidate);
 

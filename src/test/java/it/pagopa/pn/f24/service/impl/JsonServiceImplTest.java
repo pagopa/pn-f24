@@ -1,14 +1,13 @@
 package it.pagopa.pn.f24.service.impl;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.*;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import it.pagopa.pn.commons.exceptions.PnInternalException;
+import it.pagopa.pn.f24.exception.PnF24RuntimeException;
 import it.pagopa.pn.f24.generated.openapi.server.v1.dto.F24Metadata;
 
 import java.io.IOException;
@@ -18,6 +17,7 @@ import java.util.Set;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validator;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
@@ -43,7 +43,7 @@ class JsonServiceImplTest {
     void testParseMetadataFile() throws IOException {
         F24Metadata f24Metadata = new F24Metadata();
         when(objectMapper.readValue(Mockito.<byte[]>any(), Mockito.<Class<F24Metadata>>any())).thenReturn(f24Metadata);
-        assertSame(f24Metadata, jsonServiceImpl.parseMetadataFile("AXAXAXAX".getBytes(StandardCharsets.UTF_8)));
+        Assertions.assertSame(f24Metadata, jsonServiceImpl.parseMetadataFile("AXAXAXAX".getBytes(StandardCharsets.UTF_8)));
         verify(objectMapper).readValue(Mockito.<byte[]>any(), Mockito.<Class<F24Metadata>>any());
     }
 
@@ -52,15 +52,24 @@ class JsonServiceImplTest {
         when(objectMapper.readValue(Mockito.<byte[]>any(), Mockito.<Class<F24Metadata>>any()))
                 .thenThrow(new IOException("foo"));
         byte[] jsonMetadata = "AXAXAXAX".getBytes(StandardCharsets.UTF_8);
-        assertThrows(PnInternalException.class, () -> jsonServiceImpl.parseMetadataFile(jsonMetadata));
+        assertThrows(PnF24RuntimeException.class, () -> jsonServiceImpl.parseMetadataFile(jsonMetadata));
+        verify(objectMapper).readValue(Mockito.<byte[]>any(), Mockito.<Class<F24Metadata>>any());
+    }
+
+    @Test
+    void testParseMetadataFile3() throws IOException {
+        when(objectMapper.readValue(Mockito.<byte[]>any(), Mockito.<Class<F24Metadata>>any()))
+                .thenThrow(UnrecognizedPropertyException.class);
+        byte[] jsonMetadata = "AXAXAXAX".getBytes(StandardCharsets.UTF_8);
+        assertThrows(PnF24RuntimeException.class, () -> jsonServiceImpl.parseMetadataFile(jsonMetadata));
         verify(objectMapper).readValue(Mockito.<byte[]>any(), Mockito.<Class<F24Metadata>>any());
     }
 
     @Test
     void testStringifyObject() throws JsonProcessingException {
-        when(objectMapper.writeValueAsString(Mockito.<Object>any())).thenReturn("42");
-        assertEquals("42", jsonServiceImpl.stringifyObject("Object"));
-        verify(objectMapper).writeValueAsString(Mockito.<Object>any());
+        when(objectMapper.writeValueAsString(Mockito.any())).thenReturn("42");
+        Assertions.assertEquals("42", jsonServiceImpl.stringifyObject("Object"));
+        verify(objectMapper).writeValueAsString(Mockito.any());
     }
 
     @Test
@@ -82,11 +91,11 @@ class JsonServiceImplTest {
     @Test
     void testValidate() {
         HashSet<ConstraintViolation<String>> constraintViolationSet = new HashSet<>();
-        when(validator.validate(Mockito.<String>any(), (Class[]) any())).thenReturn(constraintViolationSet);
+        when(validator.validate(Mockito.<String>any(), any())).thenReturn(constraintViolationSet);
         Set<ConstraintViolation<Object>> actualValidateResult = jsonServiceImpl.validate("Object");
-        assertSame(constraintViolationSet, actualValidateResult);
-        assertTrue(actualValidateResult.isEmpty());
-        verify(validator).validate(Mockito.<String>any(), (Class[]) any());
+        Assertions.assertSame(constraintViolationSet, actualValidateResult);
+        Assertions.assertTrue(actualValidateResult.isEmpty());
+        verify(validator).validate(Mockito.<String>any(), any());
     }
 
 }

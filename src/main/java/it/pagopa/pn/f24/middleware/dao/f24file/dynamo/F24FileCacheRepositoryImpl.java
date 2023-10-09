@@ -83,7 +83,7 @@ public class F24FileCacheRepositoryImpl implements F24FileCacheDao {
 
         return Mono.fromFuture(table.updateItem(updateItemEnhancedRequest))
                 .map(F24FileCacheMapper::entityToDto)
-                .onErrorResume(ConditionalCheckFailedException.class, t -> Mono.error(new PnDbConflictException(t.getMessage())));
+                .onErrorMap(ConditionalCheckFailedException.class, t -> new PnDbConflictException(t.getMessage()));
     }
 
     @Override
@@ -104,6 +104,7 @@ public class F24FileCacheRepositoryImpl implements F24FileCacheDao {
                 .build();
 
         return Mono.fromFuture(table.updateItem(updateItemEnhancedRequest))
+                .onErrorMap(ConditionalCheckFailedException.class, t -> new PnDbConflictException(t.getMessage()))
                 .map(F24FileCacheMapper::entityToDto);
     }
 
@@ -119,6 +120,7 @@ public class F24FileCacheRepositoryImpl implements F24FileCacheDao {
                 )
                 .build();
         return Mono.fromFuture(table.putItem(putItemEnhancedRequest))
+                .onErrorMap(ConditionalCheckFailedException.class, t -> new PnDbConflictException(t.getMessage()))
                 .thenReturn(F24FileCacheMapper.entityToDto(entity));
     }
 

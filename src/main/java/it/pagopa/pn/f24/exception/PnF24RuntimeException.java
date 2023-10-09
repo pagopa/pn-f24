@@ -5,8 +5,8 @@ import org.springframework.http.HttpStatus;
 
 public class PnF24RuntimeException extends PnRuntimeException {
 
-    public PnF24RuntimeException(String message, String description, String errorcode) {
-        super(message, description, HttpStatus.INTERNAL_SERVER_ERROR.value(), errorcode, null, description);
+    public PnF24RuntimeException(String message, String description, String errorCode) {
+        super(message, description, HttpStatus.INTERNAL_SERVER_ERROR.value(), errorCode, null, description);
     }
 
 }
