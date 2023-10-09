@@ -262,9 +262,9 @@ Resources:
         ContainerEnvEntry13: !Sub 'PN_F24_EVENTBUS_NAME=arn:aws:events:${AWS::Region}:${AWS::AccountId}:event-bus/${ProjectName}-CoreEventBus'
         ContainerEnvEntry14: 'PN_F24_EVENTBUS_SOURCE=f24'
         ContainerEnvEntry15: 'PN_F24_EVENTBUS_OUTCOMEEVENTDETAIL=F24OutcomeEvent'
-        ContainerEnvEntry16: !Sub 'PN_F24_RETENTIONFORF24REQUESTSINDAYS={RetentionForF24RequestsInDays}'
-        ContainerEnvEntry17: !Sub 'PN_F24_RETENTIONFORF24FILESINDAYS={RetentionForF24FilesInDays}'
-        ContainerEnvEntry18: !Sub 'PN_F24_METADATASETTTLINDAYSUNTILVALDIATION={MetadataSetTtlInDaysUntilValidation}'
+        ContainerEnvEntry16: !Sub 'PN_F24_RETENTIONFORF24REQUESTSINDAYS=${RetentionForF24RequestsInDays}'
+        ContainerEnvEntry17: !Sub 'PN_F24_RETENTIONFORF24FILESINDAYS=${RetentionForF24FilesInDays}'
+        ContainerEnvEntry18: !Sub 'PN_F24_METADATASETTTLINDAYSUNTILVALDIATION=${MetadataSetTtlInDaysUntilValidation}'
         ContainerEnvEntry19: !Sub 'SPRING_CLOUD_FUNCTIONROUTER_QUEUES_LIST=${PnF24InternalQueueName},${SafeStorageToF24QueueName}'
         MicroServiceSecretPrefix: pn-f24-Secrets
         JavaToolOptions: '-Dreactor.netty.ioWorkerCount=120 -XX:MaxMetaspaceSize=512M'
