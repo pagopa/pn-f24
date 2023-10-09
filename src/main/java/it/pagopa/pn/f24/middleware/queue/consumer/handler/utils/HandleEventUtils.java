@@ -44,43 +44,12 @@ public class HandleEventUtils {
         return createdAt != null ? Instant.parse((CharSequence) createdAt) : null;
     }
 
-    public static void addSetIdAndCxIdToMdc(String setId, String cxId) {
-        addSetIdToMdc(setId);
-        addCxIdToMdc(cxId);
+    public static void addSetIdToMdc(String setId) {
+        MDC.put(MDCUtils.MDC_PN_SET_ID, setId);
     }
 
-    private static void addCxIdToMdc(String cxId) {
-        MDC.put(MDCUtils.MDC_CX_ID_KEY, cxId);
-    }
-
-    private static void addSetIdToMdc(String setId) {
-        MDC.put("setId", setId);
-    }
-
-    public static void addIunAndCorrIdToMdc(String iun, String correlationId) {
-        addIunToMdc(iun);
-        addCorrelationIdToMdc(correlationId);
-    }
-
-    public static void addIunAndRecIndexAndCorrIdToMdc(String iun, Integer recIndex, String correlationId) {
-        addIunToMdc(iun);
-        addRecIndexToMdc(recIndex);
-        addCorrelationIdToMdc(correlationId);
-    }
-
-    public static void addIunAndRecIndexToMdc(String iun, int recIndex) {
-        addIunToMdc(iun);
-        addRecIndexToMdc(recIndex);
-    }
-
-    public static void addIunToMdc(String iun) {
-        MDC.put(MDCUtils.MDC_PN_IUN_KEY, iun);
-    }
-
-    public static void addRecIndexToMdc(Integer recIndex) {
-        if(recIndex != null){
-            MDC.put(MDCUtils.MDC_PN_CTX_RECIPIENT_INDEX, String.valueOf(recIndex));
-        }
+    public static void addRequestIdToMdc(String requestId) {
+        MDC.put(MDCUtils.MDC_PN_CTX_REQUEST_ID, requestId);
     }
 
     public static void addCorrelationIdToMdc(String correlationId) {

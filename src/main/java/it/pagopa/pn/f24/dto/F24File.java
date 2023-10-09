@@ -2,19 +2,20 @@ package it.pagopa.pn.f24.dto;
 
 import lombok.Data;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.util.List;
+
 
 @Data
 public class F24File {
     private String pk;
-    private String created;
-    private String sk;
-    private String requestId;
-    private String status;
+    private String setId;
+    private Integer cost;
+    private String pathTokens;
+    private F24FileStatus status;
     private String fileKey;
+    private List<String> requestIds;
     private Long ttl;
-    private LocalDateTime updated;
-
-    //TODO sha256 ?
-    //private String sha256;
+    private Instant created;
+    private Instant updated;
 }

@@ -1,13 +1,11 @@
 {
   "Parameters" : {
-    "IsLollipopActive": "false",
-    "MinTasksNumber": "4",
-    "MaxTasksNumber": "26",
-    "HealthyThresholdCount": "2",
-    "AutoscalingThreshold": "1500",
-    "CpuValue": "2048",
-    "MemoryAmount": "4GB",
-    "LollipopExpectedLcOriginalUrl": "^https://api-app.io.pagopa.it/api/v1/third-party-messages/[a-zA-Z0-9]{26}$",
-    "LollipopEnableConsumerLogging": "true"
+    "PollingIntervalInSec": "1",
+    "SafeStorageExecutionLimitMin": "2",
+    "DefaultRetryAfterMilliSec": "10000",
+    "PollingTimeoutInSec": "5",
+    "RetentionForF24RequestsInDays": "120",
+    "RetentionForF24FilesInDays": "120",
+    "MetadataSetTtlInDaysUntilValidation": "3"
   }
 }

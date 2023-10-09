@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Scheduler;
 
 import java.util.List;
 
@@ -18,29 +19,38 @@ public class F24Controller implements F24ControllerApi {
 
     private final F24Service f24Service;
 
-    public F24Controller(F24Service f24Service) {
+    private final Scheduler scheduler;
+
+    public F24Controller(F24Service f24Service, Scheduler scheduler) {
         this.f24Service = f24Service;
+        this.scheduler = scheduler;
     }
 
     @Override
     public Mono<ResponseEntity<RequestAccepted>> saveMetadata(String xPagopaF24CxId, String setId, Mono<SaveF24Request> saveF24Request,  final ServerWebExchange exchange) {
         return f24Service.saveMetadata(xPagopaF24CxId, setId, saveF24Request)
-                .map(requestAccepted -> ResponseEntity.status(HttpStatus.ACCEPTED).body(requestAccepted));
+                .map(requestAccepted -> ResponseEntity.status(HttpStatus.ACCEPTED).body(requestAccepted))
+                .publishOn(scheduler);
     }
 
     @Override
     public Mono<ResponseEntity<RequestAccepted>> validateMetadata(String xPagopaF24CxId, String setId, Mono<ValidateF24Request> validateF24Request, final ServerWebExchange exchange) {
         return f24Service.validate(xPagopaF24CxId, setId)
-                .map(requestAccepted -> ResponseEntity.status(HttpStatus.ACCEPTED).body(requestAccepted));
+                .map(requestAccepted -> ResponseEntity.status(HttpStatus.ACCEPTED).body(requestAccepted))
+                .publishOn(scheduler);
     }
 
     @Override
-    public Mono<ResponseEntity<F24Response>> generatePDF(String xPagopaF24CxId, String setId, List<String> pathTokens, Integer cost,  final ServerWebExchange exchange) {
-        return null;
+    public Mono<ResponseEntity<F24Response>> generatePDF(String xPagopaF24CxId, String setId, List<String> pathTokens, Integer cost, final ServerWebExchange exchange) {
+        return f24Service.generatePDF(xPagopaF24CxId, setId, pathTokens, cost)
+                .map(ResponseEntity::ok)
+                .publishOn(scheduler);
     }
 
     @Override
     public Mono<ResponseEntity<RequestAccepted>> preparePDF(String xPagopaF24CxId, String requestId, Mono<PrepareF24Request> prepareF24Request, final ServerWebExchange exchange) {
-        return null;
+        return f24Service.preparePDF(xPagopaF24CxId, requestId, prepareF24Request)
+                .map(requestAccepted -> ResponseEntity.status(HttpStatus.ACCEPTED).body(requestAccepted))
+                .publishOn(scheduler);
     }
 }

@@ -20,10 +20,6 @@ Parameters:
     Type: String
     Description: 'keep track of used projects commitIds'
 
-  CdcKinesisSourceStreamArn:
-    Type: String
-    Description: 'Where to send CDC'
-
   LogsKinesisSourceStreamArn:
     Type: String
     Description: 'Where to send Logs'
@@ -37,39 +33,25 @@ Parameters:
     Default: 14
 
 Resources:
-  # Dynamo Table for F24File
-  F24MetadataTable:
+  # Dynamo Table for F24MetadataSet
+  F24MetadataSetTable:
     Type: AWS::DynamoDB::Table
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
     Properties:
-      TableName: !Sub '${ProjectName}-f24Metadata'
+      TableName: !Sub '${ProjectName}-f24MetadataSet'
       AttributeDefinitions:
         - AttributeName: "pk"
-          AttributeType: "S"
-        - AttributeName: "metadata"
-          AttributeType: "S"
-        - AttributeName: "status"
-          AttributeType: "S"
-        - AttributeName: "haveToSendValidationEvent"
-          AttributeType: "S"
-        - AttributeName: "validationEventSended"
-          AttributeType: "S"
-        - AttributeName: "created"
-          AttributeType: "S"
-        - AttributeName: "updated"
           AttributeType: "S"
       KeySchema:
         - AttributeName: "pk"
           KeyType: "HASH"
       BillingMode: "PAY_PER_REQUEST"
+      TimeToLiveSpecification:
+        AttributeName: "ttl"
+        Enabled: true
       PointInTimeRecoverySpecification:
         PointInTimeRecoveryEnabled: true
-      KinesisStreamSpecification:
-        StreamArn: !Ref CdcKinesisSourceStreamArn
-      StreamSpecification:
-        StreamViewType: NEW_IMAGE
-
 
   # Dynamo Table for F24File
   F24FileTable:
@@ -81,25 +63,11 @@ Resources:
       AttributeDefinitions:
         - AttributeName: "pk"
           AttributeType: "S"
-        - AttributeName: "sk"
-          AttributeType: "S"
         - AttributeName: "fileKey"
-          AttributeType: "S"
-        - AttributeName: "created"
-          AttributeType: "S"
-        - AttributeName: "requestId"
-          AttributeType: "S"
-        - AttributeName: "status"
-          AttributeType: "S"
-        - AttributeName: "ttl"
-          AttributeType: "S"
-        - AttributeName: "updated"
           AttributeType: "S"
       KeySchema:
         - AttributeName: "pk"
           KeyType: "HASH"
-        - AttributeName: "created"
-          KeyType: "RANGE"
       GlobalSecondaryIndexes:
         - IndexName: "fileKey-index"
           KeySchema:
@@ -107,41 +75,26 @@ Resources:
               KeyType: "HASH"
           Projection:
             ProjectionType: "ALL"
-        - IndexName: "requestId-index"
-          KeySchema:
-            - AttributeName: requestId
-              KeyType: "HASH"
-          Projection:
-            ProjectionType: "ALL"
-        - IndexName: "sk-index"
-          KeySchema:
-            - AttributeName: sk
-              KeyType: "HASH"
-          Projection:
-            ProjectionType: "ALL"
       BillingMode: "PAY_PER_REQUEST"
+      TimeToLiveSpecification:
+        AttributeName: "ttl"
+        Enabled: true
       PointInTimeRecoverySpecification:
         PointInTimeRecoveryEnabled: true
-      KinesisStreamSpecification:
-        StreamArn: !Ref CdcKinesisSourceStreamArn
-      StreamSpecification:
-        StreamViewType: NEW_IMAGE
 
-  # Coda per inviare eventi di asseverazione, consumata da lambda per salvataggio su bucket s3
-  # NB: usati i valori di default per: DelaySeconds, DeadLetterQueueName, MessageRetentionPeriod, MaxReceiveCount, DeadLetterMessageRetentionPeriod,
-  # QueueOldestAgeLimit
-  PnDeliveryAsseverationQueue:
+  PnF24InternalQueue:
     Type: AWS::CloudFormation::Stack
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain    
     Properties:
       TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/sqs-queue.yaml"
       Parameters:
-        QueueName: !Sub '${ProjectName}-notificationCostServiceCalls'
+        QueueName: !Sub '${ProjectName}-f24_internal'
         HasDLQ:  "true"
         AlarmSNSTopicName: !Ref AlarmSNSTopicName
-        VisibilityTimeout: 900 # the maximum lambda timeout
-        QueueHasAlarm: "false"
+        VisibilityTimeout: 60
+        MaxReceiveCount: 10
+        DelaySeconds: 1
 
   PnF24LogGroup:
     Type: AWS::CloudFormation::Stack
@@ -158,38 +111,42 @@ Resources:
 Outputs:
 
   # Dynamo table
-  F24DynamoTableName:
-    Description: Name of dynamodb table containing notifications
-    Value: !Ref F24Table
-  F24DynamoTableArn:
-    Description: ARN of dynamodb table containing notifications
-    Value: !Sub '${F24DynamoTableName.Arn}'
+  F24MetadataSetTableName:
+    Description: Name of dynamodb table containing f24 metadata set information's
+    Value: !Ref F24MetadataSetTable
+  F24MetadataSetTableArn:
+    Description: ARN of dynamodb table containing f24 metadata set information's
+    Value: !Sub '${F24MetadataSetTable.Arn}'
+  F24FileTableName:
+    Description: Name of dynamodb table containing f24 files information's
+    Value: !Ref F24FileTable
+  F24FileTableArn:
+    Description: ARN of dynamodb table containing f24 files information's
+    Value: !Sub '${F24FileTable.Arn}'
 
+  # PnF24 Internal QUEUE
+  PnF24InternalQueueName:
+    Value: !GetAtt PnF24InternalQueue.Outputs.QueueName
+    Description: internal queue name
+  PnF24InternalQueueARN:
+    Value: !GetAtt PnF24InternalQueue.Outputs.QueueARN
+    Description: internal queue arn
+  PnF24InternalDLQName:
+    Value: !GetAtt PnF24InternalQueue.Outputs.DeadLetterQueueName
+    Description: internal-DLQ queue name
+  PnF24InternalDLQURL:
+    Value: !GetAtt PnF24InternalQueue.Outputs.DeadLetterQueueURL
+    Description: internal-DLQ queue url
+  PnF24InternalDLQARN:
+    Value: !GetAtt PnF24InternalQueue.Outputs.DeadLetterQueueARN
+    Description: internal-DLQ queue ARN
+  PnF24InternalDLQAlarmARN:
+    Value: !GetAtt PnF24InternalQueue.Outputs.SqsDLQAlarmArn
+    Description: internal-DLQ alarm ARN
+  F24InternalAgeAlarmARN:
+    Value: !GetAtt PnF24InternalQueue.Outputs.SqsAgeAlarmArn
+    Description: internal-DLQ age alarm ARN
 
-  # TODO Definire code SQS
-  # Delivery Asseveration Queue
-  PnDeliveryAsseverationQueueName:
-    Value: !GetAtt PnDeliveryAsseverationQueue.Outputs.QueueName
-    Description: notificationCostServiceCalls queue name
-  PnDeliveryAsseverationQueueARN:
-    Value: !GetAtt PnDeliveryAsseverationQueue.Outputs.QueueARN
-    Description: notificationCostServiceCalls queue arn
-  PnDeliveryAsseverationDLQName:
-    Value: !GetAtt PnDeliveryAsseverationQueue.Outputs.DeadLetterQueueName
-    Description: notificationCostServiceCalls-DLQ queue name
-  PnDeliveryAsseverationDLQURL:
-    Value: !GetAtt PnDeliveryAsseverationQueue.Outputs.DeadLetterQueueURL
-    Description: notificationCostServiceCalls-DLQ queue url
-  PnDeliveryAsseverationDLQARN:
-    Value: !GetAtt PnDeliveryAsseverationQueue.Outputs.DeadLetterQueueARN
-    Description: notificationCostServiceCalls-DLQ queue ARN
-  PnDeliveryAsseverationDLQAlarmARN:
-    Value: !GetAtt PnDeliveryAsseverationQueue.Outputs.SqsDLQAlarmArn
-    Description: notificationCostServiceCalls-DLQ alarm ARN
-  PnDeliveryAsseverationAgeAlarmARN:
-    Value: !GetAtt PnDeliveryAsseverationQueue.Outputs.SqsAgeAlarmArn  
-    Description: notificationCostServiceCalls-DLQ age alarm ARN
-  
   # Log group exports
   EcsLogGroup:
     Value: !GetAtt   PnF24LogGroup.Outputs.LogGroupName

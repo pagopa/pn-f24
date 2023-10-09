@@ -1,7 +1,5 @@
 package it.pagopa.pn.f24.middleware.queue.consumer.handler;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import it.pagopa.pn.commons.utils.MDCUtils;
 import it.pagopa.pn.f24.config.F24Config;
 import it.pagopa.pn.f24.generated.openapi.msclient.safestorage.model.FileDownloadResponse;
@@ -36,12 +34,12 @@ public class SafeStorageEventHandler {
             try {
                 log.debug("Handle message from {} with content {}", PnSafeStorageClient.CLIENT_NAME, message);
                 FileDownloadResponse response = message.getPayload();
-                //FileDownloadResponse response = getResponseFromPayload(message.getPayload());
                 MDC.put(MDCUtils.MDC_PN_CTX_SAFESTORAGE_FILEKEY, response.getKey());
 
-                if(f24Config.getSafeStorageMetadataDocType().equals(response.getDocumentType()) ||
-                        f24Config.getSafeStorageF24DocType().equals(response.getDocumentType())) {
-                    safeStorageEventService.handleSafeStorageResponse(response).subscribe();
+                if(f24Config.getSafeStorageF24DocType().equals(response.getDocumentType())) {
+                    MDCUtils.addMDCToContextAndExecute(
+                            safeStorageEventService.handleSafeStorageResponse(response)
+                    ).block();
                 } else {
                     log.debug("Safe storage event received is not handled - documentType={}", response.getDocumentType());
                 }
@@ -53,14 +51,5 @@ public class SafeStorageEventHandler {
                 throw ex;
             }
         };
-    }
-
-    private FileDownloadResponse getResponseFromPayload(String payload) {
-        ObjectMapper objectMapper = new ObjectMapper();
-        try {
-            return objectMapper.readValue(payload, FileDownloadResponse.class);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
     }
 }
