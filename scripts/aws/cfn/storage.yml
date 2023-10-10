@@ -39,12 +39,12 @@ Resources:
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
     Properties:
-      TableName: !Sub '${ProjectName}-f24MetadataSet'
+      TableName: !Sub '${ProjectName}-F24MetadataSet'
       AttributeDefinitions:
-        - AttributeName: "pk"
+        - AttributeName: "setId"
           AttributeType: "S"
       KeySchema:
-        - AttributeName: "pk"
+        - AttributeName: "setId"
           KeyType: "HASH"
       BillingMode: "PAY_PER_REQUEST"
       TimeToLiveSpecification:
@@ -59,7 +59,7 @@ Resources:
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain        
     Properties:
-      TableName: !Sub '${ProjectName}-f24File'
+      TableName: !Sub '${ProjectName}-F24File'
       AttributeDefinitions:
         - AttributeName: "pk"
           AttributeType: "S"
