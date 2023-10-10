@@ -45,6 +45,11 @@
 		</dependency>
 
 		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
+
+		<dependency>
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-stream</artifactId>
 		</dependency>
@@ -234,7 +239,6 @@
 								<reactive>true</reactive>
 								<skipDefaultInterface>false</skipDefaultInterface>
 								<useTags>true</useTags>
-								<!--<additionalModelTypeAnnotations>@lombok.Builder; @lombok.AllArgsConstructor; @lombok.With</additionalModelTypeAnnotations>-->
 							</configOptions>
 						</configuration>
 					</execution>
