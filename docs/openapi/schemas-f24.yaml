@@ -3,6 +3,7 @@ components:
     F24Metadata:
       type: object
       description: è richiesto uno e uno solo tra le propeties f24Standard, f24Simplified, f24Excise, f24Elid
+      additionalProperties: false
       properties:
         f24Standard:
           nullable: true
@@ -22,6 +23,7 @@ components:
             - $ref: "#/components/schemas/F24Elid"
     IncludeNotificationCost:
       type: object
+      additionalProperties: false
       required:
         - applyCost
       properties:
@@ -31,6 +33,7 @@ components:
           description: to check if include notification cost
     CompanyData:
       type: object
+      additionalProperties: false
       properties:
         name:
           pattern: ^[A-Z\s]{1,60}$
@@ -41,6 +44,7 @@ components:
       description: Company Data (Dati Anagrafici PNF) object
     TaxPayerStandard:
       type: object
+      additionalProperties: false
       properties:
         taxCode:
           pattern: ^([A-Z]{6}[0-9LMNPQRSTUV]{2}[ABCDEHLMPRST]{1}[0-9LMNPQRSTUV]{2}[A-Z]{1}[0-9LMNPQRSTUV]{3}[A-Z]{1})|([0-9]{11})$
@@ -63,6 +67,7 @@ components:
           description: identification code
     TaxPayerExcise:
       type: object
+      additionalProperties: false
       properties:
         taxCode:
           pattern: ^([A-Z]{6}[0-9LMNPQRSTUV]{2}[ABCDEHLMPRST]{1}[0-9LMNPQRSTUV]{2}[A-Z]{1}[0-9LMNPQRSTUV]{3}[A-Z]{1})|([0-9]{11})$
@@ -85,6 +90,7 @@ components:
           description: identification code
     TaxPayerSimplified:
       type: object
+      additionalProperties: false
       properties:
         taxCode:
           pattern: ^([A-Z]{6}[0-9LMNPQRSTUV]{2}[ABCDEHLMPRST]{1}[0-9LMNPQRSTUV]{2}[A-Z]{1}[0-9LMNPQRSTUV]{3}[A-Z]{1})|([0-9]{11})$
@@ -110,6 +116,7 @@ components:
           description: identification code of the office
     TaxPayerElide:
       type: object
+      additionalProperties: false
       properties:
         taxCode:
           pattern: ^([A-Z]{6}[0-9LMNPQRSTUV]{2}[ABCDEHLMPRST]{1}[0-9LMNPQRSTUV]{2}[A-Z]{1}[0-9LMNPQRSTUV]{3}[A-Z]{1})|([0-9]{11})$
@@ -129,6 +136,7 @@ components:
           description: identification code
     F24Standard:
       type: object
+      additionalProperties: false
       properties:
         taxPayer:
           $ref: "#/components/schemas/TaxPayerStandard"
@@ -146,6 +154,7 @@ components:
       #allOf:
       #  - $ref: "#/components/schemas/IncludeNotificationCost"
       type: object
+      additionalProperties: false
       required:
         - municipality
         - taxType
@@ -187,16 +196,17 @@ components:
           type: string
           description: reference year
         debit:
-          pattern: ^[0-9]{3,15}$
-          type: string
-          description: debit amount of the record
+          type: integer
+          format: int32
+          description: debit amount of the record in eurocent
         credit:
-          pattern: ^[0-9]{3,15}$
-          type: string
-          description: credit amount of the record
+          type: integer
+          format: int32
+          description: credit amount of the record in eurocent
       description: LocalTax Record object
     LocalTaxSection:
       type: object
+      additionalProperties: false
       properties:
         operationId:
           pattern: ^[A-Z0-9]{18}$
@@ -215,6 +225,7 @@ components:
       allOf:
         - $ref: "#/components/schemas/IncludeNotificationCost"
       type: object
+      additionalProperties: false
       properties:
         office:
           pattern: ^[0-9]{5}$
@@ -237,18 +248,19 @@ components:
           type: string
           description: reason of the record
         debit:
-          pattern: ^[0-9]{3,15}$
-          type: string
-          description: debit amount of the record
+          type: integer
+          format: int32
+          description: debit amount of the record in eurocent
         credit:
-          pattern: ^[0-9]{3,15}$
-          type: string
-          description: credit amount of the record
+          type: integer
+          format: int32
+          description: credit amount of the record in eurocent
       description: INAIL Record object
     InpsRecord:
       allOf:
         - $ref: "#/components/schemas/IncludeNotificationCost"
       type: object
+      additionalProperties: false
       properties:
         office:
           pattern: ^[0-9]{3,4}$
@@ -265,16 +277,17 @@ components:
         period:
           $ref: "#/components/schemas/Period"
         debit:
-          pattern: ^[0-9]{3,15}$
-          type: string
-          description: debit amount of the record
+          type: integer
+          format: int32
+          description: debit amount of the record in eurocent
         credit:
-          pattern: ^[0-9]{3,15}$
-          type: string
-          description: credit amount of the record
+          type: integer
+          format: int32
+          description: credit amount of the record in eurocent
       description: INPS Record object
     InpsSection:
       type: object
+      additionalProperties: false
       properties:
         records:
           type: array
@@ -284,6 +297,7 @@ components:
       description: INPS Section (Sezione INPS) object
     PersonData:
       type: object
+      additionalProperties: false
       properties:
         personalData:
           $ref: "#/components/schemas/PersonalData"
@@ -292,6 +306,7 @@ components:
       description: Person Data (Dati Anagrafici PF) object
     PersonalData:
       type: object
+      additionalProperties: false
       properties:
         surname:
           pattern: ^[A-Z\\s]{1,24}$
@@ -322,6 +337,7 @@ components:
       allOf:
         - $ref: "#/components/schemas/IncludeNotificationCost"
       type: object
+      additionalProperties: false
       properties:
         region:
           pattern: ^[0-9]{2}$
@@ -340,16 +356,17 @@ components:
           type: string
           description: reference year
         debit:
-          pattern: ^[0-9]{3,15}$
-          type: string
-          description: debit amount of the record
+          type: integer
+          format: int32
+          description: debit amount of the record in eurocent
         credit:
-          pattern: ^[0-9]{3,15}$
-          type: string
-          description: credit amount of the record
+          type: integer
+          format: int32
+          description: credit amount of the record in eurocent
       description: Region Record object
     RegionSection:
       type: object
+      additionalProperties: false
       properties:
         records:
           type: array
@@ -359,6 +376,7 @@ components:
       description: Region Section (Sezione Regioni) object
     Period:
       type: object
+      additionalProperties: false
       properties:
         startDate:
           pattern: ^[0-9]{6}$
@@ -373,6 +391,7 @@ components:
       allOf:
         - $ref: "#/components/schemas/IncludeNotificationCost"
       type: object
+      additionalProperties: false
       properties:
         institution:
           pattern: ^[0-9]{4}$
@@ -393,16 +412,17 @@ components:
         period:
           $ref: "#/components/schemas/Period"
         debit:
-          pattern: ^[0-9]{3,15}$
-          type: string
-          description: debit amount of the record
+          type: integer
+          format: int32
+          description: debit amount of the record in eurocent
         credit:
-          pattern: ^[0-9]{3,15}$
-          type: string
-          description: credit amount of the record
+          type: integer
+          format: int32
+          description: credit amount of the record in eurocent
       description: Social Security Record object
     SocialSecuritySection:
       type: object
+      additionalProperties: false
       properties:
         records:
           type: array
@@ -418,6 +438,7 @@ components:
       allOf:
         - $ref: "#/components/schemas/IncludeNotificationCost"
       type: object
+      additionalProperties: false
       properties:
         taxType:
           pattern: ^[A-Z0-9]{4}$
@@ -432,16 +453,17 @@ components:
           type: string
           description: reference year of the tax
         debit:
-          pattern: ^[0-9]{3,15}$
-          type: string
-          description: debit amount of the tax
+          type: integer
+          format: int32
+          description: debit amount of the record in eurocent
         credit:
-          pattern: ^[0-9]{3,15}$
-          type: string
-          description: credit amount of the tax
+          type: integer
+          format: int32
+          description: credit amount of the record in eurocent
       description: Tax object
     TaxAddress:
       type: object
+      additionalProperties: false
       properties:
         municipality:
           pattern: ^[A-Z]{1,40}$
@@ -458,6 +480,7 @@ components:
       description: Tax Residence (Domicilio Fiscale) object
     TreasurySection:
       type: object
+      additionalProperties: false
       properties:
         records:
           type: array
@@ -475,6 +498,7 @@ components:
       description: Treasury Section (Sezione Erario) object
     F24Simplified:
       type: object
+      additionalProperties: false
       properties:
         taxPayer:
           $ref: "#/components/schemas/TaxPayerSimplified"
@@ -482,6 +506,7 @@ components:
           $ref: "#/components/schemas/SimplifiedPaymentSection"
     SimplifiedPaymentSection:
       type: object
+      additionalProperties: false
       properties:
         operationId:
           pattern: ^[A-Z0-9]{18}$
@@ -494,6 +519,7 @@ components:
           description: Payments Record List
       description: Payment Reason Section (Motivo del Pagamento) object
     SimplifiedPaymentRecord:
+      additionalProperties: false
       allOf:
         - $ref: "#/components/schemas/LocalTaxRecord"
       required:
@@ -506,6 +532,7 @@ components:
       description: Payment Reason Record object
     F24Excise:
       type: object
+      additionalProperties: false
       properties:
         taxPayer:
           $ref: "#/components/schemas/TaxPayerExcise"
@@ -522,6 +549,7 @@ components:
       description: F24 Excise (Accise) object
     ExciseSection:
       type: object
+      additionalProperties: false
       properties:
         records:
           type: array
@@ -541,6 +569,7 @@ components:
       allOf:
         - $ref: "#/components/schemas/IncludeNotificationCost"
       type: object
+      additionalProperties: false
       properties:
         institution:
           pattern: ^[A-Z]{2}$
@@ -571,12 +600,13 @@ components:
           type: string
           description: reference year
         debit:
-          pattern: ^[0-9]{3,15}$
-          type: string
-          description: debit amount
+          type: integer
+          format: int32
+          description: debit amount of the record in eurocent
       description: Excise Tax object
     F24Elid:
       type: object
+      additionalProperties: false
       properties:
         taxPayer:
           $ref: "#/components/schemas/TaxPayerElide"
@@ -584,6 +614,7 @@ components:
           $ref: "#/components/schemas/TreasuryAndOtherSection"
     TreasuryAndOtherSection:
       type: object
+      additionalProperties: false
       properties:
         office:
           pattern: ^[A-Z0-9]{3}$
@@ -603,6 +634,7 @@ components:
       allOf:
         - $ref: "#/components/schemas/IncludeNotificationCost"
       type: object
+      additionalProperties: false
       properties:
         type:
           pattern: ^[A-Z]$
@@ -621,7 +653,7 @@ components:
           type: string
           description: referance year
         debit:
-          pattern: ^[0-9]{3,15}$
-          type: string
-          description: debit amount of the record
+          type: integer
+          format: int32
+          description: debit amount of the record in eurocent
       description: Treasury Record object

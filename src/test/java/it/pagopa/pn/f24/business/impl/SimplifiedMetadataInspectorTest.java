@@ -40,7 +40,7 @@ class SimplifiedMetadataInspectorTest {
 
         SimplifiedPaymentRecord simplifiedPaymentRecord = new SimplifiedPaymentRecord();
         simplifiedPaymentRecord.setApplyCost(true);
-        simplifiedPaymentRecord.setDebit(String.valueOf(0));
+        simplifiedPaymentRecord.setDebit(0);
 
         SimplifiedPaymentSection simplifiedPaymentSection = new SimplifiedPaymentSection();
         simplifiedPaymentSection.setRecords(List.of(simplifiedPaymentRecord));
@@ -52,7 +52,7 @@ class SimplifiedMetadataInspectorTest {
 
         simplifiedMetadataInspector.addCostToDebit(f24Metadata,5);
 
-        assertEquals(5,  Integer.parseInt(f24Metadata.getF24Simplified().getPayments().getRecords().get(0).getDebit()));
+        assertEquals(5,  Integer.parseInt(f24Metadata.getF24Simplified().getPayments().getRecords().get(0).getDebit().toString()));
     }
 }
 

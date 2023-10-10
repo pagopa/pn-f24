@@ -41,7 +41,7 @@ class ElidMetadataInspectorTest {
 
         TreasuryRecord treasuryRecord = new TreasuryRecord();
         treasuryRecord.setApplyCost(true);
-        treasuryRecord.setDebit(String.valueOf(0));
+        treasuryRecord.setDebit(0);
 
         TreasuryAndOtherSection treasuryAndOtherSection = new TreasuryAndOtherSection();
         treasuryAndOtherSection.setRecords(List.of(treasuryRecord));
@@ -53,7 +53,7 @@ class ElidMetadataInspectorTest {
 
         elidMetadataInspector.addCostToDebit(f24Metadata,5);
 
-        assertEquals(5, Integer.parseInt(f24Metadata.getF24Elid().getTreasury().getRecords().get(0).getDebit()));
+        assertEquals(5, Integer.parseInt(f24Metadata.getF24Elid().getTreasury().getRecords().get(0).getDebit().toString()));
     }
 
 }

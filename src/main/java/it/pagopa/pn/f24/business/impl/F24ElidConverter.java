@@ -47,7 +47,7 @@ public class F24ElidConverter extends F24Converter {
         treasuryRecord.setYear(inputTreasuryRecord.getYear());
         treasuryRecord.setType(inputTreasuryRecord.getType());
         treasuryRecord.setTaxTypeCode(inputTreasuryRecord.getTaxType());
-        treasuryRecord.setDebitAmount(inputTreasuryRecord.getDebit());
+        treasuryRecord.setDebitAmount(integerToString(inputTreasuryRecord.getDebit()));
         return treasuryRecord;
     }
 

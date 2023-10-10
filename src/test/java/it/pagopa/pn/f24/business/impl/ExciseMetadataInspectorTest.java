@@ -67,7 +67,7 @@ class ExciseMetadataInspectorTest {
 
         Tax tax = new Tax();
         tax.setApplyCost(true);
-        tax.setDebit(String.valueOf(0));
+        tax.setDebit(0);
 
         TreasurySection treasurySection = new TreasurySection();
         treasurySection.setRecords(List.of(tax));
@@ -79,7 +79,7 @@ class ExciseMetadataInspectorTest {
 
         exciseMetadataInspector.addCostToDebit(f24Metadata, 5);
 
-        assertEquals(5, Integer.parseInt(f24Metadata.getF24Excise().getTreasury().getRecords().get(0).getDebit()));
+        assertEquals(5, Integer.parseInt(f24Metadata.getF24Excise().getTreasury().getRecords().get(0).getDebit().toString()));
     }
 
     @Test
@@ -88,7 +88,7 @@ class ExciseMetadataInspectorTest {
 
         InpsRecord inpsRecord = new InpsRecord();
         inpsRecord.setApplyCost(true);
-        inpsRecord.setDebit(String.valueOf(0));
+        inpsRecord.setDebit(0);
 
         InpsSection inps = new InpsSection();
         inps.setRecords(List.of(inpsRecord));
@@ -100,7 +100,7 @@ class ExciseMetadataInspectorTest {
 
         exciseMetadataInspector.addCostToDebit(f24Metadata, 5);
 
-        assertEquals(5, Integer.parseInt(f24Metadata.getF24Excise().getInps().getRecords().get(0).getDebit()));
+        assertEquals(5, Integer.parseInt(f24Metadata.getF24Excise().getInps().getRecords().get(0).getDebit().toString()));
     }
 
     @Test
@@ -109,7 +109,7 @@ class ExciseMetadataInspectorTest {
 
         RegionRecord regionRecord = new RegionRecord();
         regionRecord.setApplyCost(true);
-        regionRecord.setDebit(String.valueOf(0));
+        regionRecord.setDebit(0);
 
         RegionSection regionSection = new RegionSection();
         regionSection.setRecords(List.of(regionRecord));
@@ -121,7 +121,7 @@ class ExciseMetadataInspectorTest {
 
         exciseMetadataInspector.addCostToDebit(f24Metadata, 5);
 
-        assertEquals(5, Integer.parseInt(f24Metadata.getF24Excise().getRegion().getRecords().get(0).getDebit()));
+        assertEquals(5, Integer.parseInt(f24Metadata.getF24Excise().getRegion().getRecords().get(0).getDebit().toString()));
     }
 
     @Test
@@ -130,7 +130,7 @@ class ExciseMetadataInspectorTest {
 
         LocalTaxRecord localTaxRecord = new LocalTaxRecord();
         localTaxRecord.setApplyCost(true);
-        localTaxRecord.setDebit(String.valueOf(0));
+        localTaxRecord.setDebit(0);
 
         LocalTaxSection localTax = new LocalTaxSection();
         localTax.setRecords(List.of(localTaxRecord));
@@ -142,7 +142,7 @@ class ExciseMetadataInspectorTest {
 
         exciseMetadataInspector.addCostToDebit(f24Metadata, 5);
 
-        assertEquals(5, Integer.parseInt(f24Metadata.getF24Excise().getLocalTax().getRecords().get(0).getDebit()));
+        assertEquals(5, Integer.parseInt(f24Metadata.getF24Excise().getLocalTax().getRecords().get(0).getDebit().toString()));
     }
 
     @Test
@@ -151,7 +151,7 @@ class ExciseMetadataInspectorTest {
 
         ExciseTax exciseTax = new ExciseTax();
         exciseTax.setApplyCost(true);
-        exciseTax.setDebit(String.valueOf(0));
+        exciseTax.setDebit(0);
 
         ExciseSection exciseSection = new ExciseSection();
         exciseSection.setRecords(List.of(exciseTax));
@@ -163,7 +163,7 @@ class ExciseMetadataInspectorTest {
 
         exciseMetadataInspector.addCostToDebit(f24Metadata, 5);
 
-        assertEquals(5, Integer.parseInt(f24Metadata.getF24Excise().getExcise().getRecords().get(0).getDebit()));
+        assertEquals(5, Integer.parseInt(f24Metadata.getF24Excise().getExcise().getRecords().get(0).getDebit().toString()));
     }
 
     @Test
@@ -175,54 +175,54 @@ class ExciseMetadataInspectorTest {
 
         Tax tax = new Tax();
         tax.setApplyCost(false);
-        tax.setDebit(String.valueOf(0));
+        tax.setDebit(0);
         TreasurySection treasurySection = new TreasurySection();
         treasurySection.setRecords(List.of(tax));
         f24Excise.setTreasury(treasurySection);
         f24Metadata.f24Excise(f24Excise);
 
-        assertEquals(0, Integer.parseInt(f24Metadata.getF24Excise().getTreasury().getRecords().get(0).getDebit()));
+        assertEquals(0, Integer.parseInt(f24Metadata.getF24Excise().getTreasury().getRecords().get(0).getDebit().toString()));
 
         InpsRecord inpsRecord = new InpsRecord();
         inpsRecord.setApplyCost(false);
-        inpsRecord.setDebit(String.valueOf(0));
+        inpsRecord.setDebit(0);
         InpsSection inps = new InpsSection();
         inps.setRecords(List.of(inpsRecord));
         f24Excise.setInps(inps);
         f24Metadata.f24Excise(f24Excise);
 
-        assertEquals(0, Integer.parseInt(f24Metadata.getF24Excise().getInps().getRecords().get(0).getDebit()));
+        assertEquals(0, Integer.parseInt(f24Metadata.getF24Excise().getInps().getRecords().get(0).getDebit().toString()));
 
         RegionRecord regionRecord = new RegionRecord();
         regionRecord.setApplyCost(false);
-        regionRecord.setDebit(String.valueOf(0));
+        regionRecord.setDebit(0);
         RegionSection regionSection = new RegionSection();
         regionSection.setRecords(List.of(regionRecord));
         f24Excise.setRegion(regionSection);
         f24Metadata.f24Excise(f24Excise);
 
-        assertEquals(0, Integer.parseInt(f24Metadata.getF24Excise().getRegion().getRecords().get(0).getDebit()));
+        assertEquals(0, Integer.parseInt(f24Metadata.getF24Excise().getRegion().getRecords().get(0).getDebit().toString()));
 
         LocalTaxRecord localTaxRecord = new LocalTaxRecord();
         localTaxRecord.setApplyCost(false);
-        localTaxRecord.setDebit(String.valueOf(0));
+        localTaxRecord.setDebit(0);
         LocalTaxSection localTax = new LocalTaxSection();
         localTax.setRecords(List.of(localTaxRecord));
         f24Excise.setLocalTax(localTax);
         f24Metadata.f24Excise(f24Excise);
 
-        assertEquals(0, Integer.parseInt(f24Metadata.getF24Excise().getLocalTax().getRecords().get(0).getDebit()));
+        assertEquals(0, Integer.parseInt(f24Metadata.getF24Excise().getLocalTax().getRecords().get(0).getDebit().toString()));
 
         ExciseTax exciseTax = new ExciseTax();
         exciseTax.setApplyCost(false);
-        exciseTax.setDebit(String.valueOf(0));
+        exciseTax.setDebit(0);
         ExciseSection exciseSection = new ExciseSection();
         exciseSection.setRecords(List.of(exciseTax));
         f24Excise.setExcise(exciseSection);
 
         f24Metadata.f24Excise(f24Excise);
 
-        assertEquals(0, Integer.parseInt(f24Metadata.getF24Excise().getExcise().getRecords().get(0).getDebit()));
+        assertEquals(0, Integer.parseInt(f24Metadata.getF24Excise().getExcise().getRecords().get(0).getDebit().toString()));
     }
 }
 

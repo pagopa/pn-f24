@@ -9,9 +9,9 @@ public interface MetadataInspector {
     void addCostToDebit(F24Metadata f24Metadata , Integer cost);
 
 
-     static String convertDebitSum(String debit, int cost) {
-        int debitInt = Integer.parseInt(debit);
+     static Integer convertDebitSum(Integer debit, int cost) {
+        int debitInt = debit==null?0: debit;
         debitInt = debitInt + cost;
-        return String.valueOf(debitInt);
+        return debitInt;
     }
 }

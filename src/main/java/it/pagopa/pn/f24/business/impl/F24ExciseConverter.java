@@ -75,7 +75,7 @@ public class F24ExciseConverter extends F24Converter {
         exciseTax.setProvince(inputExciseTax.getProvince());
         exciseTax.setTaxTypeCode(inputExciseTax.getTaxType());
         exciseTax.setInstallment(inputExciseTax.getInstallment());
-        exciseTax.setDebitAmount(inputExciseTax.getDebit());
+        exciseTax.setDebitAmount(integerToString(inputExciseTax.getDebit()));
         return exciseTax;
     }
 }
