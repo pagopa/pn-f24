@@ -4,23 +4,21 @@ components:
       type: object
       description: è richiesto uno e uno solo tra le propeties f24Standard, f24Simplified, f24Excise, f24Elid
       additionalProperties: false
+      minProperties: 1
+      maxProperties: 1
       properties:
         f24Standard:
           nullable: true
-          allOf:
-            - $ref: "#/components/schemas/F24Standard"
+          $ref: "#/components/schemas/F24Standard"
         f24Simplified:
           nullable: true
-          allOf:
-            - $ref: "#/components/schemas/F24Simplified"
+          $ref: "#/components/schemas/F24Simplified"
         f24Excise:
           nullable: true
-          allOf:
-            - $ref: "#/components/schemas/F24Excise"
+          $ref: "#/components/schemas/F24Excise"
         f24Elid:
           nullable: true
-          allOf:
-            - $ref: "#/components/schemas/F24Elid"
+          $ref: "#/components/schemas/F24Elid"
     IncludeNotificationCost:
       type: object
       additionalProperties: false
