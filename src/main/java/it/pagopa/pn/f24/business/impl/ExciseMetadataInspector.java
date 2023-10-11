@@ -1,6 +1,7 @@
 package it.pagopa.pn.f24.business.impl;
 
 import it.pagopa.pn.f24.business.MetadataInspector;
+import it.pagopa.pn.f24.dto.ApplyCostValidation;
 import it.pagopa.pn.f24.generated.openapi.server.v1.dto.*;
 
 import static it.pagopa.pn.f24.util.Utility.countElementsByPredicate;
@@ -31,6 +32,42 @@ public class ExciseMetadataInspector implements MetadataInspector {
         }
 
         return applyCostCounter;
+    }
+
+    public ApplyCostValidation checkApplyCost(F24Metadata f24Metadata, boolean requiredApplyCost) {
+        F24Excise f24Excise = f24Metadata.getF24Excise();
+        if (f24Excise == null) {
+            return requiredApplyCost ? ApplyCostValidation.REQUIRED_APPLY_COST_NOT_GIVEN : ApplyCostValidation.OK;
+        }
+
+        int validApplyCostFound = 0;
+        int invalidApplyCostFound = 0;
+
+        if (f24Excise.getTreasury() != null && f24Excise.getTreasury().getRecords() != null) {
+            validApplyCostFound += countElementsByPredicate(f24Excise.getTreasury().getRecords(), (tax) -> tax.getApplyCost() && (tax.getCredit() == null || tax.getCredit() == 0));
+
+            invalidApplyCostFound += countElementsByPredicate(f24Excise.getTreasury().getRecords(), (tax) -> tax.getApplyCost() && (tax.getCredit() != null && tax.getCredit() > 0));
+        }
+        if (f24Excise.getInps() != null && f24Excise.getInps().getRecords() != null) {
+            validApplyCostFound += countElementsByPredicate(f24Excise.getInps().getRecords(), (inps) -> inps.getApplyCost() && (inps.getCredit() == null || inps.getCredit() == 0));
+
+            invalidApplyCostFound += countElementsByPredicate(f24Excise.getInps().getRecords(), (inps) -> inps.getApplyCost() && (inps.getCredit() != null && inps.getCredit() > 0));
+        }
+        if (f24Excise.getRegion() != null && f24Excise.getRegion().getRecords() != null) {
+            validApplyCostFound += countElementsByPredicate(f24Excise.getRegion().getRecords(), (region) -> region.getApplyCost() && (region.getCredit() == null || region.getCredit() == 0));
+
+            invalidApplyCostFound += countElementsByPredicate(f24Excise.getRegion().getRecords(), (region) -> region.getApplyCost() && (region.getCredit() != null && region.getCredit() > 0));
+        }
+        if (f24Excise.getLocalTax() != null && f24Excise.getLocalTax().getRecords() != null) {
+            validApplyCostFound += countElementsByPredicate(f24Excise.getLocalTax().getRecords(), (localTax) -> localTax.getApplyCost() && (localTax.getCredit() == null || localTax.getCredit() == 0));
+
+            invalidApplyCostFound += countElementsByPredicate(f24Excise.getLocalTax().getRecords(), (localTax) -> localTax.getApplyCost() && (localTax.getCredit() != null && localTax.getCredit() > 0));
+        }
+        if (f24Excise.getExcise() != null && f24Excise.getExcise().getRecords() != null) {
+            validApplyCostFound += countElementsByPredicate(f24Excise.getExcise().getRecords(), ExciseTax::getApplyCost);
+        }
+
+        return MetadataInspector.verifyApplyCost(requiredApplyCost, validApplyCostFound, invalidApplyCostFound);
     }
 
     @Override

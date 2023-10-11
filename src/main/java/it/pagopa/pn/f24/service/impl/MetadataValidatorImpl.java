@@ -5,6 +5,7 @@ import it.pagopa.pn.f24.business.F24Converter;
 import it.pagopa.pn.f24.business.F24ConverterFactory;
 import it.pagopa.pn.f24.business.MetadataInspector;
 import it.pagopa.pn.f24.business.MetadataInspectorFactory;
+import it.pagopa.pn.f24.dto.ApplyCostValidation;
 import it.pagopa.pn.f24.dto.F24MetadataRef;
 import it.pagopa.pn.f24.dto.F24MetadataValidationIssue;
 import it.pagopa.pn.f24.dto.MetadataToValidate;
@@ -81,6 +82,8 @@ public class MetadataValidatorImpl implements MetadataValidator {
             String message = error.getPropertyPath() + " " + error.getMessage();
             metadataValidationIssues.add(createIssue(metadataToValidate, message, PnF24ExceptionCodes.ERROR_CODE_F24_METADATA_VALIDATION_SCHEMA));
         });
+
+        log.info("End checkF24Schema");
     }
 
     private void checkSha256(MetadataToValidate metadataToValidate, List<F24MetadataValidationIssue> metadataValidationIssues) {
@@ -93,6 +96,8 @@ public class MetadataValidatorImpl implements MetadataValidator {
             log.debug("Metadata obtained from safestorage has different sha256 from persisted Metadata record");
             metadataValidationIssues.add(createIssue(metadataToValidate, "Invalid sha256", PnF24ExceptionCodes.ERROR_CODE_F24_METADATA_VALIDATION_DIFFERENT_SHA256));
         }
+
+        log.info("End checkSha256");
     }
     private void checkMetadataType(MetadataToValidate metadataToValidate, List<F24MetadataValidationIssue> metadataValidationIssues) {
         log.info("Start checkMetadataType");
@@ -115,25 +120,39 @@ public class MetadataValidatorImpl implements MetadataValidator {
             log.debug("Multiple metadata type sent");
             metadataValidationIssues.add(createIssue(metadataToValidate, "Multiple metadata type sent", PnF24ExceptionCodes.ERROR_CODE_F24_METADATA_VALIDATION_MULTI_TYPE));
         }
+
+        log.info("End checkMetadataType");
     }
 
     private void checkApplyCost(MetadataToValidate metadataToValidate, List<F24MetadataValidationIssue> metadataValidationIssues) {
         log.info("Start checkApplyCost");
-        MetadataInspector inspector = MetadataInspectorFactory.getInspector(getF24TypeFromMetadata(metadataToValidate.getF24Metadata()));
-        int applyCostCounter = inspector.countMetadataApplyCost(metadataToValidate.getF24Metadata());
-        log.debug("Found {} applyCost flag in Metadata", applyCostCounter);
 
         F24MetadataRef f24MetadataRef = metadataToValidate.getRef();
-        if(f24MetadataRef.isApplyCost() && applyCostCounter == 0) {
-            log.debug("Metadata hasn't applyCost in records");
-            metadataValidationIssues.add(createIssue(metadataToValidate,"Metadata requires applyCost=true in records", PnF24ExceptionCodes.ERROR_CODE_F24_METADATA_VALIDATION_INCONSISTENT_APPLY_COST));
-        } else if(!f24MetadataRef.isApplyCost() && applyCostCounter > 0) {
-            log.debug("Metadata shouldn't have applyCost in records");
-            metadataValidationIssues.add(createIssue(metadataToValidate,"Metadata shouldn't have applyCost=true in records", PnF24ExceptionCodes.ERROR_CODE_F24_METADATA_VALIDATION_INCONSISTENT_APPLY_COST));
-        } else if(applyCostCounter > 1) {
-            log.debug("Metadata has too many applyCost in records");
-            metadataValidationIssues.add(createIssue(metadataToValidate,"Metadata has too many applyCost=true in records", PnF24ExceptionCodes.ERROR_CODE_F24_METADATA_VALIDATION_INCONSISTENT_APPLY_COST));
+
+        MetadataInspector inspector = MetadataInspectorFactory.getInspector(getF24TypeFromMetadata(metadataToValidate.getF24Metadata()));
+        ApplyCostValidation validation = inspector.checkApplyCost(metadataToValidate.getF24Metadata(), f24MetadataRef.isApplyCost());
+
+        switch (validation) {
+            case INVALID_APPLY_COST_GIVEN -> {
+                log.debug("Metadata can't have applyCost = true and credit != 0 in a record");
+                metadataValidationIssues.add(createIssue(metadataToValidate,"Metadata can't have applyCost = true and credit != 0 in a record", PnF24ExceptionCodes.ERROR_CODE_F24_METADATA_VALIDATION_INCONSISTENT_APPLY_COST));
+            }
+            case TOO_MANY_APPLY_COST_GIVEN ->  {
+                log.debug("Metadata has too many applyCost in records");
+                metadataValidationIssues.add(createIssue(metadataToValidate,"Metadata has too many applyCost=true in records", PnF24ExceptionCodes.ERROR_CODE_F24_METADATA_VALIDATION_INCONSISTENT_APPLY_COST));
+            }
+            case NOT_REQUIRED_APPLY_COST_GIVEN -> {
+                log.debug("Metadata shouldn't have applyCost in records");
+                metadataValidationIssues.add(createIssue(metadataToValidate,"Metadata shouldn't have applyCost=true in records", PnF24ExceptionCodes.ERROR_CODE_F24_METADATA_VALIDATION_INCONSISTENT_APPLY_COST));
+            }
+            case REQUIRED_APPLY_COST_NOT_GIVEN -> {
+                log.debug("Metadata requires applyCost=true in records");
+                metadataValidationIssues.add(createIssue(metadataToValidate,"Metadata requires applyCost=true in records", PnF24ExceptionCodes.ERROR_CODE_F24_METADATA_VALIDATION_INCONSISTENT_APPLY_COST));
+            }
+            case OK -> log.debug("checkApplyCost successfully executed");
         }
+
+        log.info("End checkApplyCost");
     }
 
     private void checkMetadata(MetadataToValidate metadataToValidate, List<F24MetadataValidationIssue> metadataValidationIssues) {
@@ -146,6 +165,7 @@ public class MetadataValidatorImpl implements MetadataValidator {
         } catch (ResourceException | ProcessingException | IOException e) {
             metadataValidationIssues.add(createIssue(metadataToValidate, e.getMessage(), PnF24ExceptionCodes.ERROR_CODE_F24_METADATA_VALIDATION_ERROR));
         }
+        log.info("End checkMetadata");
     }
 
     private F24MetadataValidationIssue createIssue(MetadataToValidate metadataToValidate, 

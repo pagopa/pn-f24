@@ -1,6 +1,7 @@
 package it.pagopa.pn.f24.business.impl;
 
 import it.pagopa.pn.f24.business.MetadataInspector;
+import it.pagopa.pn.f24.dto.ApplyCostValidation;
 import it.pagopa.pn.f24.generated.openapi.server.v1.dto.*;
 import lombok.extern.slf4j.Slf4j;
 
@@ -38,6 +39,49 @@ public class StandardMetadataInspector implements MetadataInspector {
         }
 
         return applyCostCounter;
+    }
+
+    public ApplyCostValidation checkApplyCost(F24Metadata f24Metadata, boolean requiredApplyCost) {
+        F24Standard f24Standard = f24Metadata.getF24Standard();
+        if (f24Standard == null) {
+            return requiredApplyCost ? ApplyCostValidation.REQUIRED_APPLY_COST_NOT_GIVEN : ApplyCostValidation.OK;
+        }
+
+        int validApplyCostFound = 0;
+        int invalidApplyCostFound = 0;
+
+        if (f24Standard.getTreasury() != null && f24Standard.getTreasury().getRecords() != null) {
+            validApplyCostFound += countElementsByPredicate(f24Standard.getTreasury().getRecords(), (tax) -> tax.getApplyCost() && (tax.getCredit() == null || tax.getCredit() == 0));
+
+            invalidApplyCostFound += countElementsByPredicate(f24Standard.getTreasury().getRecords(), (tax) -> tax.getApplyCost() && (tax.getCredit() != null && tax.getCredit() > 0));
+        }
+        if (f24Standard.getInps() != null && f24Standard.getInps().getRecords() != null) {
+            validApplyCostFound += countElementsByPredicate(f24Standard.getInps().getRecords(), (inps) -> inps.getApplyCost() && (inps.getCredit() == null || inps.getCredit() == 0));
+
+            invalidApplyCostFound += countElementsByPredicate(f24Standard.getInps().getRecords(), (inps) -> inps.getApplyCost() && (inps.getCredit() != null && inps.getCredit() > 0));
+        }
+        if (f24Standard.getRegion() != null && f24Standard.getRegion().getRecords() != null) {
+            validApplyCostFound += countElementsByPredicate(f24Standard.getRegion().getRecords(), (region) -> region.getApplyCost() && (region.getCredit() == null || region.getCredit() == 0));
+
+            invalidApplyCostFound += countElementsByPredicate(f24Standard.getRegion().getRecords(), (region) -> region.getApplyCost() && (region.getCredit() != null && region.getCredit() > 0));
+        }
+        if (f24Standard.getLocalTax() != null && f24Standard.getLocalTax().getRecords() != null) {
+            validApplyCostFound += countElementsByPredicate(f24Standard.getLocalTax().getRecords(), (localTax) -> localTax.getApplyCost() && (localTax.getCredit() == null || localTax.getCredit() == 0));
+
+            invalidApplyCostFound += countElementsByPredicate(f24Standard.getLocalTax().getRecords(), (localTax) -> localTax.getApplyCost() && (localTax.getCredit() != null && localTax.getCredit() > 0));
+        }
+        if(f24Standard.getSocialSecurity() != null && f24Standard.getSocialSecurity().getRecords() != null) {
+            validApplyCostFound += countElementsByPredicate(f24Standard.getSocialSecurity().getRecords(), (socialRec) -> socialRec.getApplyCost() && (socialRec.getCredit() == null || socialRec.getCredit() == 0));
+
+            invalidApplyCostFound += countElementsByPredicate(f24Standard.getSocialSecurity().getRecords(), (socialRec) -> socialRec.getApplyCost() && (socialRec.getCredit() != null && socialRec.getCredit() > 0));
+        }
+        if(f24Standard.getSocialSecurity() != null && f24Standard.getSocialSecurity().getSocSecRecords() != null) {
+            validApplyCostFound += countElementsByPredicate(f24Standard.getSocialSecurity().getSocSecRecords(), (socSecRec) -> socSecRec.getApplyCost() && (socSecRec.getCredit() == null || socSecRec.getCredit() == 0));
+
+            invalidApplyCostFound += countElementsByPredicate(f24Standard.getSocialSecurity().getSocSecRecords(), (socSecRec) -> socSecRec.getApplyCost() && (socSecRec.getCredit() != null && socSecRec.getCredit() > 0));
+        }
+
+        return MetadataInspector.verifyApplyCost(requiredApplyCost, validApplyCostFound, invalidApplyCostFound);
     }
 
     @Override

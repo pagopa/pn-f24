@@ -1,9 +1,8 @@
 package it.pagopa.pn.f24.business.impl;
 
 import it.pagopa.pn.f24.business.MetadataInspector;
-import it.pagopa.pn.f24.generated.openapi.server.v1.dto.F24Metadata;
-import it.pagopa.pn.f24.generated.openapi.server.v1.dto.F24Simplified;
-import it.pagopa.pn.f24.generated.openapi.server.v1.dto.SimplifiedPaymentRecord;
+import it.pagopa.pn.f24.dto.ApplyCostValidation;
+import it.pagopa.pn.f24.generated.openapi.server.v1.dto.*;
 
 import static it.pagopa.pn.f24.util.Utility.countElementsByPredicate;
 
@@ -21,6 +20,25 @@ public class SimplifiedMetadataInspector implements MetadataInspector {
         }
 
         return applyCostCounter;
+    }
+
+    public ApplyCostValidation checkApplyCost(F24Metadata f24Metadata, boolean requiredApplyCost) {
+        F24Simplified f24Simplified = f24Metadata.getF24Simplified();
+        if (f24Simplified == null) {
+            return requiredApplyCost ? ApplyCostValidation.REQUIRED_APPLY_COST_NOT_GIVEN : ApplyCostValidation.OK;
+        }
+
+        int validApplyCostFound = 0;
+        int invalidApplyCostFound = 0;
+
+        if (f24Simplified.getPayments() != null && f24Simplified.getPayments().getRecords() != null) {
+            validApplyCostFound = countElementsByPredicate(f24Simplified.getPayments().getRecords(), (payment) -> payment.getApplyCost() && (payment.getCredit() == null || payment.getCredit() == 0));
+
+            invalidApplyCostFound = countElementsByPredicate(f24Simplified.getPayments().getRecords(), (payment) -> payment.getApplyCost() && (payment.getCredit() != null && payment.getCredit() != 0));
+        }
+
+        return MetadataInspector.verifyApplyCost(requiredApplyCost, validApplyCostFound, invalidApplyCostFound);
+
     }
 
     @Override

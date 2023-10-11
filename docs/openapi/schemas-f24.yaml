@@ -149,18 +149,14 @@ components:
         socialSecurity:
           $ref: "#/components/schemas/SocialSecuritySection"
     LocalTaxRecord:
-      #allOf:
-      #  - $ref: "#/components/schemas/IncludeNotificationCost"
+      allOf:
+        - $ref: "#/components/schemas/IncludeNotificationCost"
       type: object
       additionalProperties: false
       required:
         - municipality
         - taxType
       properties:
-        applyCost:
-          type: boolean
-          nullable: false
-          description: to check if include notification cost
         municipality:
           pattern: ^[0-9A-Z]{4}$
           type: string
@@ -307,11 +303,11 @@ components:
       additionalProperties: false
       properties:
         surname:
-          pattern: ^[A-Z\\s]{1,24}$
+          pattern: ^[A-Z\s]{1,24}$
           type: string
           description: surname of the person
         name:
-          pattern: ^[A-Z\\s]{1,20}$
+          pattern: ^[A-Z\s]{1,20}$
           type: string
           description: name of the person
         birthDate:
@@ -517,12 +513,58 @@ components:
           description: Payments Record List
       description: Payment Reason Section (Motivo del Pagamento) object
     SimplifiedPaymentRecord:
+      type: object
       additionalProperties: false
-      allOf:
-        - $ref: "#/components/schemas/LocalTaxRecord"
       required:
         - section
+        - municipality
+        - taxType
+        - applyCost
       properties:
+        applyCost:
+          type: boolean
+          nullable: false
+          description: to check if include notification cost
+        municipality:
+          pattern: ^[0-9A-Z]{4}$
+          type: string
+          description: identification code of the municipality
+        reconsideration:
+          type: boolean
+          description: to check if it is a reconsideration act
+        propertiesChanges:
+          type: boolean
+          description: to check if there are some changes in properties list
+        advancePayment:
+          type: boolean
+          description: to check if it is a payment in advance
+        fullPayment:
+          type: boolean
+          description: to check if it a full payment
+        numberOfProperties:
+          pattern: ^[0-9]{3}$
+          type: string
+          description: number of properties
+        taxType:
+          pattern: ^[0-9]{4}$
+          type: string
+          description: identification code of the type of tax
+        installment:
+          pattern: ^[A-Z0-9]{0,4}$
+          type: string
+          description: identification code of the ente
+        year:
+          pattern: ^[1-2][0-9]{3}$
+          type: string
+          description: reference year
+        debit:
+          type: integer
+          format: int32
+          description: debit amount of the record in eurocent
+        credit:
+          type: integer
+          format: int32
+          description: credit amount of the record in eurocent
         section:
           pattern: ^(ER|RG|EL)$
           type: string
