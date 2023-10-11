@@ -1,7 +1,11 @@
 package it.pagopa.pn.f24.business.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import it.pagopa.pn.f24.dto.ApplyCostValidation;
 import it.pagopa.pn.f24.generated.openapi.server.v1.dto.*;
+
+import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
@@ -113,7 +117,7 @@ class StandardMetadataInspectorTest {
 
         Tax tax = new Tax();
         tax.setApplyCost(true);
-        tax.setDebit(String.valueOf(0));
+        tax.setDebit(0);
 
         TreasurySection treasurySection = new TreasurySection();
         treasurySection.setRecords(List.of(tax));
@@ -125,7 +129,39 @@ class StandardMetadataInspectorTest {
 
         standardMetadataInspector.addCostToDebit(f24Metadata, 5);
 
-        assertEquals(5, Integer.parseInt(f24Metadata.getF24Standard().getTreasury().getRecords().get(0).getDebit()));
+        assertEquals(5, f24Metadata.getF24Standard().getTreasury().getRecords().get(0).getDebit());
+    }
+
+    @Test
+    void testCheckApplyCostOk() {
+        StandardMetadataInspector standardMetadataInspector = new StandardMetadataInspector();
+        F24Metadata f24Metadata = getF24MetadataStandardValidWithAllApplyCostFalse();
+        f24Metadata.getF24Standard().getTreasury().getRecords().get(0).setApplyCost(true);
+        assertEquals(ApplyCostValidation.OK, standardMetadataInspector.checkApplyCost(f24Metadata, true));
+    }
+
+
+    @Test
+    void testCheckApplyCostFailWithRequiredButNotGiven() {
+        StandardMetadataInspector standardMetadataInspector = new StandardMetadataInspector();
+        F24Metadata f24Metadata = getF24MetadataStandardValidWithAllApplyCostFalse();
+        assertEquals(ApplyCostValidation.REQUIRED_APPLY_COST_NOT_GIVEN, standardMetadataInspector.checkApplyCost(f24Metadata, true));
+    }
+
+    @Test
+    void testCheckApplyCostFailWithInvalidApplyCost() {
+        StandardMetadataInspector standardMetadataInspector = new StandardMetadataInspector();
+        F24Metadata f24Metadata = getF24MetadataStandardValidWithAllApplyCostFalse();
+        f24Metadata.getF24Standard().getTreasury().getRecords().get(0).setApplyCost(true);
+        f24Metadata.getF24Standard().getTreasury().getRecords().get(0).setCredit(100);
+        assertEquals(ApplyCostValidation.INVALID_APPLY_COST_GIVEN, standardMetadataInspector.checkApplyCost(f24Metadata, true));
+    }
+
+    @Test
+    void testCheckApplyCostFailWithRequiredButNotGivenAndMetadataIsNull() {
+        StandardMetadataInspector standardMetadataInspector = new StandardMetadataInspector();
+        F24Metadata f24Metadata = new F24Metadata();
+        assertEquals(ApplyCostValidation.REQUIRED_APPLY_COST_NOT_GIVEN, standardMetadataInspector.checkApplyCost(f24Metadata, true));
     }
 
     @Test
@@ -134,7 +170,7 @@ class StandardMetadataInspectorTest {
 
         InpsRecord inpsRecord = new InpsRecord();
         inpsRecord.setApplyCost(true);
-        inpsRecord.setDebit(String.valueOf(0));
+        inpsRecord.setDebit(0);
 
         InpsSection inpsSection = new InpsSection();
         inpsSection.setRecords(List.of(inpsRecord));
@@ -146,7 +182,7 @@ class StandardMetadataInspectorTest {
 
         standardMetadataInspector.addCostToDebit(f24Metadata, 5);
 
-        assertEquals(5, Integer.parseInt(f24Metadata.getF24Standard().getInps().getRecords().get(0).getDebit()));
+        assertEquals(5, f24Metadata.getF24Standard().getInps().getRecords().get(0).getDebit());
     }
 
     @Test
@@ -155,7 +191,7 @@ class StandardMetadataInspectorTest {
 
         RegionRecord regionRecord = new RegionRecord();
         regionRecord.setApplyCost(true);
-        regionRecord.setDebit(String.valueOf(0));
+        regionRecord.setDebit(0);
 
         RegionSection regionSection = new RegionSection();
         regionSection.setRecords(List.of(regionRecord));
@@ -167,7 +203,7 @@ class StandardMetadataInspectorTest {
 
         standardMetadataInspector.addCostToDebit(f24Metadata, 5);
 
-        assertEquals(5, Integer.parseInt(f24Metadata.getF24Standard().getRegion().getRecords().get(0).getDebit()));
+        assertEquals(5, f24Metadata.getF24Standard().getRegion().getRecords().get(0).getDebit());
     }
 
     @Test
@@ -176,7 +212,7 @@ class StandardMetadataInspectorTest {
 
         LocalTaxRecord localTaxRecord = new LocalTaxRecord();
         localTaxRecord.setApplyCost(true);
-        localTaxRecord.setDebit(String.valueOf(0));
+        localTaxRecord.setDebit(0);
 
         LocalTaxSection localTaxSection = new LocalTaxSection();
         localTaxSection.setRecords(List.of(localTaxRecord));
@@ -188,7 +224,7 @@ class StandardMetadataInspectorTest {
 
         standardMetadataInspector.addCostToDebit(f24Metadata, 5);
 
-        assertEquals(5, Integer.parseInt(f24Metadata.getF24Standard().getLocalTax().getRecords().get(0).getDebit()));
+        assertEquals(5, f24Metadata.getF24Standard().getLocalTax().getRecords().get(0).getDebit());
     }
 
     @Test
@@ -197,7 +233,7 @@ class StandardMetadataInspectorTest {
 
         InailRecord inailRecord = new InailRecord();
         inailRecord.setApplyCost(true);
-        inailRecord.setDebit(String.valueOf(0));
+        inailRecord.setDebit(0);
 
         SocialSecuritySection socialSecuritySection = new SocialSecuritySection();
         socialSecuritySection.setRecords(List.of(inailRecord));
@@ -209,7 +245,7 @@ class StandardMetadataInspectorTest {
 
         standardMetadataInspector.addCostToDebit(f24Metadata, 5);
 
-        assertEquals(5, Integer.parseInt(f24Metadata.getF24Standard().getSocialSecurity().getRecords().get(0).getDebit()));
+        assertEquals(5, f24Metadata.getF24Standard().getSocialSecurity().getRecords().get(0).getDebit());
     }
 
     @Test
@@ -218,7 +254,7 @@ class StandardMetadataInspectorTest {
 
         SocialSecurityRecord socialSecurityRecord = new SocialSecurityRecord();
         socialSecurityRecord.setApplyCost(true);
-        socialSecurityRecord.setDebit(String.valueOf(0));
+        socialSecurityRecord.setDebit(0);
 
         SocialSecuritySection socialSecuritySection = new SocialSecuritySection();
         socialSecuritySection.setSocSecRecords(List.of(socialSecurityRecord));
@@ -230,66 +266,72 @@ class StandardMetadataInspectorTest {
 
         standardMetadataInspector.addCostToDebit(f24Metadata, 5);
 
-        assertEquals(5, Integer.parseInt(f24Metadata.getF24Standard().getSocialSecurity().getSocSecRecords().get(0).getDebit()));
+        assertEquals(5, f24Metadata.getF24Standard().getSocialSecurity().getSocSecRecords().get(0).getDebit());
     }
 
-    @Test
-    void testAddCostToDebit6() {
 
-        F24Metadata f24Metadata = new F24Metadata();
-        F24Excise f24Excise = new F24Excise();
+    private F24Metadata getF24MetadataStandardValidWithAllApplyCostFalse() {
+        InailRecord inailRecord = new InailRecord();
+        inailRecord.setApplyCost(false);
+        inailRecord.setDebit(0);
+        List<InailRecord> inailRecords = new ArrayList<>();
+        inailRecords.add(inailRecord);
 
+        SocialSecurityRecord socialSecurityRecord = new SocialSecurityRecord();
+        socialSecurityRecord.setApplyCost(false);
+        socialSecurityRecord.setDebit(0);
+        List<SocialSecurityRecord> socialSecurityRecords = new ArrayList<>();
+        socialSecurityRecords.add(socialSecurityRecord);
 
-        Tax tax = new Tax();
-        tax.setApplyCost(false);
-        tax.setDebit(String.valueOf(0));
-        TreasurySection treasurySection = new TreasurySection();
-        treasurySection.setRecords(List.of(tax));
-        f24Excise.setTreasury(treasurySection);
-        f24Metadata.f24Excise(f24Excise);
-
-        assertEquals(0, Integer.parseInt(f24Metadata.getF24Excise().getTreasury().getRecords().get(0).getDebit()));
+        SocialSecuritySection socialSecuritySection = new SocialSecuritySection();
+        socialSecuritySection.setSocSecRecords(socialSecurityRecords);
+        socialSecuritySection.setRecords(inailRecords);
 
         InpsRecord inpsRecord = new InpsRecord();
         inpsRecord.setApplyCost(false);
-        inpsRecord.setDebit(String.valueOf(0));
-        InpsSection inps = new InpsSection();
-        inps.setRecords(List.of(inpsRecord));
-        f24Excise.setInps(inps);
-        f24Metadata.f24Excise(f24Excise);
+        inpsRecord.setDebit(0);
 
-        assertEquals(0, Integer.parseInt(f24Metadata.getF24Excise().getInps().getRecords().get(0).getDebit()));
-
-        RegionRecord regionRecord = new RegionRecord();
-        regionRecord.setApplyCost(false);
-        regionRecord.setDebit(String.valueOf(0));
-        RegionSection regionSection = new RegionSection();
-        regionSection.setRecords(List.of(regionRecord));
-        f24Excise.setRegion(regionSection);
-        f24Metadata.f24Excise(f24Excise);
-
-        assertEquals(0, Integer.parseInt(f24Metadata.getF24Excise().getRegion().getRecords().get(0).getDebit()));
+        InpsSection inpsSection = new InpsSection();
+        List<InpsRecord> inpsRecords = new ArrayList<>();
+        inpsSection.setRecords(inpsRecords);
 
         LocalTaxRecord localTaxRecord = new LocalTaxRecord();
         localTaxRecord.setApplyCost(false);
-        localTaxRecord.setDebit(String.valueOf(0));
-        LocalTaxSection localTax = new LocalTaxSection();
-        localTax.setRecords(List.of(localTaxRecord));
-        f24Excise.setLocalTax(localTax);
-        f24Metadata.f24Excise(f24Excise);
+        localTaxRecord.setDebit(0);
 
-        assertEquals(0, Integer.parseInt(f24Metadata.getF24Excise().getLocalTax().getRecords().get(0).getDebit()));
+        LocalTaxSection localTaxSection = new LocalTaxSection();
+        List<LocalTaxRecord> localTaxRecords = new ArrayList<>();
+        localTaxRecords.add(localTaxRecord);
+        localTaxSection.setRecords(localTaxRecords);
 
-        ExciseTax exciseTax = new ExciseTax();
-        exciseTax.setApplyCost(false);
-        exciseTax.setDebit(String.valueOf(0));
-        ExciseSection exciseSection = new ExciseSection();
-        exciseSection.setRecords(List.of(exciseTax));
-        f24Excise.setExcise(exciseSection);
+        RegionRecord regionRecord = new RegionRecord();
+        regionRecord.setApplyCost(false);
+        regionRecord.setDebit(0);
 
-        f24Metadata.f24Excise(f24Excise);
+        RegionSection regionSection = new RegionSection();
+        List<RegionRecord> regionRecords = new ArrayList<>();
+        regionRecords.add(regionRecord);
+        regionSection.setRecords(regionRecords);
 
-        assertEquals(0, Integer.parseInt(f24Metadata.getF24Excise().getExcise().getRecords().get(0).getDebit()));
+        Tax tax = new Tax();
+        tax.setApplyCost(false);
+        tax.setDebit(0);
+        TreasurySection treasurySection = new TreasurySection();
+        List<Tax> taxes = new ArrayList<>();
+        taxes.add(tax);
+        treasurySection.setRecords(taxes);
+
+        F24Standard f24Standard = new F24Standard();
+        f24Standard.setSocialSecurity(socialSecuritySection);
+        f24Standard.setInps(inpsSection);
+        f24Standard.setLocalTax(localTaxSection);
+        f24Standard.setRegion(regionSection);
+        f24Standard.setTreasury(treasurySection);
+
+        F24Metadata f24Metadata = new F24Metadata();
+        f24Metadata.setF24Standard(f24Standard);
+
+        return f24Metadata;
     }
 
 }

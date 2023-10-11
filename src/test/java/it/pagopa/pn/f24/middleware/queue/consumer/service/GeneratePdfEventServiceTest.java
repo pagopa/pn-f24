@@ -116,7 +116,7 @@ class GeneratePdfEventServiceTest {
         LocalTaxSection localTaxSection = new LocalTaxSection();
         LocalTaxRecord localTaxRecord = new LocalTaxRecord();
         localTaxRecord.setApplyCost(true);
-        localTaxRecord.setDebit("200");
+        localTaxRecord.setDebit(200);
         localTaxSection.setRecords(List.of(localTaxRecord));
         f24Standard.setLocalTax(localTaxSection);
         f24Metadata.setF24Standard(f24Standard);

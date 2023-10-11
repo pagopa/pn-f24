@@ -23,8 +23,8 @@ public abstract class F24Converter {
 
     private org.f24.dto.component.Tax convertTreasuryRecord(Tax tax) {
         org.f24.dto.component.Tax taxRecord = new org.f24.dto.component.Tax();
-        taxRecord.setCreditAmount(tax.getCredit());
-        taxRecord.setDebitAmount(tax.getDebit());
+        taxRecord.setCreditAmount(integerToString(tax.getCredit()));
+        taxRecord.setDebitAmount(integerToString(tax.getDebit()));
         taxRecord.setInstallment(tax.getInstallment());
         taxRecord.setYear(tax.getYear());
         taxRecord.setTaxTypeCode(tax.getTaxType());
@@ -50,8 +50,8 @@ public abstract class F24Converter {
         inpsRecord.setOfficeCode(inputInpsRecord.getOffice());
         inpsRecord.setPeriod(this.convertPeriod(inputInpsRecord.getPeriod()));
         inpsRecord.setContributionReason(inputInpsRecord.getReason());
-        inpsRecord.setCreditAmount(inputInpsRecord.getCredit());
-        inpsRecord.setDebitAmount(inputInpsRecord.getDebit());
+        inpsRecord.setCreditAmount(integerToString(inputInpsRecord.getCredit()));
+        inpsRecord.setDebitAmount(integerToString(inputInpsRecord.getDebit()));
         return inpsRecord;
     }
 
@@ -92,8 +92,8 @@ public abstract class F24Converter {
         regionRecord.setRegionCode(dvRegionRecord.getRegion());
         regionRecord.setYear(dvRegionRecord.getYear());
         regionRecord.setTaxTypeCode(dvRegionRecord.getTaxType());
-        regionRecord.setCreditAmount(dvRegionRecord.getCredit());
-        regionRecord.setDebitAmount(dvRegionRecord.getDebit());
+        regionRecord.setCreditAmount(integerToString(dvRegionRecord.getCredit()));
+        regionRecord.setDebitAmount(integerToString(dvRegionRecord.getDebit()));
         return regionRecord;
     }
 
@@ -124,8 +124,8 @@ public abstract class F24Converter {
         localTaxRecord.setInstallment(inputLocalTaxRecord.getInstallment());
         localTaxRecord.setTaxTypeCode(inputLocalTaxRecord.getTaxType());
         localTaxRecord.setYear(inputLocalTaxRecord.getYear());
-        localTaxRecord.setDebitAmount(inputLocalTaxRecord.getDebit());
-        localTaxRecord.setCreditAmount(inputLocalTaxRecord.getCredit());
+        localTaxRecord.setDebitAmount(integerToString(inputLocalTaxRecord.getDebit()));
+        localTaxRecord.setCreditAmount(integerToString(inputLocalTaxRecord.getCredit()));
         return localTaxRecord;
     }
 
@@ -166,5 +166,9 @@ public abstract class F24Converter {
         personalData.setBirthPlace(dvPersonalData.getBirthPlace());
         personalData.setBirthProvince(dvPersonalData.getBirthProvince());
         return personalData;
+    }
+
+    protected String integerToString(Integer val) {
+        return val==null?null:val.toString();
     }
 }

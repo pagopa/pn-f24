@@ -1,6 +1,8 @@
 package it.pagopa.pn.f24.business.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import it.pagopa.pn.f24.dto.ApplyCostValidation;
 import it.pagopa.pn.f24.generated.openapi.server.v1.dto.*;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -36,12 +38,41 @@ class ElidMetadataInspectorTest {
     }
 
     @Test
+    void testCheckApplyCostOk() {
+        ElidMetadataInspector elidMetadataInspector = new ElidMetadataInspector();
+        F24Metadata f24Metadata = getF24MetadataElidWithRecord(true);
+        assertEquals(ApplyCostValidation.OK, elidMetadataInspector.checkApplyCost(f24Metadata, true));
+    }
+
+    @Test
+    void testCheckApplyCostFailWithRequiredButNotGiven() {
+        ElidMetadataInspector elidMetadataInspector = new ElidMetadataInspector();
+        F24Metadata f24Metadata = getF24MetadataElidWithRecord(false);
+        assertEquals(ApplyCostValidation.REQUIRED_APPLY_COST_NOT_GIVEN, elidMetadataInspector.checkApplyCost(f24Metadata, true));
+    }
+
+    @Test
+    void testCheckApplyCostFailWithRequiredButNotGivenAndMetadataIsNull() {
+        ElidMetadataInspector elidMetadataInspector = new ElidMetadataInspector();
+        F24Metadata f24Metadata = new F24Metadata();
+        assertEquals(ApplyCostValidation.REQUIRED_APPLY_COST_NOT_GIVEN, elidMetadataInspector.checkApplyCost(f24Metadata, true));
+    }
+
+    @Test
     void testAddCostToDebit() {
         ElidMetadataInspector elidMetadataInspector = new ElidMetadataInspector();
 
+        F24Metadata f24Metadata = getF24MetadataElidWithRecord(true);
+
+        elidMetadataInspector.addCostToDebit(f24Metadata,5);
+
+        assertEquals(5, f24Metadata.getF24Elid().getTreasury().getRecords().get(0).getDebit());
+    }
+
+    private F24Metadata getF24MetadataElidWithRecord(boolean applyCost) {
         TreasuryRecord treasuryRecord = new TreasuryRecord();
-        treasuryRecord.setApplyCost(true);
-        treasuryRecord.setDebit(String.valueOf(0));
+        treasuryRecord.setApplyCost(applyCost);
+        treasuryRecord.setDebit(0);
 
         TreasuryAndOtherSection treasuryAndOtherSection = new TreasuryAndOtherSection();
         treasuryAndOtherSection.setRecords(List.of(treasuryRecord));
@@ -50,10 +81,7 @@ class ElidMetadataInspectorTest {
         f24Elid.setTreasury(treasuryAndOtherSection);
         F24Metadata f24Metadata = new F24Metadata();
         f24Metadata.setF24Elid(f24Elid);
-
-        elidMetadataInspector.addCostToDebit(f24Metadata,5);
-
-        assertEquals(5, Integer.parseInt(f24Metadata.getF24Elid().getTreasury().getRecords().get(0).getDebit()));
+        return f24Metadata;
     }
 
 }

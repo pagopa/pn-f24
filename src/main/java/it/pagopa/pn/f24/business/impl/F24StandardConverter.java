@@ -81,8 +81,8 @@ public class F24StandardConverter extends F24Converter {
 
     private org.f24.dto.component.InailRecord convertInailRecord(InailRecord inailRecord) {
         org.f24.dto.component.InailRecord outputRecord = new org.f24.dto.component.InailRecord();
-        outputRecord.setCreditAmount(inailRecord.getCredit());
-        outputRecord.setDebitAmount(inailRecord.getDebit());
+        outputRecord.setCreditAmount(integerToString(inailRecord.getCredit()));
+        outputRecord.setDebitAmount(integerToString(inailRecord.getDebit()));
         outputRecord.setOfficeCode(inailRecord.getOffice());
         outputRecord.setReason(inailRecord.getReason());
         outputRecord.setControlCode(inailRecord.getControl());
@@ -97,8 +97,8 @@ public class F24StandardConverter extends F24Converter {
         outputSocialSecurityRecord.setContributionReason(socialSecurityRecord.getReason());
         outputSocialSecurityRecord.setPositionCode(socialSecurityRecord.getPosition());
         outputSocialSecurityRecord.setPeriod(convertPeriod(socialSecurityRecord.getPeriod()));
-        outputSocialSecurityRecord.setDebitAmount(socialSecurityRecord.getDebit());
-        outputSocialSecurityRecord.setCreditAmount(socialSecurityRecord.getCredit());
+        outputSocialSecurityRecord.setDebitAmount(integerToString(socialSecurityRecord.getDebit()));
+        outputSocialSecurityRecord.setCreditAmount(integerToString(socialSecurityRecord.getCredit()));
         return outputSocialSecurityRecord;
     }
 
