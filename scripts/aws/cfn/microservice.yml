@@ -254,7 +254,7 @@ Resources:
         ContainerEnvEntry5: !Sub 'PN_F24_DEFAULTRETRYAFTERMILLISEC=${DefaultRetryAfterMilliSec}'
         ContainerEnvEntry6: !Sub 'PN_F24_POLLINGTIMEOUTSEC=${PollingTimeoutInSec}'
         ContainerEnvEntry7: 'PN_F24_SAFESTORAGECXID=pn-f24'
-        ContainerEnvEntry8: 'PN_F24_SAFESTORAGEF24DOCTYPE=F24_FILE'
+        ContainerEnvEntry8: 'PN_F24_SAFESTORAGEF24DOCTYPE=PN_F24'
         ContainerEnvEntry9: !Sub 'PN_F24_METADATASETTABLENAME=${F24MetadataSetTableName}'
         ContainerEnvEntry10: !Sub 'PN_F24_FILETABLENAME=${F24FileTableName}'
         ContainerEnvEntry11: !Sub 'PN_F24_INTERNALQUEUENAME=${PnF24InternalQueueName}'

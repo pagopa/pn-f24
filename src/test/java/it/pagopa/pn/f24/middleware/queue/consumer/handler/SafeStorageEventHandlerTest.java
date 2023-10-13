@@ -24,7 +24,7 @@ import static org.mockito.Mockito.when;
 @ContextConfiguration(classes = {SafeStorageEventHandler.class})
 @ExtendWith(SpringExtension.class)
 class SafeStorageEventHandlerTest {
-    private static final String F24_FILE_DOC_TYPE = "F24_FILE";
+    private static final String F24_FILE_DOC_TYPE = "PN_F24";
     @MockBean
     private F24Config f24Config;
     @MockBean
