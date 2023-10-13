@@ -59,9 +59,10 @@ public abstract class AbstractEventBridgeProducer<T extends GenericEventBridgeEv
     @Override
     public Mono<Void> sendEvent(List<T> events) {
         return Mono.fromFuture(amazonEventBridge.putEvents(putEventsRequestBuilder(events)))
-                .doOnError(throwable -> log.warn("Error sending event on event bridge", throwable))
+                .doOnError(throwable -> log.error("Error sending event on event bridge", throwable))
                 .flatMap(response -> {
                     if(response.failedEntryCount() != null && response.failedEntryCount() > 0) {
+                        log.error("error sending event on event bus={} response={}", eventBusName, response);
                         return Mono.error(new EventBridgeSendException(String.format("Error sending event on event bus: %s", eventBusName)));
                     }
                     log.debug("Event sent successfully: {}", response.entries());
