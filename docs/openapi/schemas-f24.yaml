@@ -2,7 +2,7 @@ components:
   schemas:
     F24Metadata:
       type: object
-      description: è richiesto uno e uno solo tra le propeties f24Standard, f24Simplified, f24Excise, f24Elid
+      description: Elemento radice deve contenere uno e uno solo tra le propeties f24Standard, f24Simplified, f24Excise, f24Elid
       additionalProperties: false
       minProperties: 1
       maxProperties: 1
@@ -28,29 +28,33 @@ components:
         applyCost:
           type: boolean
           nullable: false
-          description: to check if include notification cost
+          description: indica se alla riga devono essere aggiunti i costi di notifica. Una sola riga deve essere presente con questo flag a true.
     CompanyData:
       type: object
+      required:
+        - name
       additionalProperties: false
       properties:
         name:
           pattern: ^[A-Z\s]{1,60}$
           type: string
-          description: Company name
+          description: Denominazione
         taxAddress:
           $ref: "#/components/schemas/TaxAddress"
-      description: Company Data (Dati Anagrafici PNF) object
+      description: Dati Anagrafici PNF
     TaxPayerStandard:
       type: object
+      required:
+        - taxCode
       additionalProperties: false
       properties:
         taxCode:
           pattern: ^([A-Z]{6}[0-9LMNPQRSTUV]{2}[ABCDEHLMPRST]{1}[0-9LMNPQRSTUV]{2}[A-Z]{1}[0-9LMNPQRSTUV]{3}[A-Z]{1})|([0-9]{11})$
           type: string
-          description: Tax Payer Tax Code
+          description: Codice fiscale contribuente
         isNotTaxYear:
           type: boolean
-          description: field that show if the current year is included
+          description: anno d'imposta non coincidente con anno solare
         person:
           $ref: "#/components/schemas/PersonData"
         company:
@@ -58,22 +62,24 @@ components:
         relativePersonTaxCode:
           pattern: ^([A-Z]{6}[0-9LMNPQRSTUV]{2}[ABCDEHLMPRST]{1}[0-9LMNPQRSTUV]{2}[A-Z]{1}[0-9LMNPQRSTUV]{3}[A-Z]{1})|([0-9]{11})$
           type: string
-          description: It is the tax code of a relative of the main tax payer
+          description: Codice fiscale del coobbligato, erede, genitore, tutore o curatore fallimentare
         id:
           pattern: ^[A-Z0-9]{2}$
           type: string
-          description: identification code
+          description: codice identificativo
     TaxPayerExcise:
       type: object
+      required:
+        - taxCode
       additionalProperties: false
       properties:
         taxCode:
           pattern: ^([A-Z]{6}[0-9LMNPQRSTUV]{2}[ABCDEHLMPRST]{1}[0-9LMNPQRSTUV]{2}[A-Z]{1}[0-9LMNPQRSTUV]{3}[A-Z]{1})|([0-9]{11})$
           type: string
-          description: Tax Payer Tax Code
+          description: Codice fiscale contribuente
         isNotTaxYear:
           type: boolean
-          description: field that show if the current year is included
+          description: anno d'imposta non coincidente con anno solare
         person:
           $ref: "#/components/schemas/PersonData"
         company:
@@ -81,45 +87,49 @@ components:
         relativePersonTaxCode:
           pattern: ^([A-Z]{6}[0-9LMNPQRSTUV]{2}[ABCDEHLMPRST]{1}[0-9LMNPQRSTUV]{2}[A-Z]{1}[0-9LMNPQRSTUV]{3}[A-Z]{1})|([0-9]{11})$
           type: string
-          description: It is the tax code of a relative of the main tax payer
+          description: Codice fiscale del coobbligato, erede, genitore, tutore o curatore fallimentare
         id:
           pattern: ^[A-Z0-9]{2}$
           type: string
-          description: identification code
+          description: codice identificativo
     TaxPayerSimplified:
       type: object
+      required:
+        - taxCode
       additionalProperties: false
       properties:
         taxCode:
           pattern: ^([A-Z]{6}[0-9LMNPQRSTUV]{2}[ABCDEHLMPRST]{1}[0-9LMNPQRSTUV]{2}[A-Z]{1}[0-9LMNPQRSTUV]{3}[A-Z]{1})|([0-9]{11})$
           type: string
-          description: Tax Payer Tax Code
+          description: Codice fiscale contribuente
         personalData:
           $ref: "#/components/schemas/PersonalData"
         relativePersonTaxCode:
           pattern: ^([A-Z]{6}[0-9LMNPQRSTUV]{2}[ABCDEHLMPRST]{1}[0-9LMNPQRSTUV]{2}[A-Z]{1}[0-9LMNPQRSTUV]{3}[A-Z]{1})|([0-9]{11})$
           type: string
-          description: It is the tax code of a relative of the main tax payer
+          description: Codice fiscale del coobbligato, erede, genitore, tutore o curatore fallimentare
         id:
           pattern: ^[A-Z0-9]{2}$
           type: string
-          description: identification code
+          description: codice identificativo
         document:
           pattern: ^\d{11}$
           type: string
-          description: identification code of the document
+          description: codice identificativo of the document
         office:
           pattern: ^[A-Z0-9]{3}$
           type: string
-          description: identification code of the office
+          description: codice identificativo of the office
     TaxPayerElide:
       type: object
+      required:
+        - taxCode
       additionalProperties: false
       properties:
         taxCode:
           pattern: ^([A-Z]{6}[0-9LMNPQRSTUV]{2}[ABCDEHLMPRST]{1}[0-9LMNPQRSTUV]{2}[A-Z]{1}[0-9LMNPQRSTUV]{3}[A-Z]{1})|([0-9]{11})$
           type: string
-          description:  Tax Payer Tax Code
+          description: Codice fiscale contribuente
         person:
           $ref: "#/components/schemas/PersonData"
         company:
@@ -127,14 +137,18 @@ components:
         relativePersonTaxCode:
           pattern: ^([A-Z]{6}[0-9LMNPQRSTUV]{2}[ABCDEHLMPRST]{1}[0-9LMNPQRSTUV]{2}[A-Z]{1}[0-9LMNPQRSTUV]{3}[A-Z]{1})|([0-9]{11})$
           type: string
-          description: It is the tax code of a relative of the main tax payer
+          description: Codice fiscale del coobbligato, erede, genitore, tutore o curatore fallimentare
         id:
           pattern: ^[A-Z0-9]{2}$
           type: string
-          description: identification code
+          description: codice identificativo
     F24Standard:
       type: object
+      required:
+        - taxPayer
       additionalProperties: false
+      minProperties: 2
+      maxProperties: 6
       properties:
         taxPayer:
           $ref: "#/components/schemas/TaxPayerStandard"
@@ -160,43 +174,43 @@ components:
         municipality:
           pattern: ^[0-9A-Z]{4}$
           type: string
-          description: identification code of the municipality
+          description: codice ente / codice comune
         reconsideration:
           type: boolean
-          description: to check if it is a reconsideration act
+          description: Ravvedimento
         propertiesChanges:
           type: boolean
-          description: to check if there are some changes in properties list
+          description: Immobili variati
         advancePayment:
           type: boolean
-          description: to check if it is a payment in advance
+          description: Acconto
         fullPayment:
           type: boolean
-          description: to check if it a full payment
+          description: Saldo
         numberOfProperties:
           pattern: ^[0-9]{3}$
           type: string
-          description: number of properties
+          description: numero immobili
         taxType:
           pattern: ^[0-9]{4}$
           type: string
-          description: identification code of the type of tax
+          description: codice tributo
         installment:
           pattern: ^[A-Z0-9]{0,4}$
           type: string
-          description: identification code of the ente
+          description: rateazione / mese rif.
         year:
           pattern: ^[1-2][0-9]{3}$
           type: string
-          description: reference year
+          description: anno di riferimento
         debit:
           type: integer
           format: int32
-          description: debit amount of the record in eurocent
+          description: importi a debito versati (eurocent)
         credit:
           type: integer
           format: int32
-          description: credit amount of the record in eurocent
+          description: importi a credito compensati (eurocent)
       description: LocalTax Record object
     LocalTaxSection:
       type: object
@@ -205,7 +219,7 @@ components:
         operationId:
           pattern: ^[A-Z0-9]{18}$
           type: string
-          description: identification code of the operation
+          description: identificativo operatione
         records:
           type: array
           items:
@@ -213,8 +227,8 @@ components:
         deduction:
           pattern: ^[0-9]{3,15}$
           type: string
-          description: if there are any deduction
-      description: LocalTax Section (Sezione LocalTax e Altri Tributi Locali) object
+          description: detrazione
+      description: Sezione IMU e Altri Tributi Locali
     InailRecord:
       allOf:
         - $ref: "#/components/schemas/IncludeNotificationCost"
@@ -224,32 +238,32 @@ components:
         office:
           pattern: ^[0-9]{5}$
           type: string
-          description: identification code of the office
+          description: codice sede
         company:
           pattern: ^[0-9]{8}$
           type: string
-          description: identification code of the company
+          description: codice ditta
         control:
           pattern: ^[0-9]{2}$
           type: string
-          description: control identification code
+          description: codice di controllo c.c.
         refNumber:
           pattern: ^[0-9]{6}$
           type: string
-          description: reference number
+          description: numero di riferimento
         reason:
           pattern: ^[A-Z0-9]$
           type: string
-          description: reason of the record
+          description: causale
         debit:
           type: integer
           format: int32
-          description: debit amount of the record in eurocent
+          description: importi a debito versati (eurocent)
         credit:
           type: integer
           format: int32
-          description: credit amount of the record in eurocent
-      description: INAIL Record object
+          description: importi a credito compensati (eurocent)
+      description: INAIL sezione altri enti previdenziali e assicurativi
     InpsRecord:
       allOf:
         - $ref: "#/components/schemas/IncludeNotificationCost"
@@ -259,26 +273,26 @@ components:
         office:
           pattern: ^[0-9]{3,4}$
           type: string
-          description: identification code of the office
+          description: codice sede
         reason:
           pattern: ^[A-Z-]{3,4}$
           type: string
-          description: contribution reason for the record
+          description: causale contributo
         inps:
           pattern: ^[A-Za-z0-9\s]{0,17}$
           type: string
-          description: INPS identification code
+          description: matricola INPS / codice INPS / filiale azienda
         period:
           $ref: "#/components/schemas/Period"
         debit:
           type: integer
           format: int32
-          description: debit amount of the record in eurocent
+          description: importi a debito versati (eurocent)
         credit:
           type: integer
           format: int32
-          description: credit amount of the record in eurocent
-      description: INPS Record object
+          description: importi a credito compensati (eurocent)
+      description: Sezione INPS
     InpsSection:
       type: object
       additionalProperties: false
@@ -297,36 +311,41 @@ components:
           $ref: "#/components/schemas/PersonalData"
         taxAddress:
           $ref: "#/components/schemas/TaxAddress"
-      description: Person Data (Dati Anagrafici PF) object
+      description: Dati Anagrafici PF
     PersonalData:
       type: object
       additionalProperties: false
+      required:
+        - surname
+        - name
+        - birthDate
+        - sex
       properties:
         surname:
           pattern: ^[A-Z\s]{1,24}$
           type: string
-          description: surname of the person
+          description: cognome
         name:
           pattern: ^[A-Z\s]{1,20}$
           type: string
-          description: name of the person
+          description: nome
         birthDate:
           pattern: ^\d{2}-\d{2}-\d{4}$
           type: string
-          description: birthdate of the person
+          description: data di nascita
         sex:
           pattern: ^[FM]$
           type: string
-          description: indicate if is (F)emale or (M)ale
+          description: indicare (F)emmina o (M)aschio
         birthPlace:
           pattern: ^[A-Z\s]{1,40}$
           type: string
-          description: birth place of the person
+          description: Luogo di nascita
         birthProvince:
           pattern: ^[A-Z]{2}$
           type: string
-          description: birth province of the person
-      description: Personal Data (Dati Anagrafici) object
+          description: provincia di nascita
+      description: Dati Anagrafici
     RegionRecord:
       allOf:
         - $ref: "#/components/schemas/IncludeNotificationCost"
@@ -336,27 +355,27 @@ components:
         region:
           pattern: ^[0-9]{2}$
           type: string
-          description: region identification code
+          description: codice regione
         taxType:
           pattern: ^[0-9A-Z]{4}$
           type: string
-          description: identification code of the type of tax
+          description: codice tributo
         installment:
           pattern: ^[A-Z0-9]{0,4}$
           type: string
-          description: identification code of the ente
+          description: rateazione
         year:
           pattern: ^[1-2][0-9]{3}$
           type: string
-          description: reference year
+          description: anno di riferimento
         debit:
           type: integer
           format: int32
-          description: debit amount of the record in eurocent
+          description: importi a debito versati (eurocent)
         credit:
           type: integer
           format: int32
-          description: credit amount of the record in eurocent
+          description: importi a credito compensati (eurocent)
       description: Region Record object
     RegionSection:
       type: object
@@ -366,8 +385,8 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/RegionRecord"
-          description: Region Record List
-      description: Region Section (Sezione Regioni) object
+          description: Righe sezione regioni
+      description: Sezione Regioni
     Period:
       type: object
       additionalProperties: false
@@ -375,12 +394,12 @@ components:
         startDate:
           pattern: ^[0-9]{6}$
           type: string
-          description: start date of the period
+          description: da mm/aaaa
         endDate:
           pattern: ^[0-9]{6}$
           type: string
-          description: end date of the period
-      description: Reporting Period (Sezione INPS) object
+          description: a mm/aaaa
+      description: periodo di riferimento (Sezione INPS)
     SocialSecurityRecord:
       allOf:
         - $ref: "#/components/schemas/IncludeNotificationCost"
@@ -390,30 +409,30 @@ components:
         institution:
           pattern: ^[0-9]{4}$
           type: string
-          description: identification code of the institution
+          description: codice ente
         office:
           pattern: ^[0-9A-Z]{5}$
           type: string
-          description: identification code of the office
+          description: codice sede
         reason:
           pattern: ^[0-9A-Z]{3,4}$
           type: string
-          description: reason of the contribution
+          description: causale contributo
         position:
           pattern: ^[0-9]{9}$
           type: string
-          description: identification code of the position
+          description: codice posizione
         period:
           $ref: "#/components/schemas/Period"
         debit:
           type: integer
           format: int32
-          description: debit amount of the record in eurocent
+          description: importi a debito versati (eurocent)
         credit:
           type: integer
           format: int32
-          description: credit amount of the record in eurocent
-      description: Social Security Record object
+          description: importi a credito compensati (eurocent)
+      description: Sezione altri enti previdenziali e assicurativi
     SocialSecuritySection:
       type: object
       additionalProperties: false
@@ -427,7 +446,7 @@ components:
           items:
             $ref: "#/components/schemas/SocialSecurityRecord"
           description: Social Security Record List
-      description: Social Security Section (Sezione Altri Enti Previdenziali) object
+      description: Sezione Altri Enti Previdenziali
     Tax:
       allOf:
         - $ref: "#/components/schemas/IncludeNotificationCost"
@@ -437,23 +456,23 @@ components:
         taxType:
           pattern: ^[A-Z0-9]{4}$
           type: string
-          description: identification code of the type of tax
+          description: codice tributo
         installment:
           pattern: ^[A-Z0-9]{0,4}$
           type: string
-          description: identification code of the ente
+          description: rateazione/regione/prov./mese rif.
         year:
           pattern: ^[1-2][0-9]{3}$
           type: string
-          description: reference year of the tax
+          description: anno di riferimento
         debit:
           type: integer
           format: int32
-          description: debit amount of the record in eurocent
+          description: importi a debito versati (eurocent)
         credit:
           type: integer
           format: int32
-          description: credit amount of the record in eurocent
+          description: importi a credito compensati (eurocent)
       description: Tax object
     TaxAddress:
       type: object
@@ -462,16 +481,16 @@ components:
         municipality:
           pattern: ^[A-Z]{1,40}$
           type: string
-          description: municipality of the tax address
+          description: comune
         province:
           pattern: ^[A-Z]{2}$
           type: string
-          description: province of the tax address
+          description: provincia
         address:
           pattern: ^[A-Z0-9\s.]{1,35}$
           type: string
-          description: street and house number of the tax address
-      description: Tax Residence (Domicilio Fiscale) object
+          description: via e numero civico
+      description: Domicilio Fiscale
     TreasurySection:
       type: object
       additionalProperties: false
@@ -480,16 +499,16 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Tax"
-          description: list of the taxes
+          description: righe sezione erario
         office:
           pattern: ^[A-Z0-9]{3}$
           type: string
-          description: identification code of the office
+          description: codice ufficio
         document:
           pattern: ^\d{11}$
           type: string
-          description: identification code of the document
-      description: Treasury Section (Sezione Erario) object
+          description: codice atto
+      description: Sezione Erario
     F24Simplified:
       type: object
       additionalProperties: false
@@ -505,71 +524,68 @@ components:
         operationId:
           pattern: ^[A-Z0-9]{18}$
           type: string
-          description: identification code of the operation
+          description: identificativo operazione
         records:
           type: array
           items:
             $ref: "#/components/schemas/SimplifiedPaymentRecord"
-          description: Payments Record List
-      description: Payment Reason Section (Motivo del Pagamento) object
+          description: righe sezione semplificato
+      description: Motivo del Pagamento
     SimplifiedPaymentRecord:
+      allOf:
+        - $ref: "#/components/schemas/IncludeNotificationCost"
       type: object
       additionalProperties: false
       required:
         - section
         - municipality
         - taxType
-        - applyCost
       properties:
-        applyCost:
-          type: boolean
-          nullable: false
-          description: to check if include notification cost
         municipality:
           pattern: ^[0-9A-Z]{4}$
           type: string
-          description: identification code of the municipality
+          description: codice ente/prov/comune
         reconsideration:
           type: boolean
-          description: to check if it is a reconsideration act
+          description: flag ravvedimento
         propertiesChanges:
           type: boolean
-          description: to check if there are some changes in properties list
+          description: flag immobili variati
         advancePayment:
           type: boolean
-          description: to check if it is a payment in advance
+          description: flag acconto
         fullPayment:
           type: boolean
-          description: to check if it a full payment
+          description: flag saldo
         numberOfProperties:
           pattern: ^[0-9]{3}$
           type: string
-          description: number of properties
+          description: numero immobili
         taxType:
           pattern: ^[0-9]{4}$
           type: string
-          description: identification code of the type of tax
+          description: codice tributo
         installment:
           pattern: ^[A-Z0-9]{0,4}$
           type: string
-          description: identification code of the ente
+          description: rateazione
         year:
           pattern: ^[1-2][0-9]{3}$
           type: string
-          description: reference year
+          description: anno di riferimento
         debit:
           type: integer
           format: int32
-          description: debit amount of the record in eurocent
+          description: importi a debito versati (eurocent)
         credit:
           type: integer
           format: int32
-          description: credit amount of the record in eurocent
+          description: importi a credito compensati (eurocent)
         section:
           pattern: ^(ER|RG|EL)$
           type: string
-          description: section code (ER|RG|EL)
-      description: Payment Reason Record object
+          description: Sezione (ER|RG|EL)
+      description: riga semplificato
     F24Excise:
       type: object
       additionalProperties: false
@@ -599,12 +615,12 @@ components:
         office:
           pattern: ^[A-Z0-9]{3}$
           type: string
-          description: identification code of the office
+          description: codice ufficio
         document:
           pattern: ^\d{11}$
           type: string
-          description: identification code of the document
-      description: Excise Section (Accise) object
+          description: codice atto
+      description: Accise
     ExciseTax:
       allOf:
         - $ref: "#/components/schemas/IncludeNotificationCost"
@@ -614,35 +630,35 @@ components:
         institution:
           pattern: ^[A-Z]{2}$
           type: string
-          description: institution of the tax
+          description: ente
         province:
           pattern: ^[A-Z]{2}$
           type: string
-          description: province of the tax
+          description: provincia
         id:
           pattern: ^[A-Z0-9]{17}$
           type: string
-          description: identification code
+          description: codice tributo
         taxType:
           pattern: ^[0-9A-Z]{4}$
           type: string
-          description: identification code of the type of tax
+          description: codice identificativo
         installment:
           pattern: ^[A-Z0-9]{0,4}$
           type: string
-          description: identification code of the ente
+          description: rateazione
         month:
           pattern: ^[0-1][0-9]$
           type: string
-          description: month reference
+          description: mese
         year:
           pattern: ^[1-2][0-9]{3}$
           type: string
-          description: reference year
+          description: anno di riferimento
         debit:
           type: integer
           format: int32
-          description: debit amount of the record in eurocent
+          description: importi a debito versati (eurocent)
       description: Excise Tax object
     F24Elid:
       type: object
@@ -659,17 +675,17 @@ components:
         office:
           pattern: ^[A-Z0-9]{3}$
           type: string
-          description: identification code of the office
+          description: codice ufficio
         document:
           pattern: ^\d{11}$
           type: string
-          description: identification code of the document
+          description: codice atto
         records:
           type: array
           items:
             $ref: "#/components/schemas/TreasuryRecord"
-          description: Treasury Records
-      description: Treasury ans Other Section (Sezione Erario e Altro) object
+          description: Righe sezione erario
+      description: Sezione Erario e Altro
     TreasuryRecord:
       allOf:
         - $ref: "#/components/schemas/IncludeNotificationCost"
@@ -679,21 +695,21 @@ components:
         type:
           pattern: ^[A-Z]$
           type: string
-          description: type of treasury
+          description: tipo
         id:
           pattern: ^[A-Z0-9]{17}$
           type: string
-          description: identification code of the element
+          description: elementi identificativi
         taxType:
           pattern: ^[A-Z0-9]{4}$
           type: string
-          description: identification code of the type of tax
+          description: codice
         year:
           pattern: ^[1-2][0-9]{3}$
           type: string
-          description: referance year
+          description: anno di riferimento
         debit:
           type: integer
           format: int32
-          description: debit amount of the record in eurocent
-      description: Treasury Record object
+          description: importi a debito versati (eurocent)
+      description: Riga sezione Erario
