@@ -384,6 +384,7 @@ public class F24ServiceImpl implements F24Service {
         FileCreationWithContentRequest fileCreationWithContentRequest = new FileCreationWithContentRequest();
         fileCreationWithContentRequest.setContent(generatedPdf);
         fileCreationWithContentRequest.setContentType(CONTENT_TYPE);
+        fileCreationWithContentRequest.setDocumentType(f24Config.getSafeStorageF24DocType());
         fileCreationWithContentRequest.setStatus("SAVED");
         return fileCreationWithContentRequest;
     }
