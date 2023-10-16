@@ -8,10 +8,11 @@ import it.pagopa.pn.f24.dto.PreparePdfLists;
 import it.pagopa.pn.f24.middleware.queue.producer.events.GeneratePdfEvent;
 
 import java.time.Instant;
+import java.util.UUID;
 
 public class GeneratePdfEventBuilder {
     private GeneratePdfEventBuilder() { }
-    private static final String GENERATE_PDF_EVENT_ID_DESCRIPTOR = "_generate_pdf";
+    private static final String GENERATE_PDF_EVENT_ID_DESCRIPTOR = "generate_pdf_";
 
     public static GeneratePdfEvent buildGeneratePdfEvent(PreparePdfLists.F24FileToCreate f24FileToCreate) {
         F24File f24File = f24FileToCreate.getFile();
@@ -29,13 +30,18 @@ public class GeneratePdfEventBuilder {
     }
 
     private static GenericEventHeader buildInternalEventHeader(String f24FilePk) {
-        // il carattere # non è accettato come eventId
-        String eventId = f24FilePk.replace("#", "_") + GENERATE_PDF_EVENT_ID_DESCRIPTOR;
         return GenericEventHeader.builder()
-                .eventId(eventId)
+                .eventId(generateEventId(f24FilePk))
                 .eventType(F24InternalEventType.GENERATE_PDF.getValue())
                 .publisher(EventPublisher.F24.name())
                 .createdAt(Instant.now())
                 .build();
+    }
+
+
+    private static String generateEventId(String requestId){
+        // il carattere # non è accettato come eventId
+        String eventId = (GENERATE_PDF_EVENT_ID_DESCRIPTOR + UUID.randomUUID() +requestId).replaceAll("[^a-zA-Z0-9]","_");
+        return eventId.substring(0,Math.min(79, eventId.length()));
     }
 }

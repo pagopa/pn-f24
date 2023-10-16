@@ -17,6 +17,7 @@ class GeneratePdfEventBuilderTest {
         GenericEventHeader header = GeneratePdfEventBuilder.buildGeneratePdfEvent(f24FileToCreate).getHeader();
         assertEquals(EventPublisher.F24.name(), header.getPublisher());
         assertEquals("GENERATE_PDF", header.getEventType());
-        assertEquals("CACHE_setId_200_0_0_generate_pdf", header.getEventId());
+        assertTrue(header.getEventId().startsWith("generate_pdf_"));
+        assertTrue(header.getEventId().endsWith("CACHE_setId_200_0_0"));
     }
 }
