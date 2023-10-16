@@ -312,6 +312,7 @@ Resources:
             Resource:
               - !Sub "${F24MetadataSetTableArn}"
               - !Sub "${F24FileTableArn}"
+              - !Sub "${F24FileTableArn}/*"
           - Effect: Allow
             Action:
               - events:PutEvents
