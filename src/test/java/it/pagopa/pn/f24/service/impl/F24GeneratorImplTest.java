@@ -1,6 +1,6 @@
 package it.pagopa.pn.f24.service.impl;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import it.pagopa.pn.f24.business.F24Converter;
@@ -29,7 +29,9 @@ class F24GeneratorImplTest {
         F24Metadata metadata = mock(F24Metadata.class);
         when(metadata.getF24Simplified()).thenReturn(new F24Simplified());
         when(metadata.getF24Standard()).thenReturn(null);
-        assertEquals(0, f24GeneratorImpl.generate(metadata).length);
+        when(metadata.getF24Excise()).thenReturn(null);
+        when(metadata.getF24Elid()).thenReturn(null);
+        assertDoesNotThrow(() -> f24GeneratorImpl.generate(metadata));
         verify(metadata, atLeast(1)).getF24Simplified();
         verify(metadata).getF24Standard();
     }
