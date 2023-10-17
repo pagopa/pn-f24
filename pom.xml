@@ -232,6 +232,7 @@
 								<interfaceOnly>true</interfaceOnly>
 								<annotationLibrary>none</annotationLibrary>
 								<documentationProvider>source</documentationProvider>
+								<additionalModelTypeAnnotations>@com.fasterxml.jackson.annotation.JsonIgnoreProperties(ignoreUnknown = true)</additionalModelTypeAnnotations>
 								<openApiNullable>false</openApiNullable>
 								<reactive>true</reactive>
 								<skipDefaultInterface>false</skipDefaultInterface>
