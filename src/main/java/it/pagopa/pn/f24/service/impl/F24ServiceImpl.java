@@ -373,7 +373,7 @@ public class F24ServiceImpl implements F24Service {
             log.debug("Trying to add cost :{} ", cost);
             MetadataInspector inspector = MetadataInspectorFactory.getInspector(getF24TypeFromMetadata(f24Metadata));
             inspector.addCostToDebit(f24Metadata, cost);
-        } else if (!applyCost && cost != null) {
+        } else if (!applyCost && cost != null && cost > 0) {
             throw new PnBadRequestException("apply cost inconsistent", "applyCost is required when cost is populated", PnF24ExceptionCodes.ERROR_CODE_F24_METADATA_VALIDATION_INCONSISTENT_APPLY_COST);
         } else if (applyCost && cost == null) {
             throw new PnBadRequestException("apply cost inconsistent", "cost is required when applyCost is true", PnF24ExceptionCodes.ERROR_CODE_F24_METADATA_VALIDATION_INCONSISTENT_APPLY_COST);
