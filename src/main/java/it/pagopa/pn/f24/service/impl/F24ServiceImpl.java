@@ -302,7 +302,13 @@ public class F24ServiceImpl implements F24Service {
     @Override
     public Mono<F24Response> generatePDF(String xPagopaF24CxId, String setId, List<String> pathTokens, Integer cost) {
         String pathTokensInString = Utility.convertPathTokensList(pathTokens);
-        return f24FileCacheDao.getItem(setId, cost, pathTokensInString)
+        // equipara 0 a null
+        if (cost != null && cost == 0)
+            cost = null;
+
+        final Integer fcost = cost;
+
+        return f24FileCacheDao.getItem(setId, fcost, pathTokensInString)
                 .flatMap(f24File -> {
                     if (f24File.getStatus().equals(F24FileStatus.DONE)) {
                         return safeStorageService.getFile(f24File.getFileKey(), false).map(FileDownloadResponseInt::getDownload)
@@ -318,7 +324,7 @@ public class F24ServiceImpl implements F24Service {
 
                     return Mono.just(F24ResponseConverter.fileDownloadInfoToF24Response(buildRetryAfterResponse().getDownload()));
                 })
-                .switchIfEmpty(Mono.defer(() -> generateFromMetadata(setId, pathTokensInString, cost)));
+                .switchIfEmpty(Mono.defer(() -> generateFromMetadata(setId, pathTokensInString, fcost)));
     }
 
     private boolean fileHasNotBeenUpdatedRecently(F24File f24File) {
