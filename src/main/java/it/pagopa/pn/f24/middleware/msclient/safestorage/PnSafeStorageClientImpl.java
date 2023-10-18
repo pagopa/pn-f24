@@ -48,7 +48,7 @@ public class PnSafeStorageClientImpl extends CommonBaseClient implements PnSafeS
     public Mono<FileCreationResponse> createFile(FileCreationWithContentRequest fileCreationRequestWithContent, String sha256) {
         log.logInvokingExternalService(PnLogger.EXTERNAL_SERVICES.PN_SAFE_STORAGE, "createFile");
 
-        FileCreationRequest fileCreationRequest = new FileCreationWithContentRequest();
+        FileCreationRequest fileCreationRequest = new FileCreationRequest();
         fileCreationRequest.setContentType(fileCreationRequestWithContent.getContentType());
         fileCreationRequest.setDocumentType(fileCreationRequestWithContent.getDocumentType());
         fileCreationRequest.setStatus(fileCreationRequestWithContent.getStatus());
