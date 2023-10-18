@@ -2,7 +2,7 @@ components:
   schemas:
     F24Metadata:
       type: object
-      description: Elemento radice deve contenere uno e uno solo tra le propeties f24Standard, f24Simplified, f24Excise, f24Elid
+      description: Elemento radice deve contenere uno e uno solo tra le proprietà f24Standard, f24Simplified, f24Excise, f24Elid
       additionalProperties: false
       minProperties: 1
       maxProperties: 1
