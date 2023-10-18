@@ -12,7 +12,6 @@ import it.pagopa.pn.f24.generated.openapi.msclient.safestorage.model.FileCreatio
 import it.pagopa.pn.f24.generated.openapi.msclient.safestorage.model.FileCreationResponse;
 import it.pagopa.pn.f24.generated.openapi.msclient.safestorage.model.FileDownloadResponse;
 import lombok.CustomLog;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpEntity;
@@ -38,7 +37,7 @@ public class PnSafeStorageClientImpl extends CommonBaseClient implements PnSafeS
     private final F24Config f24Config;
     private final RestTemplate restTemplate;
 
-    public PnSafeStorageClientImpl(FileUploadApi fileUploadApi, FileDownloadApi fileDownloadApi, F24Config f24Config, @Qualifier("withBufferRequestBodyFalse") RestTemplate restTemplate) {
+    public PnSafeStorageClientImpl(FileUploadApi fileUploadApi, FileDownloadApi fileDownloadApi, F24Config f24Config, RestTemplate restTemplate) {
         this.fileUploadApi = fileUploadApi;
         this.fileDownloadApi = fileDownloadApi;
         this.f24Config = f24Config;
