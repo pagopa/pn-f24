@@ -279,7 +279,7 @@ components:
           type: string
           description: causale contributo
         inps:
-          pattern: ^[A-Za-z0-9\s]{0,17}$
+          pattern: ^[ -~]{0,17}$
           type: string
           description: matricola INPS / codice INPS / filiale azienda
         period:
@@ -479,7 +479,7 @@ components:
       additionalProperties: false
       properties:
         municipality:
-          pattern: ^[A-Z]{1,40}$
+          pattern: ^[ -~]{1,40}$
           type: string
           description: comune
         province:
@@ -487,7 +487,7 @@ components:
           type: string
           description: provincia
         address:
-          pattern: ^[A-Z0-9\s.]{1,35}$
+          pattern: ^[ -~]{1,35}$
           type: string
           description: via e numero civico
       description: Domicilio Fiscale
