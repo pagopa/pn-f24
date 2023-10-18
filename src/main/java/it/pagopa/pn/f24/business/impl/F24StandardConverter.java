@@ -93,6 +93,7 @@ public class F24StandardConverter extends F24Converter {
 
     public org.f24.dto.component.SocialSecurityRecord convertSocialSecurityRecord(SocialSecurityRecord socialSecurityRecord) {
         org.f24.dto.component.SocialSecurityRecord outputSocialSecurityRecord = new org.f24.dto.component.SocialSecurityRecord();
+        outputSocialSecurityRecord.setMunicipalityCode(socialSecurityRecord.getInstitution());
         outputSocialSecurityRecord.setOfficeCode(socialSecurityRecord.getOffice());
         outputSocialSecurityRecord.setContributionReason(socialSecurityRecord.getReason());
         outputSocialSecurityRecord.setPositionCode(socialSecurityRecord.getPosition());
