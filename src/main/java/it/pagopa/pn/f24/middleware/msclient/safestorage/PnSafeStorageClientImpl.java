@@ -1,6 +1,5 @@
 package it.pagopa.pn.f24.middleware.msclient.safestorage;
 
-import com.google.common.io.ByteSource;
 import it.pagopa.pn.commons.exceptions.PnInternalException;
 import it.pagopa.pn.commons.log.PnLogger;
 import it.pagopa.pn.commons.pnclients.CommonBaseClient;
@@ -9,12 +8,11 @@ import it.pagopa.pn.f24.dto.safestorage.FileCreationWithContentRequest;
 import it.pagopa.pn.f24.exception.PnF24ExceptionCodes;
 import it.pagopa.pn.f24.generated.openapi.msclient.safestorage.api.FileDownloadApi;
 import it.pagopa.pn.f24.generated.openapi.msclient.safestorage.api.FileUploadApi;
+import it.pagopa.pn.f24.generated.openapi.msclient.safestorage.model.FileCreationRequest;
 import it.pagopa.pn.f24.generated.openapi.msclient.safestorage.model.FileCreationResponse;
 import it.pagopa.pn.f24.generated.openapi.msclient.safestorage.model.FileDownloadResponse;
 import lombok.CustomLog;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
@@ -39,7 +37,7 @@ public class PnSafeStorageClientImpl extends CommonBaseClient implements PnSafeS
     private final F24Config f24Config;
     private final RestTemplate restTemplate;
 
-    public PnSafeStorageClientImpl(FileUploadApi fileUploadApi, FileDownloadApi fileDownloadApi, F24Config f24Config, @Qualifier("withBufferRequestBodyFalse") RestTemplate restTemplate) {
+    public PnSafeStorageClientImpl(FileUploadApi fileUploadApi, FileDownloadApi fileDownloadApi, F24Config f24Config, RestTemplate restTemplate) {
         this.fileUploadApi = fileUploadApi;
         this.fileDownloadApi = fileDownloadApi;
         this.f24Config = f24Config;
@@ -47,11 +45,16 @@ public class PnSafeStorageClientImpl extends CommonBaseClient implements PnSafeS
     }
 
     @Override
-    public Mono<FileCreationResponse> createFile(FileCreationWithContentRequest fileCreationRequest, String sha256) {
+    public Mono<FileCreationResponse> createFile(FileCreationWithContentRequest fileCreationRequestWithContent, String sha256) {
         log.logInvokingExternalService(PnLogger.EXTERNAL_SERVICES.PN_SAFE_STORAGE, "createFile");
 
+        FileCreationRequest fileCreationRequest = new FileCreationRequest();
+        fileCreationRequest.setContentType(fileCreationRequestWithContent.getContentType());
+        fileCreationRequest.setDocumentType(fileCreationRequestWithContent.getDocumentType());
+        fileCreationRequest.setStatus(fileCreationRequestWithContent.getStatus());
+
         return fileUploadApi.createFile( this.f24Config.getSafeStorageCxId(),"SHA-256", sha256,  fileCreationRequest )
-                .doOnError( res -> log.error("File creation error - documentType={} filesize={} sha256={}", fileCreationRequest.getDocumentType(), fileCreationRequest.getContent().length, sha256));
+                .doOnError( res -> log.error("File creation error - documentType={} filesize={} sha256={}", fileCreationRequest.getDocumentType(), fileCreationRequestWithContent.getContent().length, sha256));
     }
 
     @Override
@@ -70,7 +73,7 @@ public class PnSafeStorageClientImpl extends CommonBaseClient implements PnSafeS
             headers.add("x-amz-checksum-sha256", sha256);
             headers.add("x-amz-meta-secret", fileCreationResponse.getSecret());
 
-            HttpEntity<Resource> req = new HttpEntity<>(new InputStreamResource(ByteSource.wrap(fileCreationRequest.getContent()).openStream()), headers);
+            HttpEntity<Resource> req = new HttpEntity<>(new ByteArrayResource(fileCreationRequest.getContent()), headers);
 
             URI url = URI.create(fileCreationResponse.getUploadUrl());
             HttpMethod method = fileCreationResponse.getUploadMethod() == FileCreationResponse.UploadMethodEnum.POST ? HttpMethod.POST : HttpMethod.PUT;
