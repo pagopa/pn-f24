@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.http.converter.json.AbstractJackson2HttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
 
@@ -34,6 +35,22 @@ public class RestTemplateFactory {
                         .configOverride(OffsetDateTime.class)
                         .setFormat(JsonFormat.Value.forPattern("yyyy-MM-dd'T'HH:mm:ss.SSSX"))
                 );
+        return template;
+    }
+
+
+    @Bean
+    @Primary
+    @Qualifier("withBufferRequestBodyFalse")
+    public RestTemplate restTemplateWithBufferRequestBodyFalse(@Value("${pn.commons.retry.max-attempts}") int retryMaxAttempts, @Value("${pn.commons.connection-timeout-millis}") int connectionTimeout, @Value("${pn.commons.read-timeout-millis}") int readTimeout) {
+        // Override del comportamento di serializzazione delle date
+        // per ovviare al problema del numero di cifre nella frazione di secondo
+        RestTemplate template = templateFactory.restTemplateWithTracing(retryMaxAttempts, connectionTimeout, readTimeout);
+
+        SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
+        requestFactory.setBufferRequestBody(false);
+        template.setRequestFactory(requestFactory);
+
         return template;
     }
 
