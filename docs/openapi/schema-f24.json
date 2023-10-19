@@ -1,0 +1,855 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://notifichedigitali.it/f24.schema.json",
+  "title": "F24Metadata",
+  "description": "F24 Metadata",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "additionalProperties": false,
+    "metadata": {
+      "type": "object",
+      "description": "Elemento radice deve contenere uno e uno solo tra le proprietà f24Standard, f24Simplified, f24Excise, f24Elid",
+      "minProperties": 1,
+      "maxProperties": 1,
+      "additionalProperties": false,
+      "properties": {
+        "f24Standard": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "required": [
+            "taxPayer"
+          ],
+          "minProperties": 2,
+          "maxProperties": 6,
+          "additionalProperties": false,
+          "properties": {
+            "taxPayer": {
+              "type": "object",
+              "required": [
+                "taxCode"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "taxCode": {
+                  "pattern": "^([A-Z]{6}[0-9LMNPQRSTUV]{2}[ABCDEHLMPRST]{1}[0-9LMNPQRSTUV]{2}[A-Z]{1}[0-9LMNPQRSTUV]{3}[A-Z]{1})|([0-9]{11})$",
+                  "type": "string",
+                  "description": "Codice fiscale contribuente"
+                },
+                "isNotTaxYear": {
+                  "type": "boolean",
+                  "description": "Anno d'imposta non coincidente con anno solare"
+                },
+                "person": {
+                  "type": "object",
+                  "description": "Dati Anagrafici PF",
+                  "additionalProperties": false,
+                  "properties": {
+                    "personalData": {
+                      "type": "object",
+                      "required": [
+                        "surname",
+                        "name",
+                        "birthDate",
+                        "sex"
+                      ],
+                      "description": "Dati Anagrafici",
+                      "additionalProperties": false,
+                      "properties": {
+                        "surname": {
+                          "pattern": "^[ -~]{1,24}$",
+                          "type": "string",
+                          "description": "Cognome"
+                        },
+                        "name": {
+                          "pattern": "^[ -~]{1,20}$",
+                          "type": "string",
+                          "description": "Nome"
+                        },
+                        "birthDate": {
+                          "pattern": "^\\d{2}-\\d{2}-\\d{4}$",
+                          "type": "string",
+                          "description": "Data di nascita"
+                        },
+                        "sex": {
+                          "pattern": "^[FM]$",
+                          "type": "string",
+                          "description": "Indicare (F)emmina o (M)aschio"
+                        },
+                        "birthPlace": {
+                          "pattern": "^[ -~]{1,40}$",
+                          "type": "string",
+                          "description": "Luogo di nascita"
+                        },
+                        "birthProvince": {
+                          "pattern": "^[A-Z]{2}$",
+                          "type": "string",
+                          "description": "Provincia di nascita"
+                        }
+                      }
+                    },
+                    "taxAddress": {
+                      "type": "object",
+                      "description": "Domicilio Fiscale",
+                      "additionalProperties": false,
+                      "properties": {
+                        "municipality": {
+                          "pattern": "^[ -~]{1,40}$",
+                          "type": "string",
+                          "description": "Comune"
+                        },
+                        "province": {
+                          "pattern": "^[A-Z]{2}$",
+                          "type": "string",
+                          "description": "Provincia"
+                        },
+                        "address": {
+                          "pattern": "^[ -~]{1,35}$",
+                          "type": "string",
+                          "description": "Via e numero civico"
+                        }
+                      }
+                    }
+                  }
+                },
+                "company": {
+                  "type": "object",
+                  "required": [
+                    "name"
+                  ],
+                  "description": "Dati Anagrafici PNF",
+                  "additionalProperties": false,
+                  "properties": {
+                    "name": {
+                      "pattern": "^[ -~]{1,60}$",
+                      "type": "string",
+                      "description": "Denominazione"
+                    },
+                    "taxAddress": {
+                      "type": "object",
+                      "description": "Domicilio Fiscale",
+                      "additionalProperties": false,
+                      "properties": {
+                        "municipality": {
+                          "pattern": "^[ -~]{1,40}$",
+                          "type": "string",
+                          "description": "Comune"
+                        },
+                        "province": {
+                          "pattern": "^[A-Z]{2}$",
+                          "type": "string",
+                          "description": "Provincia"
+                        },
+                        "address": {
+                          "pattern": "^[ -~]{1,35}$",
+                          "type": "string",
+                          "description": "Via e numero civico"
+                        }
+                      }
+                    }
+                  }
+                },
+                "relativePersonTaxCode": {
+                  "pattern": "^([A-Z]{6}[0-9LMNPQRSTUV]{2}[ABCDEHLMPRST]{1}[0-9LMNPQRSTUV]{2}[A-Z]{1}[0-9LMNPQRSTUV]{3}[A-Z]{1})|([0-9]{11})$",
+                  "type": "string",
+                  "description": "Codice fiscale del coobbligato, erede, genitore, tutore o curatore fallimentare"
+                },
+                "id": {
+                  "pattern": "^[A-Z0-9]{2}$",
+                  "type": "string",
+                  "description": "Codice identificativo"
+                }
+              }
+            },
+            "treasury": {
+              "type": "object",
+              "description": "Sezione Erario",
+              "additionalProperties": false,
+              "properties": {
+                "records": {
+                  "type": "array",
+                  "description": "Righe sezione erario",
+                  "items": {
+                    "type": "object",
+                    "description": "Tax object",
+                    "required": [
+                      "applyCost"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "office": {
+                  "pattern": "^[A-Z0-9]{3}$",
+                  "type": "string",
+                  "description": "Codice ufficio"
+                },
+                "document": {
+                  "pattern": "^\\d{11}$",
+                  "type": "string",
+                  "description": "Codice atto"
+                }
+              }
+            },
+            "inps": {
+              "type": "object",
+              "description": "INPS Section (Sezione INPS) object",
+              "additionalProperties": false,
+              "properties": {
+                "records": {
+                  "type": "array",
+                  "description": "INPS Record List",
+                  "items": {
+                    "type": "object",
+                    "description": "Sezione INPS",
+                    "required": [
+                      "applyCost"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              }
+            },
+            "region": {
+              "type": "object",
+              "description": "Sezione Regioni",
+              "additionalProperties": false,
+              "properties": {
+                "records": {
+                  "type": "array",
+                  "description": "Righe sezione regioni",
+                  "items": {
+                    "type": "object",
+                    "description": "Region Record object",
+                    "required": [
+                      "applyCost"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              }
+            },
+            "localTax": {
+              "type": "object",
+              "description": "Sezione IMU e Altri Tributi Locali",
+              "additionalProperties": false,
+              "properties": {
+                "operationId": {
+                  "pattern": "^[A-Z0-9]{18}$",
+                  "type": "string",
+                  "description": "Identificativo operatione"
+                },
+                "records": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "applyCost",
+                      "municipality",
+                      "taxType"
+                    ],
+                    "description": "LocalTax Record object",
+                    "additionalProperties": false
+                  }
+                },
+                "deduction": {
+                  "pattern": "^[0-9]{3,15}$",
+                  "type": "string",
+                  "description": "Detrazione"
+                }
+              }
+            },
+            "socialSecurity": {
+              "type": "object",
+              "description": "Sezione Altri Enti Previdenziali",
+              "additionalProperties": false,
+              "properties": {
+                "records": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "description": "INAIL sezione altri enti previdenziali e assicurativi",
+                    "required": [
+                      "applyCost"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "socSecRecords": {
+                  "type": "array",
+                  "description": "Social Security Record List",
+                  "items": {
+                    "type": "object",
+                    "description": "Sezione altri enti previdenziali e assicurativi",
+                    "required": [
+                      "applyCost"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              }
+            }
+          }
+        },
+        "f24Simplified": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "taxPayer": {
+              "type": "object",
+              "required": [
+                "taxCode"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "taxCode": {
+                  "pattern": "^([A-Z]{6}[0-9LMNPQRSTUV]{2}[ABCDEHLMPRST]{1}[0-9LMNPQRSTUV]{2}[A-Z]{1}[0-9LMNPQRSTUV]{3}[A-Z]{1})|([0-9]{11})$",
+                  "type": "string",
+                  "description": "Codice fiscale contribuente"
+                },
+                "personalData": {
+                  "type": "object",
+                  "required": [
+                    "surname",
+                    "name",
+                    "birthDate",
+                    "sex"
+                  ],
+                  "description": "Dati Anagrafici",
+                  "additionalProperties": false,
+                  "properties": {
+                    "surname": {
+                      "pattern": "^[ -~]{1,24}$",
+                      "type": "string",
+                      "description": "Cognome"
+                    },
+                    "name": {
+                      "pattern": "^[ -~]{1,20}$",
+                      "type": "string",
+                      "description": "Nome"
+                    },
+                    "birthDate": {
+                      "pattern": "^\\d{2}-\\d{2}-\\d{4}$",
+                      "type": "string",
+                      "description": "Data di nascita"
+                    },
+                    "sex": {
+                      "pattern": "^[FM]$",
+                      "type": "string",
+                      "description": "Indicare (F)emmina o (M)aschio"
+                    },
+                    "birthPlace": {
+                      "pattern": "^[ -~]{1,40}$",
+                      "type": "string",
+                      "description": "Luogo di nascita"
+                    },
+                    "birthProvince": {
+                      "pattern": "^[A-Z]{2}$",
+                      "type": "string",
+                      "description": "Provincia di nascita"
+                    }
+                  }
+                },
+                "relativePersonTaxCode": {
+                  "pattern": "^([A-Z]{6}[0-9LMNPQRSTUV]{2}[ABCDEHLMPRST]{1}[0-9LMNPQRSTUV]{2}[A-Z]{1}[0-9LMNPQRSTUV]{3}[A-Z]{1})|([0-9]{11})$",
+                  "type": "string",
+                  "description": "Codice fiscale del coobbligato, erede, genitore, tutore o curatore fallimentare"
+                },
+                "id": {
+                  "pattern": "^[A-Z0-9]{2}$",
+                  "type": "string",
+                  "description": "Codice identificativo"
+                },
+                "document": {
+                  "pattern": "^\\d{11}$",
+                  "type": "string",
+                  "description": "Codice identificativo of the document"
+                },
+                "office": {
+                  "pattern": "^[A-Z0-9]{3}$",
+                  "type": "string",
+                  "description": "Codice identificativo of the office"
+                }
+              }
+            },
+            "payments": {
+              "type": "object",
+              "description": "Motivo del Pagamento",
+              "additionalProperties": false,
+              "properties": {
+                "operationId": {
+                  "pattern": "^[A-Z0-9]{18}$",
+                  "type": "string",
+                  "description": "Identificativo operazione"
+                },
+                "records": {
+                  "type": "array",
+                  "description": "Righe sezione semplificato",
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "applyCost",
+                      "municipality",
+                      "section",
+                      "taxType"
+                    ],
+                    "description": "Riga semplificato",
+                    "additionalProperties": false
+                  }
+                }
+              }
+            }
+          }
+        },
+        "f24Excise": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "description": "F24 Excise (Accise) object",
+          "additionalProperties": false,
+          "properties": {
+            "taxPayer": {
+              "type": "object",
+              "required": [
+                "taxCode"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "taxCode": {
+                  "pattern": "^([A-Z]{6}[0-9LMNPQRSTUV]{2}[ABCDEHLMPRST]{1}[0-9LMNPQRSTUV]{2}[A-Z]{1}[0-9LMNPQRSTUV]{3}[A-Z]{1})|([0-9]{11})$",
+                  "type": "string",
+                  "description": "Codice fiscale contribuente"
+                },
+                "isNotTaxYear": {
+                  "type": "boolean",
+                  "description": "Anno d'imposta non coincidente con anno solare"
+                },
+                "person": {
+                  "type": "object",
+                  "description": "Dati Anagrafici PF",
+                  "additionalProperties": false,
+                  "properties": {
+                    "personalData": {
+                      "type": "object",
+                      "required": [
+                        "surname",
+                        "name",
+                        "birthDate",
+                        "sex"
+                      ],
+                      "description": "Dati Anagrafici",
+                      "additionalProperties": false,
+                      "properties": {
+                        "surname": {
+                          "pattern": "^[ -~]{1,24}$",
+                          "type": "string",
+                          "description": "Cognome"
+                        },
+                        "name": {
+                          "pattern": "^[ -~]{1,20}$",
+                          "type": "string",
+                          "description": "Nome"
+                        },
+                        "birthDate": {
+                          "pattern": "^\\d{2}-\\d{2}-\\d{4}$",
+                          "type": "string",
+                          "description": "Data di nascita"
+                        },
+                        "sex": {
+                          "pattern": "^[FM]$",
+                          "type": "string",
+                          "description": "Indicare (F)emmina o (M)aschio"
+                        },
+                        "birthPlace": {
+                          "pattern": "^[ -~]{1,40}$",
+                          "type": "string",
+                          "description": "Luogo di nascita"
+                        },
+                        "birthProvince": {
+                          "pattern": "^[A-Z]{2}$",
+                          "type": "string",
+                          "description": "Provincia di nascita"
+                        }
+                      }
+                    },
+                    "taxAddress": {
+                      "type": "object",
+                      "description": "Domicilio Fiscale",
+                      "additionalProperties": false,
+                      "properties": {
+                        "municipality": {
+                          "pattern": "^[ -~]{1,40}$",
+                          "type": "string",
+                          "description": "Comune"
+                        },
+                        "province": {
+                          "pattern": "^[A-Z]{2}$",
+                          "type": "string",
+                          "description": "Provincia"
+                        },
+                        "address": {
+                          "pattern": "^[ -~]{1,35}$",
+                          "type": "string",
+                          "description": "Via e numero civico"
+                        }
+                      }
+                    }
+                  }
+                },
+                "company": {
+                  "type": "object",
+                  "required": [
+                    "name"
+                  ],
+                  "description": "Dati Anagrafici PNF",
+                  "additionalProperties": false,
+                  "properties": {
+                    "name": {
+                      "pattern": "^[ -~]{1,60}$",
+                      "type": "string",
+                      "description": "Denominazione"
+                    },
+                    "taxAddress": {
+                      "type": "object",
+                      "description": "Domicilio Fiscale",
+                      "additionalProperties": false,
+                      "properties": {
+                        "municipality": {
+                          "pattern": "^[ -~]{1,40}$",
+                          "type": "string",
+                          "description": "Comune"
+                        },
+                        "province": {
+                          "pattern": "^[A-Z]{2}$",
+                          "type": "string",
+                          "description": "Provincia"
+                        },
+                        "address": {
+                          "pattern": "^[ -~]{1,35}$",
+                          "type": "string",
+                          "description": "Via e numero civico"
+                        }
+                      }
+                    }
+                  }
+                },
+                "relativePersonTaxCode": {
+                  "pattern": "^([A-Z]{6}[0-9LMNPQRSTUV]{2}[ABCDEHLMPRST]{1}[0-9LMNPQRSTUV]{2}[A-Z]{1}[0-9LMNPQRSTUV]{3}[A-Z]{1})|([0-9]{11})$",
+                  "type": "string",
+                  "description": "Codice fiscale del coobbligato, erede, genitore, tutore o curatore fallimentare"
+                },
+                "id": {
+                  "pattern": "^[A-Z0-9]{2}$",
+                  "type": "string",
+                  "description": "Codice identificativo"
+                }
+              }
+            },
+            "treasury": {
+              "type": "object",
+              "description": "Sezione Erario",
+              "additionalProperties": false,
+              "properties": {
+                "records": {
+                  "type": "array",
+                  "description": "Righe sezione erario",
+                  "items": {
+                    "type": "object",
+                    "description": "Tax object",
+                    "required": [
+                      "applyCost"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "office": {
+                  "pattern": "^[A-Z0-9]{3}$",
+                  "type": "string",
+                  "description": "Codice ufficio"
+                },
+                "document": {
+                  "pattern": "^\\d{11}$",
+                  "type": "string",
+                  "description": "Codice atto"
+                }
+              }
+            },
+            "inps": {
+              "type": "object",
+              "description": "INPS Section (Sezione INPS) object",
+              "additionalProperties": false,
+              "properties": {
+                "records": {
+                  "type": "array",
+                  "description": "INPS Record List",
+                  "items": {
+                    "type": "object",
+                    "description": "Sezione INPS",
+                    "required": [
+                      "applyCost"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              }
+            },
+            "region": {
+              "type": "object",
+              "description": "Sezione Regioni",
+              "additionalProperties": false,
+              "properties": {
+                "records": {
+                  "type": "array",
+                  "description": "Righe sezione regioni",
+                  "items": {
+                    "type": "object",
+                    "description": "Region Record object",
+                    "required": [
+                      "applyCost"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              }
+            },
+            "localTax": {
+              "type": "object",
+              "description": "Sezione IMU e Altri Tributi Locali",
+              "additionalProperties": false,
+              "properties": {
+                "operationId": {
+                  "pattern": "^[A-Z0-9]{18}$",
+                  "type": "string",
+                  "description": "Identificativo operatione"
+                },
+                "records": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "applyCost",
+                      "municipality",
+                      "taxType"
+                    ],
+                    "description": "LocalTax Record object",
+                    "additionalProperties": false
+                  }
+                },
+                "deduction": {
+                  "pattern": "^[0-9]{3,15}$",
+                  "type": "string",
+                  "description": "Detrazione"
+                }
+              }
+            },
+            "excise": {
+              "type": "object",
+              "description": "Accise",
+              "additionalProperties": false,
+              "properties": {
+                "records": {
+                  "type": "array",
+                  "description": "Excise Tax List",
+                  "items": {
+                    "type": "object",
+                    "description": "Excise Tax object",
+                    "required": [
+                      "applyCost"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "office": {
+                  "pattern": "^[A-Z0-9]{3}$",
+                  "type": "string",
+                  "description": "Codice ufficio"
+                },
+                "document": {
+                  "pattern": "^\\d{11}$",
+                  "type": "string",
+                  "description": "Codice atto"
+                }
+              }
+            }
+          }
+        },
+        "f24Elid": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "taxPayer": {
+              "type": "object",
+              "required": [
+                "taxCode"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "taxCode": {
+                  "pattern": "^([A-Z]{6}[0-9LMNPQRSTUV]{2}[ABCDEHLMPRST]{1}[0-9LMNPQRSTUV]{2}[A-Z]{1}[0-9LMNPQRSTUV]{3}[A-Z]{1})|([0-9]{11})$",
+                  "type": "string",
+                  "description": "Codice fiscale contribuente"
+                },
+                "person": {
+                  "type": "object",
+                  "description": "Dati Anagrafici PF",
+                  "additionalProperties": false,
+                  "properties": {
+                    "personalData": {
+                      "type": "object",
+                      "required": [
+                        "surname",
+                        "name",
+                        "birthDate",
+                        "sex"
+                      ],
+                      "description": "Dati Anagrafici",
+                      "additionalProperties": false,
+                      "properties": {
+                        "surname": {
+                          "pattern": "^[ -~]{1,24}$",
+                          "type": "string",
+                          "description": "Cognome"
+                        },
+                        "name": {
+                          "pattern": "^[ -~]{1,20}$",
+                          "type": "string",
+                          "description": "Nome"
+                        },
+                        "birthDate": {
+                          "pattern": "^\\d{2}-\\d{2}-\\d{4}$",
+                          "type": "string",
+                          "description": "Data di nascita"
+                        },
+                        "sex": {
+                          "pattern": "^[FM]$",
+                          "type": "string",
+                          "description": "Indicare (F)emmina o (M)aschio"
+                        },
+                        "birthPlace": {
+                          "pattern": "^[ -~]{1,40}$",
+                          "type": "string",
+                          "description": "Luogo di nascita"
+                        },
+                        "birthProvince": {
+                          "pattern": "^[A-Z]{2}$",
+                          "type": "string",
+                          "description": "Provincia di nascita"
+                        }
+                      }
+                    },
+                    "taxAddress": {
+                      "type": "object",
+                      "description": "Domicilio Fiscale",
+                      "additionalProperties": false,
+                      "properties": {
+                        "municipality": {
+                          "pattern": "^[ -~]{1,40}$",
+                          "type": "string",
+                          "description": "Comune"
+                        },
+                        "province": {
+                          "pattern": "^[A-Z]{2}$",
+                          "type": "string",
+                          "description": "Provincia"
+                        },
+                        "address": {
+                          "pattern": "^[ -~]{1,35}$",
+                          "type": "string",
+                          "description": "Via e numero civico"
+                        }
+                      }
+                    }
+                  }
+                },
+                "company": {
+                  "type": "object",
+                  "required": [
+                    "name"
+                  ],
+                  "description": "Dati Anagrafici PNF",
+                  "additionalProperties": false,
+                  "properties": {
+                    "name": {
+                      "pattern": "^[ -~]{1,60}$",
+                      "type": "string",
+                      "description": "Denominazione"
+                    },
+                    "taxAddress": {
+                      "type": "object",
+                      "description": "Domicilio Fiscale",
+                      "additionalProperties": false,
+                      "properties": {
+                        "municipality": {
+                          "pattern": "^[ -~]{1,40}$",
+                          "type": "string",
+                          "description": "Comune"
+                        },
+                        "province": {
+                          "pattern": "^[A-Z]{2}$",
+                          "type": "string",
+                          "description": "Provincia"
+                        },
+                        "address": {
+                          "pattern": "^[ -~]{1,35}$",
+                          "type": "string",
+                          "description": "Via e numero civico"
+                        }
+                      }
+                    }
+                  }
+                },
+                "relativePersonTaxCode": {
+                  "pattern": "^([A-Z]{6}[0-9LMNPQRSTUV]{2}[ABCDEHLMPRST]{1}[0-9LMNPQRSTUV]{2}[A-Z]{1}[0-9LMNPQRSTUV]{3}[A-Z]{1})|([0-9]{11})$",
+                  "type": "string",
+                  "description": "Codice fiscale del coobbligato, erede, genitore, tutore o curatore fallimentare"
+                },
+                "id": {
+                  "pattern": "^[A-Z0-9]{2}$",
+                  "type": "string",
+                  "description": "Codice identificativo"
+                }
+              }
+            },
+            "treasury": {
+              "type": "object",
+              "description": "Sezione Erario e Altro",
+              "additionalProperties": false,
+              "properties": {
+                "office": {
+                  "pattern": "^[A-Z0-9]{3}$",
+                  "type": "string",
+                  "description": "Codice ufficio"
+                },
+                "document": {
+                  "pattern": "^\\d{11}$",
+                  "type": "string",
+                  "description": "Codice atto"
+                },
+                "records": {
+                  "type": "array",
+                  "description": "Righe sezione erario",
+                  "items": {
+                    "type": "object",
+                    "description": "Riga sezione Erario",
+                    "required": [
+                      "applyCost"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
