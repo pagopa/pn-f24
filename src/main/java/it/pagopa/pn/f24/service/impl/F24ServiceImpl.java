@@ -542,6 +542,7 @@ public class F24ServiceImpl implements F24Service {
                 });
     }
 
+
     private F24Request buildF24Request(String xPagopaF24CxId, String requestId, PrepareF24Request prepareF24Request) {
         F24Request f24Request = new F24Request();
         f24Request.setCxId(xPagopaF24CxId);
