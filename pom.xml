@@ -24,24 +24,6 @@
 			<groupId>it.pagopa.pn</groupId>
 			<artifactId>pn-commons</artifactId>
 			<version>2.2.0-SNAPSHOT</version>
-			<exclusions>
-				<exclusion>
-					<groupId>it.pagopa.tech.lollipop-consumer-java-sdk</groupId>
-					<artifactId>core</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>it.pagopa.tech.lollipop-consumer-java-sdk</groupId>
-					<artifactId>http-verifier</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>it.pagopa.tech.lollipop-consumer-java-sdk</groupId>
-					<artifactId>assertion-rest-client-native</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>it.pagopa.tech.lollipop-consumer-java-sdk</groupId>
-					<artifactId>identity-service-rest-client-native</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 
 		<dependency>
@@ -141,38 +123,6 @@
 						</env>
 					</image>
 				</configuration>
-			</plugin>
-			<plugin>
-				<artifactId>maven-antrun-plugin</artifactId>
-				<version>3.1.0</version>
-				<executions>
-					<execution>
-						<id>default-cli</id>
-						<configuration>
-							<target>
-								<property name="windows_bash_exe" value="${ant.windows_bash_exe}" />
-								<ant antfile="${basedir}/scripts/aws/lambda/build.xml">
-									<target name="default" />
-								</ant>
-							</target>
-						</configuration>
-						<goals>
-							<goal>run</goal>
-						</goals>
-					</execution>
-					<execution>
-						<id>print-message</id>
-						<phase>compile</phase>
-						<configuration>
-							<target>
-								<echo level="info" message="NB: Per lo sviluppo in localstack, ricordarsi di lanciare il goal maven di deploy della lambda: mvn antrun:run" />
-							</target>
-						</configuration>
-						<goals>
-							<goal>run</goal>
-						</goals>
-					</execution>
-				</executions>
 			</plugin>
 			<plugin>
 				<groupId>org.openapitools</groupId>
