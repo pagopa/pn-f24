@@ -27,7 +27,7 @@ public class AuditLogServiceImpl implements AuditLogService {
     public void buildGeneratePdfAuditLogEvent(String setId, String pathTokensInString, Integer cost, String f24FileKey, String metadataFileKey) {
         String message = "Generated and uploaded pdf on safe storage with fileKey={} and cost={}, used metadata with fileKey={}, pathTokens={}";
         PnAuditLogEvent logEvent = this.buildAuditLogEvent(setId, PnAuditLogEventType.AUD_F24_CREATE, message, f24FileKey, cost, metadataFileKey, pathTokensInString);
-        logEvent.generateSuccess();
+        logEvent.generateSuccess().log();
     }
 
 }
