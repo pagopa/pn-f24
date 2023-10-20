@@ -68,6 +68,9 @@ public class F24SimplifiedConverter extends F24Converter {
         paymentReasonRecord.setPropertiesChanges(simplifiedPaymentRecord.getPropertiesChanges());
         paymentReasonRecord.setTaxTypeCode(simplifiedPaymentRecord.getTaxType());
         paymentReasonRecord.setNumberOfProperties(simplifiedPaymentRecord.getNumberOfProperties());
+        paymentReasonRecord.setMonth(simplifiedPaymentRecord.getInstallment());
+        paymentReasonRecord.setDebitAmount(integerToString(simplifiedPaymentRecord.getDebit()));
+        paymentReasonRecord.setCreditAmount(integerToString(simplifiedPaymentRecord.getCredit()));
         return paymentReasonRecord;
     }
 }
