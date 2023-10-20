@@ -120,7 +120,7 @@ class F24ServiceImplTest {
         f24File.setPk("fileMetadata");
         f24File.setCreated(Instant.now());
         // f24File.setRequestId("fileKey");
-        f24File.setStatus(F24FileStatus.TO_PROCESS);
+        f24File.setStatus(F24FileStatus.GENERATED);
         f24File.setUpdated(Instant.now().minus(Duration.ofMinutes(10)));
 
         //mock for SafeStorageService.getFile
@@ -139,6 +139,7 @@ class F24ServiceImplTest {
                 .expectError(PnF24RuntimeException.class)
                 .verify();
     }
+
 
     /**
      * Method under test: {@link F24ServiceImpl#saveMetadata(String, String, Mono)}
@@ -370,7 +371,7 @@ class F24ServiceImplTest {
         f24File.setFileKey("fileKey");
         f24File.setPk("fileMetadata");
         f24File.setCreated(Instant.now());
-        f24File.setStatus(F24FileStatus.TO_PROCESS);
+        f24File.setStatus(F24FileStatus.GENERATED);
         f24File.setUpdated(Instant.now());
 
         //mock for SafeStorageService.getFile
@@ -388,6 +389,83 @@ class F24ServiceImplTest {
                 .expectNextMatches(f24Response -> f24Response.getRetryAfter().compareTo(BigDecimal.valueOf(0)) == 1)
                 .expectComplete()
                 .verify();
+    }
+
+    @Test
+    void generatePdfFromCacheSuccessWithRetry() {
+
+        List<String> pathTokens = List.of("key");
+
+        //Mock for f24FileDao.getItem
+        F24File f24File = new F24File();
+        f24File.setFileKey("fileKey");
+        f24File.setPk("fileMetadata");
+        f24File.setCreated(Instant.now());
+        f24File.setStatus(F24FileStatus.TO_PROCESS);
+        f24File.setUpdated(Instant.now());
+
+        //Mock for MetadataSetDao.getItem
+        F24MetadataSet f24MetadataSet = new F24MetadataSet();
+        F24MetadataRef f24MetadataRef = new F24MetadataRef();
+        f24MetadataRef.setFileKey("key");
+        f24MetadataRef.setApplyCost(true);
+        f24MetadataSet.setFileKeys(Map.of("key", f24MetadataRef));
+        f24MetadataSet.setSetId("pk");
+
+        //mock for SafeStorageService.createAndUploadContent
+        FileCreationResponseInt fileCreationResponseInt = new FileCreationResponseInt();
+        fileCreationResponseInt.setKey("key");
+
+
+        //mock for SafeStorageService.getFile
+        FileDownloadResponseInt fileDownloadResponseInt = new FileDownloadResponseInt();
+        FileDownloadInfoInt fileDownloadInfoInt = new FileDownloadInfoInt();
+        fileDownloadInfoInt.setUrl("url");
+        fileDownloadResponseInt.setDownload(fileDownloadInfoInt);
+        //mock for F24Generator.generate
+        F24Metadata f24Metadata = new F24Metadata();
+        f24Metadata.setF24Standard(new F24Standard());
+
+        F24File f24File1 = new F24File();
+        f24File1.setPk("CACHE#setId#10#0_0");
+        f24File1.setStatus(F24FileStatus.GENERATED);
+        f24File1.setFileKey("key");
+
+        F24File f24FilePolling = new F24File();
+        f24FilePolling.setPk("CACHE#setId#10#0_0");
+        f24FilePolling.setStatus(F24FileStatus.DONE);
+        f24FilePolling.setFileKey("key");
+
+        when(f24MetadataSetDao.getItem(anyString()))
+                .thenReturn(Mono.just(f24MetadataSet));
+        when(f24FileCacheDao.getItem(anyString(), anyInt(), anyString()))
+                .thenReturn(Mono.just(f24File));
+        when(safeStorageService.getFile(anyString(), eq(false)))
+                .thenReturn(Mono.just(fileDownloadResponseInt));
+        when(metadataDownloader.downloadMetadata(any()))
+                .thenReturn(Mono.just(f24Metadata));
+        when(f24Generator.generate(any(F24Metadata.class)))
+                .thenReturn(new byte[0]);
+        when(safeStorageService.createAndUploadContent(any()))
+                .thenReturn(Mono.just(fileCreationResponseInt));
+        when(f24FileCacheDao.putItemIfAbsent(any()))
+                .thenReturn(Mono.just(f24File1));
+        // PnAuditLogEvent auditLogEvent = Mockito.mock(PnAuditLogEvent.class);
+        doNothing().when(auditLogService).buildGeneratePdfAuditLogEvent(any(), any(), any(), any(), any());
+        // when(auditLogEvent.generateSuccess()).thenReturn(auditLogEvent);
+        //Polling
+        when(f24FileCacheDao.getItem(anyString()))
+                .thenReturn(Mono.just(f24FilePolling));
+        when(safeStorageService.getFile(any(), any()))
+                .thenReturn(Mono.just(fileDownloadResponseInt));
+
+
+        // Assert
+        StepVerifier.create(f24ServiceImpl.generatePDF("xPagopaF24CxId", "setId", pathTokens, 10))
+                .expectNextMatches(f24Response -> Objects.equals(f24Response.getUrl(), "url"))
+                .expectComplete()
+                .verify();
+
     }
 
     @Test
