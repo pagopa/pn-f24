@@ -1,0 +1,220 @@
+{
+	"f24Standard": {
+		"taxPayer": {
+			"taxCode": "RSSMRA80A01F205X",
+			"isNotTaxYear": true,
+			"person": {
+				"personalData": {
+					"surname": "ROSSI",
+					"name": "MARIO",
+					"birthDate": "01-01-1980",
+					"sex": "M",
+					"birthPlace": "MILANO",
+					"birthProvince": "MI"
+				},
+				"taxAddress": {
+					"municipality": "MILANO",
+					"province": "MI",
+					"address": "VIA LARGA 21"
+				}
+			},
+			"relativePersonTaxCode": "TDITLC46H54C619Q",
+			"id": "9W"
+		},
+		"treasury": {
+			"records": [
+				{
+					"applyCost": true,
+					"taxType": "B9AD",
+					"installment": "88MP",
+					"year": "2617",
+					"debit": "7309",
+					"credit": "0"
+				},
+				{
+					"applyCost": false,
+					"taxType": "B9AD",
+					"installment": "88MP",
+					"year": "2617",
+					"debit": "7309",
+					"credit": "0"
+				},
+				{
+					"applyCost": false,
+					"taxType": "B9AD",
+					"installment": "88MP",
+					"year": "2617",
+					"debit": "7309",
+					"credit": "0"
+				},
+				{
+					"applyCost": false,
+					"taxType": "B9AD",
+					"installment": "88MP",
+					"year": "2617",
+					"debit": "7309",
+					"credit": "0"
+				},
+				{
+					"applyCost": false,
+					"taxType": "B9AD",
+					"installment": "88MP",
+					"year": "2617",
+					"debit": "7309",
+					"credit": "0"
+				},
+				{
+					"applyCost": false,
+					"taxType": "B9AD",
+					"installment": "88MP",
+					"year": "2617",
+					"debit": "7309",
+					"credit": "0"
+				},
+				{
+					"applyCost": false,
+					"taxType": "B9AD",
+					"installment": "88MP",
+					"year": "2617",
+					"debit": "7309",
+					"credit": "0"
+				},
+				{
+					"applyCost": false,
+					"taxType": "B9AD",
+					"installment": "88MP",
+					"year": "2617",
+					"debit": "7309",
+					"credit": "0"
+				}
+			],
+			"office": "FRH",
+			"document": "29542848644"
+		},
+		"inps": {
+			"records": [
+				{
+					"applyCost": false,
+					"office": "5670",
+					"reason": "HHW",
+					"inps": "32W95Mf",
+					"period": {
+						"startDate": "403120",
+						"endDate": "084198"
+					},
+					"debit": "840",
+					"credit": "0"
+				},
+				{
+					"applyCost": false,
+					"office": "5670",
+					"reason": "HHW",
+					"inps": "32W95Mf",
+					"period": {
+						"startDate": "403120",
+						"endDate": "084198"
+					},
+					"debit": "840",
+					"credit": "0"
+				},
+				{
+					"applyCost": false,
+					"office": "5670",
+					"reason": "HHW",
+					"inps": "32W95Mf",
+					"period": {
+						"startDate": "403120",
+						"endDate": "084198"
+					},
+					"debit": "840",
+					"credit": "0"
+				},
+				{
+					"applyCost": false,
+					"office": "5670",
+					"reason": "HHW",
+					"inps": "32W95Mf",
+					"period": {
+						"startDate": "403120",
+						"endDate": "084198"
+					},
+					"debit": "840",
+					"credit": "0"
+				},
+				{
+					"applyCost": false,
+					"office": "5670",
+					"reason": "HHW",
+					"inps": "32W95Mf",
+					"period": {
+						"startDate": "403120",
+						"endDate": "084198"
+					},
+					"debit": "840",
+					"credit": "0"
+				}
+			]
+		},
+		"region": {
+			"records": [
+				{
+					"applyCost": false,
+					"region": "60",
+					"taxType": "ZEMO",
+					"installment": "A",
+					"year": "2306",
+					"debit": "901492",
+					"credit": "0"
+				}
+			]
+		},
+		"localTax": {
+			"operationId": "A0VU5WBKUUJPCBE8AK",
+			"records": [
+				{
+					"applyCost": false,
+					"municipality": "99YZ",
+					"reconsideration": true,
+					"propertiesChanges": true,
+					"advancePayment": true,
+					"fullPayment": true,
+					"numberOfProperties": "433",
+					"taxType": "0943",
+					"installment": "43CV",
+					"year": "2432",
+					"debit": "6002916",
+					"credit": "0"
+				}
+			],
+			"deduction": "97091877"
+		},
+		"socialSecurity": {
+			"records": [
+				{
+					"applyCost": false,
+					"office": "69605",
+					"company": "47858729",
+					"control": "54",
+					"refNumber": "792244",
+					"reason": "B",
+					"debit": "600",
+					"credit": "0"
+				}
+			],
+			"socSecRecords": [
+				{
+					"applyCost": false,
+					"office": "B6COP",
+					"reason": "G1D",
+					"position": "693850961",
+					"period": {
+						"startDate": "150401",
+						"endDate": "671726"
+					},
+					"debit": "360",
+					"credit": "0"
+				}
+			]
+		}
+	}
+}
