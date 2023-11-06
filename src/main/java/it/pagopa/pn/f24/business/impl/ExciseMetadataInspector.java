@@ -44,24 +44,24 @@ public class ExciseMetadataInspector implements MetadataInspector {
         int invalidApplyCostFound = 0;
 
         if (f24Excise.getTreasury() != null && f24Excise.getTreasury().getRecords() != null) {
-            validApplyCostFound += countElementsByPredicate(f24Excise.getTreasury().getRecords(), (tax) -> tax.getApplyCost() && (tax.getCredit() == null || tax.getCredit() == 0));
+            validApplyCostFound += countElementsByPredicate(f24Excise.getTreasury().getRecords(), tax -> tax.getApplyCost() && (tax.getCredit() == null || tax.getCredit() == 0));
 
-            invalidApplyCostFound += countElementsByPredicate(f24Excise.getTreasury().getRecords(), (tax) -> tax.getApplyCost() && (tax.getCredit() != null && tax.getCredit() > 0));
+            invalidApplyCostFound += countElementsByPredicate(f24Excise.getTreasury().getRecords(), tax -> tax.getApplyCost() && (tax.getCredit() != null && tax.getCredit() > 0));
         }
         if (f24Excise.getInps() != null && f24Excise.getInps().getRecords() != null) {
-            validApplyCostFound += countElementsByPredicate(f24Excise.getInps().getRecords(), (inps) -> inps.getApplyCost() && (inps.getCredit() == null || inps.getCredit() == 0));
+            validApplyCostFound += countElementsByPredicate(f24Excise.getInps().getRecords(), inps -> inps.getApplyCost() && (inps.getCredit() == null || inps.getCredit() == 0));
 
-            invalidApplyCostFound += countElementsByPredicate(f24Excise.getInps().getRecords(), (inps) -> inps.getApplyCost() && (inps.getCredit() != null && inps.getCredit() > 0));
+            invalidApplyCostFound += countElementsByPredicate(f24Excise.getInps().getRecords(), inps -> inps.getApplyCost() && (inps.getCredit() != null && inps.getCredit() > 0));
         }
         if (f24Excise.getRegion() != null && f24Excise.getRegion().getRecords() != null) {
-            validApplyCostFound += countElementsByPredicate(f24Excise.getRegion().getRecords(), (region) -> region.getApplyCost() && (region.getCredit() == null || region.getCredit() == 0));
+            validApplyCostFound += countElementsByPredicate(f24Excise.getRegion().getRecords(), region -> region.getApplyCost() && (region.getCredit() == null || region.getCredit() == 0));
 
-            invalidApplyCostFound += countElementsByPredicate(f24Excise.getRegion().getRecords(), (region) -> region.getApplyCost() && (region.getCredit() != null && region.getCredit() > 0));
+            invalidApplyCostFound += countElementsByPredicate(f24Excise.getRegion().getRecords(), region -> region.getApplyCost() && (region.getCredit() != null && region.getCredit() > 0));
         }
         if (f24Excise.getLocalTax() != null && f24Excise.getLocalTax().getRecords() != null) {
-            validApplyCostFound += countElementsByPredicate(f24Excise.getLocalTax().getRecords(), (localTax) -> localTax.getApplyCost() && (localTax.getCredit() == null || localTax.getCredit() == 0));
+            validApplyCostFound += countElementsByPredicate(f24Excise.getLocalTax().getRecords(), localTax -> localTax.getApplyCost() && (localTax.getCredit() == null || localTax.getCredit() == 0));
 
-            invalidApplyCostFound += countElementsByPredicate(f24Excise.getLocalTax().getRecords(), (localTax) -> localTax.getApplyCost() && (localTax.getCredit() != null && localTax.getCredit() > 0));
+            invalidApplyCostFound += countElementsByPredicate(f24Excise.getLocalTax().getRecords(), localTax -> localTax.getApplyCost() && (localTax.getCredit() != null && localTax.getCredit() > 0));
         }
         if (f24Excise.getExcise() != null && f24Excise.getExcise().getRecords() != null) {
             validApplyCostFound += countElementsByPredicate(f24Excise.getExcise().getRecords(), ExciseTax::getApplyCost);

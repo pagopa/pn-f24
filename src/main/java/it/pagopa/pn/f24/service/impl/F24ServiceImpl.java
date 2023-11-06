@@ -318,20 +318,12 @@ public class F24ServiceImpl implements F24Service {
                                 });
                     }
 
-                    if (f24File.getStatus() == F24FileStatus.TO_PROCESS)
-                    {
-                        // il file era cmq presente ma lo stato era ancora TO_PROCESS, evidentemente c'è stato un errore in fase di generazione/ingaggio di safe storage
-                        // ritentando si potrebbe sistemare se l'errore era temporaneo.
-                        return Mono.defer(() -> generateFromMetadata(setId, pathTokensInString, fcost));
-                    }
-                    else if(fileHasNotBeenUpdatedRecently(f24File)) {
+                    if(fileHasNotBeenUpdatedRecently(f24File)) {
                         throw new PnF24RuntimeException("error retrieving file", "File generation exceeded time expectation", PnF24ExceptionCodes.ERROR_CODE_F24_FILE_GENERATION_IN_PROGRESS);
                     }
-                    else
-                    {
-                        // il file è stato generato poco tempo fa, avviso di attendere
-                        return Mono.just(F24ResponseConverter.fileDownloadInfoToF24Response(buildRetryAfterResponse().getDownload()));
-                    }
+
+                    // il file è stato generato poco tempo fa, avviso di attendere
+                    return Mono.just(F24ResponseConverter.fileDownloadInfoToF24Response(buildRetryAfterResponse().getDownload()));
 
                 })
                 .switchIfEmpty(Mono.defer(() -> generateFromMetadata(setId, pathTokensInString, fcost)));

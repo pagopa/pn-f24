@@ -1,14 +1,13 @@
 package it.pagopa.pn.f24.it.mockbean;
 
 import it.pagopa.pn.f24.dto.*;
-import it.pagopa.pn.f24.exception.PnDbConflictException;
 import it.pagopa.pn.f24.middleware.dao.f24metadataset.F24MetadataSetDao;
 import reactor.core.publisher.Mono;
 
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-public class F24MetadataSetDaoMock implements F24MetadataSetDao {
+public class F24MetadataSetDaoMock implements F24MetadataSetDao, ClearableMock {
 
     private List<F24MetadataSet> f24MetadataSetList = new CopyOnWriteArrayList<>();
 

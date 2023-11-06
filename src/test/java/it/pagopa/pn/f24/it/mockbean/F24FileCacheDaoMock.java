@@ -1,6 +1,5 @@
 package it.pagopa.pn.f24.it.mockbean;
 
-import it.pagopa.pn.f24.config.F24Config;
 import it.pagopa.pn.f24.dto.F24File;
 import it.pagopa.pn.f24.dto.F24FileStatus;
 import it.pagopa.pn.f24.exception.PnDbConflictException;
@@ -15,7 +14,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 @Setter
-public class F24FileCacheDaoMock implements F24FileCacheDao {
+public class F24FileCacheDaoMock implements F24FileCacheDao, ClearableMock {
 
     private List<F24File> f24FileList = new ArrayList<>();
 

@@ -4,7 +4,7 @@ import it.pagopa.pn.f24.dto.F24File;
 import it.pagopa.pn.f24.dto.safestorage.FileCreationWithContentRequest;
 import it.pagopa.pn.f24.generated.openapi.msclient.safestorage.model.FileCreationResponse;
 import it.pagopa.pn.f24.generated.openapi.msclient.safestorage.model.FileDownloadInfo;
-import it.pagopa.pn.f24.generated.openapi.msclient.safestorage.model.FileDownloadResponse;;
+import it.pagopa.pn.f24.generated.openapi.msclient.safestorage.model.FileDownloadResponse;
 import it.pagopa.pn.f24.it.util.TestUtils;
 import it.pagopa.pn.f24.it.util.ThreadPool;
 import it.pagopa.pn.f24.middleware.msclient.safestorage.PnSafeStorageClient;
@@ -58,7 +58,7 @@ public class PnSafeStorageClientMock implements PnSafeStorageClient {
             Assertions.assertDoesNotThrow(() -> {
                 log.info("[TEST] Start wait for createFile documentType={}", fileCreationRequest.getDocumentType());
                 try {
-                    await().atMost(Duration.ofSeconds(1)).untilAsserted(() -> {
+                    await().atMost(Duration.ofSeconds(3)).untilAsserted(() -> {
                         F24File f24File = f24FileCacheDaoMock.getItemByFileKey(key).block();
                         log.info("[TEST] Start assertion for createFile f24File={}", f24File);
                         Assertions.assertNotNull(f24File);

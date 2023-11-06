@@ -51,34 +51,34 @@ public class StandardMetadataInspector implements MetadataInspector {
         int invalidApplyCostFound = 0;
 
         if (f24Standard.getTreasury() != null && f24Standard.getTreasury().getRecords() != null) {
-            validApplyCostFound += countElementsByPredicate(f24Standard.getTreasury().getRecords(), (tax) -> tax.getApplyCost() && (tax.getCredit() == null || tax.getCredit() == 0));
+            validApplyCostFound += countElementsByPredicate(f24Standard.getTreasury().getRecords(), tax -> tax.getApplyCost() && (tax.getCredit() == null || tax.getCredit() == 0));
 
-            invalidApplyCostFound += countElementsByPredicate(f24Standard.getTreasury().getRecords(), (tax) -> tax.getApplyCost() && (tax.getCredit() != null && tax.getCredit() > 0));
+            invalidApplyCostFound += countElementsByPredicate(f24Standard.getTreasury().getRecords(), tax -> tax.getApplyCost() && (tax.getCredit() != null && tax.getCredit() > 0));
         }
         if (f24Standard.getInps() != null && f24Standard.getInps().getRecords() != null) {
-            validApplyCostFound += countElementsByPredicate(f24Standard.getInps().getRecords(), (inps) -> inps.getApplyCost() && (inps.getCredit() == null || inps.getCredit() == 0));
+            validApplyCostFound += countElementsByPredicate(f24Standard.getInps().getRecords(), inps -> inps.getApplyCost() && (inps.getCredit() == null || inps.getCredit() == 0));
 
-            invalidApplyCostFound += countElementsByPredicate(f24Standard.getInps().getRecords(), (inps) -> inps.getApplyCost() && (inps.getCredit() != null && inps.getCredit() > 0));
+            invalidApplyCostFound += countElementsByPredicate(f24Standard.getInps().getRecords(), inps -> inps.getApplyCost() && (inps.getCredit() != null && inps.getCredit() > 0));
         }
         if (f24Standard.getRegion() != null && f24Standard.getRegion().getRecords() != null) {
-            validApplyCostFound += countElementsByPredicate(f24Standard.getRegion().getRecords(), (region) -> region.getApplyCost() && (region.getCredit() == null || region.getCredit() == 0));
+            validApplyCostFound += countElementsByPredicate(f24Standard.getRegion().getRecords(), region -> region.getApplyCost() && (region.getCredit() == null || region.getCredit() == 0));
 
-            invalidApplyCostFound += countElementsByPredicate(f24Standard.getRegion().getRecords(), (region) -> region.getApplyCost() && (region.getCredit() != null && region.getCredit() > 0));
+            invalidApplyCostFound += countElementsByPredicate(f24Standard.getRegion().getRecords(), region -> region.getApplyCost() && (region.getCredit() != null && region.getCredit() > 0));
         }
         if (f24Standard.getLocalTax() != null && f24Standard.getLocalTax().getRecords() != null) {
-            validApplyCostFound += countElementsByPredicate(f24Standard.getLocalTax().getRecords(), (localTax) -> localTax.getApplyCost() && (localTax.getCredit() == null || localTax.getCredit() == 0));
+            validApplyCostFound += countElementsByPredicate(f24Standard.getLocalTax().getRecords(), localTax -> localTax.getApplyCost() && (localTax.getCredit() == null || localTax.getCredit() == 0));
 
-            invalidApplyCostFound += countElementsByPredicate(f24Standard.getLocalTax().getRecords(), (localTax) -> localTax.getApplyCost() && (localTax.getCredit() != null && localTax.getCredit() > 0));
+            invalidApplyCostFound += countElementsByPredicate(f24Standard.getLocalTax().getRecords(), localTax -> localTax.getApplyCost() && (localTax.getCredit() != null && localTax.getCredit() > 0));
         }
         if(f24Standard.getSocialSecurity() != null && f24Standard.getSocialSecurity().getRecords() != null) {
-            validApplyCostFound += countElementsByPredicate(f24Standard.getSocialSecurity().getRecords(), (socialRec) -> socialRec.getApplyCost() && (socialRec.getCredit() == null || socialRec.getCredit() == 0));
+            validApplyCostFound += countElementsByPredicate(f24Standard.getSocialSecurity().getRecords(), socialRec -> socialRec.getApplyCost() && (socialRec.getCredit() == null || socialRec.getCredit() == 0));
 
-            invalidApplyCostFound += countElementsByPredicate(f24Standard.getSocialSecurity().getRecords(), (socialRec) -> socialRec.getApplyCost() && (socialRec.getCredit() != null && socialRec.getCredit() > 0));
+            invalidApplyCostFound += countElementsByPredicate(f24Standard.getSocialSecurity().getRecords(), socialRec -> socialRec.getApplyCost() && (socialRec.getCredit() != null && socialRec.getCredit() > 0));
         }
         if(f24Standard.getSocialSecurity() != null && f24Standard.getSocialSecurity().getSocSecRecords() != null) {
-            validApplyCostFound += countElementsByPredicate(f24Standard.getSocialSecurity().getSocSecRecords(), (socSecRec) -> socSecRec.getApplyCost() && (socSecRec.getCredit() == null || socSecRec.getCredit() == 0));
+            validApplyCostFound += countElementsByPredicate(f24Standard.getSocialSecurity().getSocSecRecords(), socSecRec -> socSecRec.getApplyCost() && (socSecRec.getCredit() == null || socSecRec.getCredit() == 0));
 
-            invalidApplyCostFound += countElementsByPredicate(f24Standard.getSocialSecurity().getSocSecRecords(), (socSecRec) -> socSecRec.getApplyCost() && (socSecRec.getCredit() != null && socSecRec.getCredit() > 0));
+            invalidApplyCostFound += countElementsByPredicate(f24Standard.getSocialSecurity().getSocSecRecords(), socSecRec -> socSecRec.getApplyCost() && (socSecRec.getCredit() != null && socSecRec.getCredit() > 0));
         }
 
         return MetadataInspector.verifyApplyCost(requiredApplyCost, validApplyCostFound, invalidApplyCostFound);
