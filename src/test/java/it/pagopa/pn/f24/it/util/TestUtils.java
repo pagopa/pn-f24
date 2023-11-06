@@ -52,40 +52,32 @@ public class TestUtils {
         return fileBytes;
     }
 
-    public static F24File createF24FileDone(String setId, Integer cost, String pathTokens) {
+    public static F24File createF24File(String setId, Integer cost, String pathTokens) {
         F24File f24File = new F24File();
         f24File.setFileKey("fileKey");
         f24File.setSetId(setId);
         f24File.setCost(cost);
         f24File.setPathTokens(pathTokens);
-        f24File.setStatus(F24FileStatus.DONE);
         f24File.setTtl(1L);
         f24File.setCreated(Instant.now());
         f24File.setUpdated(Instant.now());
+        return f24File;
+    }
+
+    public static F24File createF24FileDone(String setId, Integer cost, String pathTokens) {
+        F24File f24File = createF24File(setId, cost, pathTokens);
+        f24File.setStatus(F24FileStatus.DONE);
         return f24File;
     }
 
     public static F24File createF24FileToProcess(String setId, Integer cost, String pathTokens) {
-        F24File f24File = new F24File();
-        f24File.setFileKey("fileKey");
-        f24File.setSetId(setId);
-        f24File.setCost(cost);
-        f24File.setPathTokens(pathTokens);
+        F24File f24File = createF24File(setId, cost, pathTokens);
         f24File.setStatus(F24FileStatus.TO_PROCESS);
-        f24File.setTtl(1L);
-        f24File.setCreated(Instant.now());
-        f24File.setUpdated(Instant.now());
         return f24File;
     }
 
     public static F24File createF24FileToProcessLate(String setId, Integer cost, String pathTokens) {
-        F24File f24File = new F24File();
-        f24File.setFileKey("fileKey");
-        f24File.setSetId(setId);
-        f24File.setCost(cost);
-        f24File.setPathTokens(pathTokens);
-        f24File.setStatus(F24FileStatus.TO_PROCESS);
-        f24File.setTtl(1L);
+        F24File f24File = createF24FileToProcess(setId, cost, pathTokens);
         f24File.setCreated(Instant.now().minus(Duration.ofMinutes(10)));
         f24File.setUpdated(Instant.now().minus(Duration.ofMinutes(9)));
         return f24File;
@@ -116,20 +108,16 @@ public class TestUtils {
         return fileKeys;
     }
 
-    public static F24MetadataSet createF24MetadataSetWithApplyCost(String setId){
+    public static F24MetadataSet createDummyF24MetadataSet(String setId, Map<String, F24MetadataRef> fileKeys){
         F24MetadataSet f24MetadataSet = new F24MetadataSet();
-        F24MetadataRef f24MetadataRef = new F24MetadataRef();
-        f24MetadataRef.setApplyCost(true);
-        f24MetadataRef.setSha256("sha256");
-        f24MetadataRef.setFileKey(METADATA_SIMPLIFIED_WITH_COST_FILEKEY);
         f24MetadataSet.setSetId(setId);
         f24MetadataSet.setCreatorCxId("creatorCxId");
         f24MetadataSet.setValidatorCxId("validatorCxId");
-        f24MetadataSet.setStatus(F24MetadataStatus.TO_VALIDATE);
-        f24MetadataSet.setFileKeys(Map.of("key", f24MetadataRef));
+        f24MetadataSet.setStatus(F24MetadataStatus.VALIDATION_ENDED);
+        f24MetadataSet.setFileKeys(fileKeys);
         f24MetadataSet.setSha256("sha256");
-        f24MetadataSet.setHaveToSendValidationEvent(false);
-        f24MetadataSet.setValidationEventSent(false);
+        f24MetadataSet.setHaveToSendValidationEvent(true);
+        f24MetadataSet.setValidationEventSent(true);
         f24MetadataSet.setValidationResult(null);
         f24MetadataSet.setCreated(null);
         f24MetadataSet.setUpdated(null);
@@ -137,25 +125,20 @@ public class TestUtils {
         return f24MetadataSet;
     }
 
+    public static F24MetadataSet createF24MetadataSetWithApplyCost(String setId){
+        F24MetadataRef f24MetadataRef = new F24MetadataRef();
+        f24MetadataRef.setApplyCost(true);
+        f24MetadataRef.setSha256("sha256");
+        f24MetadataRef.setFileKey(METADATA_SIMPLIFIED_WITH_COST_FILEKEY);
+        return createDummyF24MetadataSet(setId, Map.of("key", f24MetadataRef));
+    }
+
     public static F24MetadataSet createF24MetadataSetWithoutApplyCost(String setId){
-        F24MetadataSet f24MetadataSet = new F24MetadataSet();
         F24MetadataRef f24MetadataRef = new F24MetadataRef();
         f24MetadataRef.setApplyCost(false);
         f24MetadataRef.setSha256("sha256");
         f24MetadataRef.setFileKey(METADATA_SIMPLIFIED_WITHOUT_COST_FILEKEY);
-        f24MetadataSet.setSetId(setId);
-        f24MetadataSet.setCreatorCxId("creatorCxId");
-        f24MetadataSet.setValidatorCxId("validatorCxId");
-        f24MetadataSet.setStatus(F24MetadataStatus.TO_VALIDATE);
-        f24MetadataSet.setFileKeys(Map.of("key", f24MetadataRef));
-        f24MetadataSet.setSha256("sha256");
-        f24MetadataSet.setHaveToSendValidationEvent(false);
-        f24MetadataSet.setValidationEventSent(false);
-        f24MetadataSet.setValidationResult(null);
-        f24MetadataSet.setCreated(null);
-        f24MetadataSet.setUpdated(null);
-        f24MetadataSet.setTtl(null);
-        return f24MetadataSet;
+        return createDummyF24MetadataSet(setId, Map.of("key", f24MetadataRef));
     }
 
     public static boolean checkMetadataSetIsValid(String setId, F24MetadataSetDaoMock f24MetadataSetDaoMock) {
