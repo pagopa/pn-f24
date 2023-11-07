@@ -45,9 +45,8 @@ public class GeneratePdfEventService {
                 "generate f24 pdf file for metadata with setId: {} and fileKey:{} ",
                 payload.getSetId(), payload.getMetadataFileKey()
         );
-        final String processName = "PREPARE PDF HANDLER";
+        final String processName = "GENERATE PDF HANDLER";
         log.logStartingProcess(processName);
-
         return getF24File(payload.getFilePk())
                 .flatMap(this::checkF24FileStatus)
                 .flatMap(f24File -> generateF24Pdf(payload.getMetadataFileKey(), f24File))

@@ -32,9 +32,9 @@ public class SimplifiedMetadataInspector implements MetadataInspector {
         int invalidApplyCostFound = 0;
 
         if (f24Simplified.getPayments() != null && f24Simplified.getPayments().getRecords() != null) {
-            validApplyCostFound = countElementsByPredicate(f24Simplified.getPayments().getRecords(), (payment) -> payment.getApplyCost() && (payment.getCredit() == null || payment.getCredit() == 0));
+            validApplyCostFound = countElementsByPredicate(f24Simplified.getPayments().getRecords(), payment -> payment.getApplyCost() && (payment.getCredit() == null || payment.getCredit() == 0));
 
-            invalidApplyCostFound = countElementsByPredicate(f24Simplified.getPayments().getRecords(), (payment) -> payment.getApplyCost() && (payment.getCredit() != null && payment.getCredit() != 0));
+            invalidApplyCostFound = countElementsByPredicate(f24Simplified.getPayments().getRecords(), payment -> payment.getApplyCost() && (payment.getCredit() != null && payment.getCredit() != 0));
         }
 
         return MetadataInspector.verifyApplyCost(requiredApplyCost, validApplyCostFound, invalidApplyCostFound);
