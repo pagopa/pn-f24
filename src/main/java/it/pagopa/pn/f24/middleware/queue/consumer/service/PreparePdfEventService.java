@@ -23,10 +23,9 @@ import reactor.core.publisher.Mono;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @CustomLog
@@ -175,7 +174,7 @@ public class PreparePdfEventService {
     private void addRequestIdToFile(F24File f24File, String requestId) {
         List<String> actualRequestIds = f24File.getRequestIds();
         if(actualRequestIds == null) {
-            f24File.setRequestIds(List.of(requestId));
+            f24File.setRequestIds(Stream.of(requestId).collect(Collectors.toList()));
         } else {
             f24File.getRequestIds().add(requestId);
         }
@@ -191,7 +190,7 @@ public class PreparePdfEventService {
         f24File.setSetId(setId);
         f24File.setCost(cost);
         f24File.setPathTokens(pathTokensInString);
-        f24File.setRequestIds(List.of(f24Request.getRequestId()));
+        f24File.setRequestIds(Stream.of(f24Request.getRequestId()).collect(Collectors.toList()));
         if(f24Config.getRetentionForF24FilesInDays() != null && f24Config.getRetentionForF24FilesInDays() > 0) {
             f24File.setTtl(Instant.now().plus(Duration.ofDays(f24Config.getRetentionForF24FilesInDays())).getEpochSecond());
         }
