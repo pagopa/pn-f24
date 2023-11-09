@@ -1,572 +1,38 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "type": "object",
   "additionalProperties": false,
+  "minProperties": 1,
+  "maxProperties": 1,
   "properties": {
-    "F24Metadata": {
+    "f24Standard": {
       "type": "object",
-      "description": "Elemento radice deve contenere uno e uno solo tra le proprietà f24Standard, f24Simplified, f24Excise, f24Elid",
+      "required": [
+        "taxPayer"
+      ],
       "additionalProperties": false,
-      "minProperties": 1,
-      "maxProperties": 1,
+      "minProperties": 2,
+      "maxProperties": 6,
       "properties": {
-        "f24Standard": {
+        "taxPayer": {
           "type": "object",
           "required": [
-            "taxPayer"
+            "taxCode"
           ],
           "additionalProperties": false,
-          "minProperties": 2,
-          "maxProperties": 6,
           "properties": {
-            "taxPayer": {
-              "type": "object",
-              "required": [
-                "taxCode"
-              ],
-              "additionalProperties": false,
-              "properties": {
-                "taxCode": {
-                  "pattern": "^([A-Z]{6}[0-9LMNPQRSTUV]{2}[ABCDEHLMPRST]{1}[0-9LMNPQRSTUV]{2}[A-Z]{1}[0-9LMNPQRSTUV]{3}[A-Z]{1})|([0-9]{11})$",
-                  "type": "string",
-                  "description": "Codice fiscale contribuente"
-                },
-                "isNotTaxYear": {
-                  "type": "boolean",
-                  "description": "Anno d'imposta non coincidente con anno solare"
-                },
-                "person": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "properties": {
-                    "personalData": {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "required": [
-                        "surname",
-                        "name",
-                        "birthDate",
-                        "sex"
-                      ],
-                      "properties": {
-                        "surname": {
-                          "pattern": "^[ -~]{1,24}$",
-                          "type": "string",
-                          "description": "Cognome"
-                        },
-                        "name": {
-                          "pattern": "^[ -~]{1,20}$",
-                          "type": "string",
-                          "description": "Nome"
-                        },
-                        "birthDate": {
-                          "pattern": "^\\d{2}-\\d{2}-\\d{4}$",
-                          "type": "string",
-                          "description": "Data di nascita"
-                        },
-                        "sex": {
-                          "pattern": "^[FM]$",
-                          "type": "string",
-                          "description": "Indicare (F)emmina o (M)aschio"
-                        },
-                        "birthPlace": {
-                          "pattern": "^[ -~]{1,40}$",
-                          "type": "string",
-                          "description": "Luogo di nascita"
-                        },
-                        "birthProvince": {
-                          "pattern": "^[A-Z]{2}$",
-                          "type": "string",
-                          "description": "Provincia di nascita"
-                        }
-                      },
-                      "description": "Dati Anagrafici"
-                    },
-                    "taxAddress": {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "properties": {
-                        "municipality": {
-                          "pattern": "^[ -~]{1,40}$",
-                          "type": "string",
-                          "description": "Comune"
-                        },
-                        "province": {
-                          "pattern": "^[A-Z]{2}$",
-                          "type": "string",
-                          "description": "Provincia"
-                        },
-                        "address": {
-                          "pattern": "^[ -~]{1,35}$",
-                          "type": "string",
-                          "description": "Via e numero civico"
-                        }
-                      },
-                      "description": "Domicilio Fiscale"
-                    }
-                  },
-                  "description": "Dati Anagrafici PF"
-                },
-                "company": {
-                  "type": "object",
-                  "required": [
-                    "name"
-                  ],
-                  "additionalProperties": false,
-                  "properties": {
-                    "name": {
-                      "pattern": "^[ -~]{1,60}$",
-                      "type": "string",
-                      "description": "Denominazione"
-                    },
-                    "taxAddress": {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "properties": {
-                        "municipality": {
-                          "pattern": "^[ -~]{1,40}$",
-                          "type": "string",
-                          "description": "Comune"
-                        },
-                        "province": {
-                          "pattern": "^[A-Z]{2}$",
-                          "type": "string",
-                          "description": "Provincia"
-                        },
-                        "address": {
-                          "pattern": "^[ -~]{1,35}$",
-                          "type": "string",
-                          "description": "Via e numero civico"
-                        }
-                      },
-                      "description": "Domicilio Fiscale"
-                    }
-                  },
-                  "description": "Dati Anagrafici PNF"
-                },
-                "relativePersonTaxCode": {
-                  "pattern": "^([A-Z]{6}[0-9LMNPQRSTUV]{2}[ABCDEHLMPRST]{1}[0-9LMNPQRSTUV]{2}[A-Z]{1}[0-9LMNPQRSTUV]{3}[A-Z]{1})|([0-9]{11})$",
-                  "type": "string",
-                  "description": "Codice fiscale del coobbligato, erede, genitore, tutore o curatore fallimentare"
-                },
-                "id": {
-                  "pattern": "^[A-Z0-9]{2}$",
-                  "type": "string",
-                  "description": "Codice identificativo"
-                }
-              }
+            "taxCode": {
+              "pattern": "^([A-Z]{6}[0-9LMNPQRSTUV]{2}[ABCDEHLMPRST]{1}[0-9LMNPQRSTUV]{2}[A-Z]{1}[0-9LMNPQRSTUV]{3}[A-Z]{1})|([0-9]{11})$",
+              "type": "string",
+              "description": "Codice fiscale contribuente"
             },
-            "treasury": {
-              "type": "object",
-              "additionalProperties": false,
-              "properties": {
-                "records": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "additionalProperties": false,
-                    "required": [
-                      "applyCost"
-                    ],
-                    "properties": {
-                      "applyCost": {
-                        "type": "boolean",
-                        "description": "Indica se alla riga devono essere aggiunti i costi di notifica. Una sola riga deve essere presente con questo flag a true."
-                      },
-                      "taxType": {
-                        "pattern": "^[A-Z0-9]{4}$",
-                        "type": "string",
-                        "description": "Codice tributo"
-                      },
-                      "installment": {
-                        "pattern": "^[A-Z0-9]{0,4}$",
-                        "type": "string",
-                        "description": "Rateazione/regione/prov./mese rif."
-                      },
-                      "year": {
-                        "pattern": "^[1-2][0-9]{3}$",
-                        "type": "string",
-                        "description": "Anno di riferimento"
-                      },
-                      "debit": {
-                        "type": "integer",
-                        "format": "int32",
-                        "description": "Importi a debito versati (eurocent)"
-                      },
-                      "credit": {
-                        "type": "integer",
-                        "format": "int32",
-                        "description": "Importi a credito compensati (eurocent)"
-                      }
-                    },
-                    "description": "Tax object"
-                  },
-                  "description": "Righe sezione erario"
-                },
-                "office": {
-                  "pattern": "^[A-Z0-9]{3}$",
-                  "type": "string",
-                  "description": "Codice ufficio"
-                },
-                "document": {
-                  "pattern": "^\\d{11}$",
-                  "type": "string",
-                  "description": "Codice atto"
-                }
-              },
-              "description": "Sezione Erario"
+            "isNotTaxYear": {
+              "type": "boolean",
+              "description": "Anno d'imposta non coincidente con anno solare"
             },
-            "inps": {
+            "person": {
               "type": "object",
               "additionalProperties": false,
               "properties": {
-                "records": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "additionalProperties": false,
-                    "required": [
-                      "applyCost"
-                    ],
-                    "properties": {
-                      "applyCost": {
-                        "type": "boolean",
-                        "description": "Indica se alla riga devono essere aggiunti i costi di notifica. Una sola riga deve essere presente con questo flag a true."
-                      },
-                      "office": {
-                        "pattern": "^[0-9]{3,4}$",
-                        "type": "string",
-                        "description": "Codice sede"
-                      },
-                      "reason": {
-                        "pattern": "^[A-Z-]{3,4}$",
-                        "type": "string",
-                        "description": "Causale contributo"
-                      },
-                      "inps": {
-                        "pattern": "^[ -~]{0,17}$",
-                        "type": "string",
-                        "description": "Matricola INPS / codice INPS / filiale azienda"
-                      },
-                      "period": {
-                        "type": "object",
-                        "additionalProperties": false,
-                        "properties": {
-                          "startDate": {
-                            "pattern": "^[0-9]{6}$",
-                            "type": "string",
-                            "description": "Da mm/aaaa"
-                          },
-                          "endDate": {
-                            "pattern": "^[0-9]{6}$",
-                            "type": "string",
-                            "description": "A mm/aaaa"
-                          }
-                        },
-                        "description": "Periodo di riferimento (Sezione INPS)"
-                      },
-                      "debit": {
-                        "type": "integer",
-                        "format": "int32",
-                        "description": "Importi a debito versati (eurocent)"
-                      },
-                      "credit": {
-                        "type": "integer",
-                        "format": "int32",
-                        "description": "Importi a credito compensati (eurocent)"
-                      }
-                    },
-                    "description": "Sezione INPS"
-                  },
-                  "description": "INPS Record List"
-                }
-              },
-              "description": "INPS Section (Sezione INPS) object"
-            },
-            "region": {
-              "type": "object",
-              "additionalProperties": false,
-              "properties": {
-                "records": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "additionalProperties": false,
-                    "required": [
-                      "applyCost"
-                    ],
-                    "properties": {
-                      "applyCost": {
-                        "type": "boolean",
-                        "description": "Indica se alla riga devono essere aggiunti i costi di notifica. Una sola riga deve essere presente con questo flag a true."
-                      },
-                      "region": {
-                        "pattern": "^[0-9]{2}$",
-                        "type": "string",
-                        "description": "Codice regione"
-                      },
-                      "taxType": {
-                        "pattern": "^[0-9A-Z]{4}$",
-                        "type": "string",
-                        "description": "Codice tributo"
-                      },
-                      "installment": {
-                        "pattern": "^[A-Z0-9]{0,4}$",
-                        "type": "string",
-                        "description": "Rateazione"
-                      },
-                      "year": {
-                        "pattern": "^[1-2][0-9]{3}$",
-                        "type": "string",
-                        "description": "Anno di riferimento"
-                      },
-                      "debit": {
-                        "type": "integer",
-                        "format": "int32",
-                        "description": "Importi a debito versati (eurocent)"
-                      },
-                      "credit": {
-                        "type": "integer",
-                        "format": "int32",
-                        "description": "Importi a credito compensati (eurocent)"
-                      }
-                    },
-                    "description": "Region Record object"
-                  },
-                  "description": "Righe sezione regioni"
-                }
-              },
-              "description": "Sezione Regioni"
-            },
-            "localTax": {
-              "type": "object",
-              "additionalProperties": false,
-              "properties": {
-                "operationId": {
-                  "pattern": "^[A-Z0-9]{18}$",
-                  "type": "string",
-                  "description": "Identificativo operatione"
-                },
-                "records": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "additionalProperties": false,
-                    "required": [
-                      "applyCost",
-                      "municipality",
-                      "taxType"
-                    ],
-                    "properties": {
-                      "applyCost": {
-                        "type": "boolean",
-                        "description": "Indica se alla riga devono essere aggiunti i costi di notifica. Una sola riga deve essere presente con questo flag a true."
-                      },
-                      "municipality": {
-                        "pattern": "^[0-9A-Z]{4}$",
-                        "type": "string",
-                        "description": "Codice ente / codice comune"
-                      },
-                      "reconsideration": {
-                        "type": "boolean",
-                        "description": "Ravvedimento"
-                      },
-                      "propertiesChanges": {
-                        "type": "boolean",
-                        "description": "Immobili variati"
-                      },
-                      "advancePayment": {
-                        "type": "boolean",
-                        "description": "Acconto"
-                      },
-                      "fullPayment": {
-                        "type": "boolean",
-                        "description": "Saldo"
-                      },
-                      "numberOfProperties": {
-                        "pattern": "^[0-9]{3}$",
-                        "type": "string",
-                        "description": "Numero immobili"
-                      },
-                      "taxType": {
-                        "pattern": "^[0-9A-Z]{4}$",
-                        "type": "string",
-                        "description": "Codice tributo"
-                      },
-                      "installment": {
-                        "pattern": "^[A-Z0-9]{0,4}$",
-                        "type": "string",
-                        "description": "Rateazione / mese rif."
-                      },
-                      "year": {
-                        "pattern": "^[1-2][0-9]{3}$",
-                        "type": "string",
-                        "description": "Anno di riferimento"
-                      },
-                      "debit": {
-                        "type": "integer",
-                        "format": "int32",
-                        "description": "Importi a debito versati (eurocent)"
-                      },
-                      "credit": {
-                        "type": "integer",
-                        "format": "int32",
-                        "description": "Importi a credito compensati (eurocent)"
-                      }
-                    },
-                    "description": "LocalTax Record object"
-                  }
-                },
-                "deduction": {
-                  "pattern": "^[0-9]{3,15}$",
-                  "type": "string",
-                  "description": "Detrazione"
-                }
-              },
-              "description": "Sezione IMU e Altri Tributi Locali"
-            },
-            "socialSecurity": {
-              "type": "object",
-              "additionalProperties": false,
-              "properties": {
-                "records": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "additionalProperties": false,
-                    "required": [
-                      "applyCost"
-                    ],
-                    "properties": {
-                      "applyCost": {
-                        "type": "boolean",
-                        "description": "Indica se alla riga devono essere aggiunti i costi di notifica. Una sola riga deve essere presente con questo flag a true."
-                      },
-                      "office": {
-                        "pattern": "^[0-9]{5}$",
-                        "type": "string",
-                        "description": "Codice sede"
-                      },
-                      "company": {
-                        "pattern": "^[0-9]{8}$",
-                        "type": "string",
-                        "description": "Codice ditta"
-                      },
-                      "control": {
-                        "pattern": "^[0-9]{2}$",
-                        "type": "string",
-                        "description": "Codice di controllo c.c."
-                      },
-                      "refNumber": {
-                        "pattern": "^[0-9]{6}$",
-                        "type": "string",
-                        "description": "Numero di riferimento"
-                      },
-                      "reason": {
-                        "pattern": "^[A-Z0-9]$",
-                        "type": "string",
-                        "description": "Causale"
-                      },
-                      "debit": {
-                        "type": "integer",
-                        "format": "int32",
-                        "description": "Importi a debito versati (eurocent)"
-                      },
-                      "credit": {
-                        "type": "integer",
-                        "format": "int32",
-                        "description": "Importi a credito compensati (eurocent)"
-                      }
-                    },
-                    "description": "INAIL sezione altri enti previdenziali e assicurativi"
-                  }
-                },
-                "socSecRecords": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "additionalProperties": false,
-                    "required": [
-                      "applyCost"
-                    ],
-                    "properties": {
-                      "applyCost": {
-                        "type": "boolean",
-                        "description": "Indica se alla riga devono essere aggiunti i costi di notifica. Una sola riga deve essere presente con questo flag a true."
-                      },
-                      "institution": {
-                        "pattern": "^[0-9]{4}$",
-                        "type": "string",
-                        "description": "Codice ente"
-                      },
-                      "office": {
-                        "pattern": "^[0-9A-Z]{5}$",
-                        "type": "string",
-                        "description": "Codice sede"
-                      },
-                      "reason": {
-                        "pattern": "^[0-9A-Z]{3,4}$",
-                        "type": "string",
-                        "description": "Causale contributo"
-                      },
-                      "position": {
-                        "pattern": "^[0-9]{9}$",
-                        "type": "string",
-                        "description": "Codice posizione"
-                      },
-                      "period": {
-                        "type": "object",
-                        "additionalProperties": false,
-                        "properties": {
-                          "startDate": {
-                            "pattern": "^[0-9]{6}$",
-                            "type": "string",
-                            "description": "Da mm/aaaa"
-                          },
-                          "endDate": {
-                            "pattern": "^[0-9]{6}$",
-                            "type": "string",
-                            "description": "A mm/aaaa"
-                          }
-                        },
-                        "description": "Periodo di riferimento (Sezione INPS)"
-                      },
-                      "debit": {
-                        "type": "integer",
-                        "format": "int32",
-                        "description": "Importi a debito versati (eurocent)"
-                      },
-                      "credit": {
-                        "type": "integer",
-                        "format": "int32",
-                        "description": "Importi a credito compensati (eurocent)"
-                      }
-                    },
-                    "description": "Sezione altri enti previdenziali e assicurativi"
-                  },
-                  "description": "Social Security Record List"
-                }
-              },
-              "description": "Sezione Altri Enti Previdenziali"
-            }
-          }
-        },
-        "f24Simplified": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "taxPayer": {
-              "type": "object",
-              "required": [
-                "taxCode"
-              ],
-              "additionalProperties": false,
-              "properties": {
-                "taxCode": {
-                  "pattern": "^([A-Z]{6}[0-9LMNPQRSTUV]{2}[ABCDEHLMPRST]{1}[0-9LMNPQRSTUV]{2}[A-Z]{1}[0-9LMNPQRSTUV]{3}[A-Z]{1})|([0-9]{11})$",
-                  "type": "string",
-                  "description": "Codice fiscale contribuente"
-                },
                 "personalData": {
                   "type": "object",
                   "additionalProperties": false,
@@ -610,805 +76,1331 @@
                   },
                   "description": "Dati Anagrafici"
                 },
-                "relativePersonTaxCode": {
-                  "pattern": "^([A-Z]{6}[0-9LMNPQRSTUV]{2}[ABCDEHLMPRST]{1}[0-9LMNPQRSTUV]{2}[A-Z]{1}[0-9LMNPQRSTUV]{3}[A-Z]{1})|([0-9]{11})$",
-                  "type": "string",
-                  "description": "Codice fiscale del coobbligato, erede, genitore, tutore o curatore fallimentare"
-                },
-                "id": {
-                  "pattern": "^[A-Z0-9]{2}$",
-                  "type": "string",
-                  "description": "Codice identificativo"
-                },
-                "document": {
-                  "pattern": "^\\d{11}$",
-                  "type": "string",
-                  "description": "Codice identificativo of the document"
-                },
-                "office": {
-                  "pattern": "^[A-Z0-9]{3}$",
-                  "type": "string",
-                  "description": "Codice identificativo of the office"
-                }
-              }
-            },
-            "payments": {
-              "type": "object",
-              "additionalProperties": false,
-              "properties": {
-                "operationId": {
-                  "pattern": "^[A-Z0-9]{18}$",
-                  "type": "string",
-                  "description": "Identificativo operazione"
-                },
-                "records": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "additionalProperties": false,
-                    "required": [
-                      "applyCost",
-                      "section",
-                      "municipality",
-                      "taxType"
-                    ],
-                    "properties": {
-                      "applyCost": {
-                        "type": "boolean",
-                        "description": "Indica se alla riga devono essere aggiunti i costi di notifica. Una sola riga deve essere presente con questo flag a true."
-                      },
-                      "municipality": {
-                        "pattern": "^[0-9A-Z]{4}$",
-                        "type": "string",
-                        "description": "Codice ente/prov/comune"
-                      },
-                      "reconsideration": {
-                        "type": "boolean",
-                        "description": "Flag ravvedimento"
-                      },
-                      "propertiesChanges": {
-                        "type": "boolean",
-                        "description": "Flag immobili variati"
-                      },
-                      "advancePayment": {
-                        "type": "boolean",
-                        "description": "Flag acconto"
-                      },
-                      "fullPayment": {
-                        "type": "boolean",
-                        "description": "Flag saldo"
-                      },
-                      "numberOfProperties": {
-                        "pattern": "^[0-9]{3}$",
-                        "type": "string",
-                        "description": "Numero immobili"
-                      },
-                      "taxType": {
-                        "pattern": "^[0-9A-Z]{4}$",
-                        "type": "string",
-                        "description": "Codice tributo"
-                      },
-                      "installment": {
-                        "pattern": "^[A-Z0-9]{0,4}$",
-                        "type": "string",
-                        "description": "Rateazione"
-                      },
-                      "year": {
-                        "pattern": "^[1-2][0-9]{3}$",
-                        "type": "string",
-                        "description": "Anno di riferimento"
-                      },
-                      "debit": {
-                        "type": "integer",
-                        "format": "int32",
-                        "description": "Importi a debito versati (eurocent)"
-                      },
-                      "credit": {
-                        "type": "integer",
-                        "format": "int32",
-                        "description": "Importi a credito compensati (eurocent)"
-                      },
-                      "section": {
-                        "pattern": "^(ER|RG|EL)$",
-                        "type": "string",
-                        "description": "Sezione (ER|RG|EL)"
-                      }
+                "taxAddress": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "municipality": {
+                      "pattern": "^[ -~]{1,40}$",
+                      "type": "string",
+                      "description": "Comune"
                     },
-                    "description": "Riga semplificato"
+                    "province": {
+                      "pattern": "^[A-Z]{2}$",
+                      "type": "string",
+                      "description": "Provincia"
+                    },
+                    "address": {
+                      "pattern": "^[ -~]{1,35}$",
+                      "type": "string",
+                      "description": "Via e numero civico"
+                    }
                   },
-                  "description": "Righe sezione semplificato"
+                  "description": "Domicilio Fiscale"
                 }
               },
-              "description": "Motivo del Pagamento"
-            }
-          }
-        },
-        "f24Excise": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "taxPayer": {
+              "description": "Dati Anagrafici PF"
+            },
+            "company": {
               "type": "object",
               "required": [
-                "taxCode"
+                "name"
               ],
               "additionalProperties": false,
               "properties": {
-                "taxCode": {
-                  "pattern": "^([A-Z]{6}[0-9LMNPQRSTUV]{2}[ABCDEHLMPRST]{1}[0-9LMNPQRSTUV]{2}[A-Z]{1}[0-9LMNPQRSTUV]{3}[A-Z]{1})|([0-9]{11})$",
+                "name": {
+                  "pattern": "^[ -~]{1,60}$",
                   "type": "string",
-                  "description": "Codice fiscale contribuente"
+                  "description": "Denominazione"
                 },
-                "isNotTaxYear": {
-                  "type": "boolean",
-                  "description": "Anno d'imposta non coincidente con anno solare"
-                },
-                "person": {
+                "taxAddress": {
                   "type": "object",
                   "additionalProperties": false,
                   "properties": {
-                    "personalData": {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "required": [
-                        "surname",
-                        "name",
-                        "birthDate",
-                        "sex"
-                      ],
-                      "properties": {
-                        "surname": {
-                          "pattern": "^[ -~]{1,24}$",
-                          "type": "string",
-                          "description": "Cognome"
-                        },
-                        "name": {
-                          "pattern": "^[ -~]{1,20}$",
-                          "type": "string",
-                          "description": "Nome"
-                        },
-                        "birthDate": {
-                          "pattern": "^\\d{2}-\\d{2}-\\d{4}$",
-                          "type": "string",
-                          "description": "Data di nascita"
-                        },
-                        "sex": {
-                          "pattern": "^[FM]$",
-                          "type": "string",
-                          "description": "Indicare (F)emmina o (M)aschio"
-                        },
-                        "birthPlace": {
-                          "pattern": "^[ -~]{1,40}$",
-                          "type": "string",
-                          "description": "Luogo di nascita"
-                        },
-                        "birthProvince": {
-                          "pattern": "^[A-Z]{2}$",
-                          "type": "string",
-                          "description": "Provincia di nascita"
-                        }
-                      },
-                      "description": "Dati Anagrafici"
-                    },
-                    "taxAddress": {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "properties": {
-                        "municipality": {
-                          "pattern": "^[ -~]{1,40}$",
-                          "type": "string",
-                          "description": "Comune"
-                        },
-                        "province": {
-                          "pattern": "^[A-Z]{2}$",
-                          "type": "string",
-                          "description": "Provincia"
-                        },
-                        "address": {
-                          "pattern": "^[ -~]{1,35}$",
-                          "type": "string",
-                          "description": "Via e numero civico"
-                        }
-                      },
-                      "description": "Domicilio Fiscale"
-                    }
-                  },
-                  "description": "Dati Anagrafici PF"
-                },
-                "company": {
-                  "type": "object",
-                  "required": [
-                    "name"
-                  ],
-                  "additionalProperties": false,
-                  "properties": {
-                    "name": {
-                      "pattern": "^[ -~]{1,60}$",
+                    "municipality": {
+                      "pattern": "^[ -~]{1,40}$",
                       "type": "string",
-                      "description": "Denominazione"
+                      "description": "Comune"
                     },
-                    "taxAddress": {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "properties": {
-                        "municipality": {
-                          "pattern": "^[ -~]{1,40}$",
-                          "type": "string",
-                          "description": "Comune"
-                        },
-                        "province": {
-                          "pattern": "^[A-Z]{2}$",
-                          "type": "string",
-                          "description": "Provincia"
-                        },
-                        "address": {
-                          "pattern": "^[ -~]{1,35}$",
-                          "type": "string",
-                          "description": "Via e numero civico"
-                        }
-                      },
-                      "description": "Domicilio Fiscale"
+                    "province": {
+                      "pattern": "^[A-Z]{2}$",
+                      "type": "string",
+                      "description": "Provincia"
+                    },
+                    "address": {
+                      "pattern": "^[ -~]{1,35}$",
+                      "type": "string",
+                      "description": "Via e numero civico"
                     }
                   },
-                  "description": "Dati Anagrafici PNF"
-                },
-                "relativePersonTaxCode": {
-                  "pattern": "^([A-Z]{6}[0-9LMNPQRSTUV]{2}[ABCDEHLMPRST]{1}[0-9LMNPQRSTUV]{2}[A-Z]{1}[0-9LMNPQRSTUV]{3}[A-Z]{1})|([0-9]{11})$",
-                  "type": "string",
-                  "description": "Codice fiscale del coobbligato, erede, genitore, tutore o curatore fallimentare"
-                },
-                "id": {
-                  "pattern": "^[A-Z0-9]{2}$",
-                  "type": "string",
-                  "description": "Codice identificativo"
-                }
-              }
-            },
-            "treasury": {
-              "type": "object",
-              "additionalProperties": false,
-              "properties": {
-                "records": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "additionalProperties": false,
-                    "required": [
-                      "applyCost"
-                    ],
-                    "properties": {
-                      "applyCost": {
-                        "type": "boolean",
-                        "description": "Indica se alla riga devono essere aggiunti i costi di notifica. Una sola riga deve essere presente con questo flag a true."
-                      },
-                      "taxType": {
-                        "pattern": "^[A-Z0-9]{4}$",
-                        "type": "string",
-                        "description": "Codice tributo"
-                      },
-                      "installment": {
-                        "pattern": "^[A-Z0-9]{0,4}$",
-                        "type": "string",
-                        "description": "Rateazione/regione/prov./mese rif."
-                      },
-                      "year": {
-                        "pattern": "^[1-2][0-9]{3}$",
-                        "type": "string",
-                        "description": "Anno di riferimento"
-                      },
-                      "debit": {
-                        "type": "integer",
-                        "format": "int32",
-                        "description": "Importi a debito versati (eurocent)"
-                      },
-                      "credit": {
-                        "type": "integer",
-                        "format": "int32",
-                        "description": "Importi a credito compensati (eurocent)"
-                      }
-                    },
-                    "description": "Tax object"
-                  },
-                  "description": "Righe sezione erario"
-                },
-                "office": {
-                  "pattern": "^[A-Z0-9]{3}$",
-                  "type": "string",
-                  "description": "Codice ufficio"
-                },
-                "document": {
-                  "pattern": "^\\d{11}$",
-                  "type": "string",
-                  "description": "Codice atto"
+                  "description": "Domicilio Fiscale"
                 }
               },
-              "description": "Sezione Erario"
+              "description": "Dati Anagrafici PNF"
             },
-            "inps": {
-              "type": "object",
-              "additionalProperties": false,
-              "properties": {
-                "records": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "additionalProperties": false,
-                    "required": [
-                      "applyCost"
-                    ],
-                    "properties": {
-                      "applyCost": {
-                        "type": "boolean",
-                        "description": "Indica se alla riga devono essere aggiunti i costi di notifica. Una sola riga deve essere presente con questo flag a true."
-                      },
-                      "office": {
-                        "pattern": "^[0-9]{3,4}$",
-                        "type": "string",
-                        "description": "Codice sede"
-                      },
-                      "reason": {
-                        "pattern": "^[A-Z-]{3,4}$",
-                        "type": "string",
-                        "description": "Causale contributo"
-                      },
-                      "inps": {
-                        "pattern": "^[ -~]{0,17}$",
-                        "type": "string",
-                        "description": "Matricola INPS / codice INPS / filiale azienda"
-                      },
-                      "period": {
-                        "type": "object",
-                        "additionalProperties": false,
-                        "properties": {
-                          "startDate": {
-                            "pattern": "^[0-9]{6}$",
-                            "type": "string",
-                            "description": "Da mm/aaaa"
-                          },
-                          "endDate": {
-                            "pattern": "^[0-9]{6}$",
-                            "type": "string",
-                            "description": "A mm/aaaa"
-                          }
-                        },
-                        "description": "Periodo di riferimento (Sezione INPS)"
-                      },
-                      "debit": {
-                        "type": "integer",
-                        "format": "int32",
-                        "description": "Importi a debito versati (eurocent)"
-                      },
-                      "credit": {
-                        "type": "integer",
-                        "format": "int32",
-                        "description": "Importi a credito compensati (eurocent)"
-                      }
-                    },
-                    "description": "Sezione INPS"
+            "relativePersonTaxCode": {
+              "pattern": "^([A-Z]{6}[0-9LMNPQRSTUV]{2}[ABCDEHLMPRST]{1}[0-9LMNPQRSTUV]{2}[A-Z]{1}[0-9LMNPQRSTUV]{3}[A-Z]{1})|([0-9]{11})$",
+              "type": "string",
+              "description": "Codice fiscale del coobbligato, erede, genitore, tutore o curatore fallimentare"
+            },
+            "id": {
+              "pattern": "^[A-Z0-9]{2}$",
+              "type": "string",
+              "description": "Codice identificativo"
+            }
+          }
+        },
+        "treasury": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "records": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "applyCost"
+                ],
+                "properties": {
+                  "applyCost": {
+                    "type": "boolean",
+                    "description": "Indica se alla riga devono essere aggiunti i costi di notifica. Una sola riga deve essere presente con questo flag a true."
                   },
-                  "description": "INPS Record List"
-                }
-              },
-              "description": "INPS Section (Sezione INPS) object"
-            },
-            "region": {
-              "type": "object",
-              "additionalProperties": false,
-              "properties": {
-                "records": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "additionalProperties": false,
-                    "required": [
-                      "applyCost"
-                    ],
-                    "properties": {
-                      "applyCost": {
-                        "type": "boolean",
-                        "description": "Indica se alla riga devono essere aggiunti i costi di notifica. Una sola riga deve essere presente con questo flag a true."
-                      },
-                      "region": {
-                        "pattern": "^[0-9]{2}$",
-                        "type": "string",
-                        "description": "Codice regione"
-                      },
-                      "taxType": {
-                        "pattern": "^[0-9A-Z]{4}$",
-                        "type": "string",
-                        "description": "Codice tributo"
-                      },
-                      "installment": {
-                        "pattern": "^[A-Z0-9]{0,4}$",
-                        "type": "string",
-                        "description": "Rateazione"
-                      },
-                      "year": {
-                        "pattern": "^[1-2][0-9]{3}$",
-                        "type": "string",
-                        "description": "Anno di riferimento"
-                      },
-                      "debit": {
-                        "type": "integer",
-                        "format": "int32",
-                        "description": "Importi a debito versati (eurocent)"
-                      },
-                      "credit": {
-                        "type": "integer",
-                        "format": "int32",
-                        "description": "Importi a credito compensati (eurocent)"
-                      }
-                    },
-                    "description": "Region Record object"
+                  "taxType": {
+                    "pattern": "^[A-Z0-9]{4}$",
+                    "type": "string",
+                    "description": "Codice tributo"
                   },
-                  "description": "Righe sezione regioni"
-                }
-              },
-              "description": "Sezione Regioni"
-            },
-            "localTax": {
-              "type": "object",
-              "additionalProperties": false,
-              "properties": {
-                "operationId": {
-                  "pattern": "^[A-Z0-9]{18}$",
-                  "type": "string",
-                  "description": "Identificativo operatione"
-                },
-                "records": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "additionalProperties": false,
-                    "required": [
-                      "applyCost",
-                      "municipality",
-                      "taxType"
-                    ],
-                    "properties": {
-                      "applyCost": {
-                        "type": "boolean",
-                        "description": "Indica se alla riga devono essere aggiunti i costi di notifica. Una sola riga deve essere presente con questo flag a true."
-                      },
-                      "municipality": {
-                        "pattern": "^[0-9A-Z]{4}$",
-                        "type": "string",
-                        "description": "Codice ente / codice comune"
-                      },
-                      "reconsideration": {
-                        "type": "boolean",
-                        "description": "Ravvedimento"
-                      },
-                      "propertiesChanges": {
-                        "type": "boolean",
-                        "description": "Immobili variati"
-                      },
-                      "advancePayment": {
-                        "type": "boolean",
-                        "description": "Acconto"
-                      },
-                      "fullPayment": {
-                        "type": "boolean",
-                        "description": "Saldo"
-                      },
-                      "numberOfProperties": {
-                        "pattern": "^[0-9]{3}$",
-                        "type": "string",
-                        "description": "Numero immobili"
-                      },
-                      "taxType": {
-                        "pattern": "^[0-9A-Z]{4}$",
-                        "type": "string",
-                        "description": "Codice tributo"
-                      },
-                      "installment": {
-                        "pattern": "^[A-Z0-9]{0,4}$",
-                        "type": "string",
-                        "description": "Rateazione / mese rif."
-                      },
-                      "year": {
-                        "pattern": "^[1-2][0-9]{3}$",
-                        "type": "string",
-                        "description": "Anno di riferimento"
-                      },
-                      "debit": {
-                        "type": "integer",
-                        "format": "int32",
-                        "description": "Importi a debito versati (eurocent)"
-                      },
-                      "credit": {
-                        "type": "integer",
-                        "format": "int32",
-                        "description": "Importi a credito compensati (eurocent)"
-                      }
-                    },
-                    "description": "LocalTax Record object"
+                  "installment": {
+                    "pattern": "^[A-Z0-9]{0,4}$",
+                    "type": "string",
+                    "description": "Rateazione/regione/prov./mese rif."
+                  },
+                  "year": {
+                    "pattern": "^[1-2][0-9]{3}$",
+                    "type": "string",
+                    "description": "Anno di riferimento"
+                  },
+                  "debit": {
+                    "type": "integer",
+                    "format": "int32",
+                    "description": "Importi a debito versati (eurocent)"
+                  },
+                  "credit": {
+                    "type": "integer",
+                    "format": "int32",
+                    "description": "Importi a credito compensati (eurocent)"
                   }
                 },
-                "deduction": {
-                  "pattern": "^[0-9]{3,15}$",
-                  "type": "string",
-                  "description": "Detrazione"
-                }
+                "description": "Tax object"
               },
-              "description": "Sezione IMU e Altri Tributi Locali"
+              "description": "Righe sezione erario"
             },
-            "excise": {
-              "type": "object",
-              "additionalProperties": false,
-              "properties": {
-                "records": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "additionalProperties": false,
-                    "required": [
-                      "applyCost"
-                    ],
-                    "properties": {
-                      "applyCost": {
-                        "type": "boolean",
-                        "description": "Indica se alla riga devono essere aggiunti i costi di notifica. Una sola riga deve essere presente con questo flag a true."
-                      },
-                      "institution": {
-                        "pattern": "^[A-Z]{2}$",
-                        "type": "string",
-                        "description": "Ente"
-                      },
-                      "province": {
-                        "pattern": "^[A-Z]{2}$",
-                        "type": "string",
-                        "description": "Provincia"
-                      },
-                      "id": {
-                        "pattern": "^[A-Z0-9]{17}$",
-                        "type": "string",
-                        "description": "Codice tributo"
-                      },
-                      "taxType": {
-                        "pattern": "^[0-9A-Z]{4}$",
-                        "type": "string",
-                        "description": "Codice identificativo"
-                      },
-                      "installment": {
-                        "pattern": "^[A-Z0-9]{0,4}$",
-                        "type": "string",
-                        "description": "Rateazione"
-                      },
-                      "month": {
-                        "pattern": "^[0-1][0-9]$",
-                        "type": "string",
-                        "description": "Mese"
-                      },
-                      "year": {
-                        "pattern": "^[1-2][0-9]{3}$",
-                        "type": "string",
-                        "description": "Anno di riferimento"
-                      },
-                      "debit": {
-                        "type": "integer",
-                        "format": "int32",
-                        "description": "Importi a debito versati (eurocent)"
-                      }
-                    },
-                    "description": "Excise Tax object"
-                  },
-                  "description": "Excise Tax List"
-                },
-                "office": {
-                  "pattern": "^[A-Z0-9]{3}$",
-                  "type": "string",
-                  "description": "Codice ufficio"
-                },
-                "document": {
-                  "pattern": "^\\d{11}$",
-                  "type": "string",
-                  "description": "Codice atto"
-                }
-              },
-              "description": "Accise"
+            "office": {
+              "pattern": "^[A-Z0-9]{3}$",
+              "type": "string",
+              "description": "Codice ufficio"
+            },
+            "document": {
+              "pattern": "^\\d{11}$",
+              "type": "string",
+              "description": "Codice atto"
             }
           },
-          "description": "F24 Excise (Accise) object"
+          "description": "Sezione Erario"
         },
-        "f24Elid": {
+        "inps": {
           "type": "object",
           "additionalProperties": false,
           "properties": {
-            "taxPayer": {
+            "records": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "applyCost"
+                ],
+                "properties": {
+                  "applyCost": {
+                    "type": "boolean",
+                    "description": "Indica se alla riga devono essere aggiunti i costi di notifica. Una sola riga deve essere presente con questo flag a true."
+                  },
+                  "office": {
+                    "pattern": "^[0-9]{3,4}$",
+                    "type": "string",
+                    "description": "Codice sede"
+                  },
+                  "reason": {
+                    "pattern": "^[A-Z-]{3,4}$",
+                    "type": "string",
+                    "description": "Causale contributo"
+                  },
+                  "inps": {
+                    "pattern": "^[ -~]{0,17}$",
+                    "type": "string",
+                    "description": "Matricola INPS / codice INPS / filiale azienda"
+                  },
+                  "period": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "startDate": {
+                        "pattern": "^[0-9]{6}$",
+                        "type": "string",
+                        "description": "Da mm/aaaa"
+                      },
+                      "endDate": {
+                        "pattern": "^[0-9]{6}$",
+                        "type": "string",
+                        "description": "A mm/aaaa"
+                      }
+                    },
+                    "description": "Periodo di riferimento (Sezione INPS)"
+                  },
+                  "debit": {
+                    "type": "integer",
+                    "format": "int32",
+                    "description": "Importi a debito versati (eurocent)"
+                  },
+                  "credit": {
+                    "type": "integer",
+                    "format": "int32",
+                    "description": "Importi a credito compensati (eurocent)"
+                  }
+                },
+                "description": "Sezione INPS"
+              },
+              "description": "INPS Record List"
+            }
+          },
+          "description": "INPS Section (Sezione INPS) object"
+        },
+        "region": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "records": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "applyCost"
+                ],
+                "properties": {
+                  "applyCost": {
+                    "type": "boolean",
+                    "description": "Indica se alla riga devono essere aggiunti i costi di notifica. Una sola riga deve essere presente con questo flag a true."
+                  },
+                  "region": {
+                    "pattern": "^[0-9]{2}$",
+                    "type": "string",
+                    "description": "Codice regione"
+                  },
+                  "taxType": {
+                    "pattern": "^[0-9A-Z]{4}$",
+                    "type": "string",
+                    "description": "Codice tributo"
+                  },
+                  "installment": {
+                    "pattern": "^[A-Z0-9]{0,4}$",
+                    "type": "string",
+                    "description": "Rateazione"
+                  },
+                  "year": {
+                    "pattern": "^[1-2][0-9]{3}$",
+                    "type": "string",
+                    "description": "Anno di riferimento"
+                  },
+                  "debit": {
+                    "type": "integer",
+                    "format": "int32",
+                    "description": "Importi a debito versati (eurocent)"
+                  },
+                  "credit": {
+                    "type": "integer",
+                    "format": "int32",
+                    "description": "Importi a credito compensati (eurocent)"
+                  }
+                },
+                "description": "Region Record object"
+              },
+              "description": "Righe sezione regioni"
+            }
+          },
+          "description": "Sezione Regioni"
+        },
+        "localTax": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "operationId": {
+              "pattern": "^[A-Z0-9]{18}$",
+              "type": "string",
+              "description": "Identificativo operatione"
+            },
+            "records": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "applyCost",
+                  "municipality",
+                  "taxType"
+                ],
+                "properties": {
+                  "applyCost": {
+                    "type": "boolean",
+                    "description": "Indica se alla riga devono essere aggiunti i costi di notifica. Una sola riga deve essere presente con questo flag a true."
+                  },
+                  "municipality": {
+                    "pattern": "^[0-9A-Z]{4}$",
+                    "type": "string",
+                    "description": "Codice ente / codice comune"
+                  },
+                  "reconsideration": {
+                    "type": "boolean",
+                    "description": "Ravvedimento"
+                  },
+                  "propertiesChanges": {
+                    "type": "boolean",
+                    "description": "Immobili variati"
+                  },
+                  "advancePayment": {
+                    "type": "boolean",
+                    "description": "Acconto"
+                  },
+                  "fullPayment": {
+                    "type": "boolean",
+                    "description": "Saldo"
+                  },
+                  "numberOfProperties": {
+                    "pattern": "^[0-9]{3}$",
+                    "type": "string",
+                    "description": "Numero immobili"
+                  },
+                  "taxType": {
+                    "pattern": "^[0-9A-Z]{4}$",
+                    "type": "string",
+                    "description": "Codice tributo"
+                  },
+                  "installment": {
+                    "pattern": "^[A-Z0-9]{0,4}$",
+                    "type": "string",
+                    "description": "Rateazione / mese rif."
+                  },
+                  "year": {
+                    "pattern": "^[1-2][0-9]{3}$",
+                    "type": "string",
+                    "description": "Anno di riferimento"
+                  },
+                  "debit": {
+                    "type": "integer",
+                    "format": "int32",
+                    "description": "Importi a debito versati (eurocent)"
+                  },
+                  "credit": {
+                    "type": "integer",
+                    "format": "int32",
+                    "description": "Importi a credito compensati (eurocent)"
+                  }
+                },
+                "description": "LocalTax Record object"
+              }
+            },
+            "deduction": {
+              "pattern": "^[0-9]{3,15}$",
+              "type": "string",
+              "description": "Detrazione"
+            }
+          },
+          "description": "Sezione IMU e Altri Tributi Locali"
+        },
+        "socialSecurity": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "records": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "applyCost"
+                ],
+                "properties": {
+                  "applyCost": {
+                    "type": "boolean",
+                    "description": "Indica se alla riga devono essere aggiunti i costi di notifica. Una sola riga deve essere presente con questo flag a true."
+                  },
+                  "office": {
+                    "pattern": "^[0-9]{5}$",
+                    "type": "string",
+                    "description": "Codice sede"
+                  },
+                  "company": {
+                    "pattern": "^[0-9]{8}$",
+                    "type": "string",
+                    "description": "Codice ditta"
+                  },
+                  "control": {
+                    "pattern": "^[0-9]{2}$",
+                    "type": "string",
+                    "description": "Codice di controllo c.c."
+                  },
+                  "refNumber": {
+                    "pattern": "^[0-9]{6}$",
+                    "type": "string",
+                    "description": "Numero di riferimento"
+                  },
+                  "reason": {
+                    "pattern": "^[A-Z0-9]$",
+                    "type": "string",
+                    "description": "Causale"
+                  },
+                  "debit": {
+                    "type": "integer",
+                    "format": "int32",
+                    "description": "Importi a debito versati (eurocent)"
+                  },
+                  "credit": {
+                    "type": "integer",
+                    "format": "int32",
+                    "description": "Importi a credito compensati (eurocent)"
+                  }
+                },
+                "description": "INAIL sezione altri enti previdenziali e assicurativi"
+              }
+            },
+            "socSecRecords": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "applyCost"
+                ],
+                "properties": {
+                  "applyCost": {
+                    "type": "boolean",
+                    "description": "Indica se alla riga devono essere aggiunti i costi di notifica. Una sola riga deve essere presente con questo flag a true."
+                  },
+                  "institution": {
+                    "pattern": "^[0-9]{4}$",
+                    "type": "string",
+                    "description": "Codice ente"
+                  },
+                  "office": {
+                    "pattern": "^[0-9A-Z]{5}$",
+                    "type": "string",
+                    "description": "Codice sede"
+                  },
+                  "reason": {
+                    "pattern": "^[0-9A-Z]{3,4}$",
+                    "type": "string",
+                    "description": "Causale contributo"
+                  },
+                  "position": {
+                    "pattern": "^[0-9]{9}$",
+                    "type": "string",
+                    "description": "Codice posizione"
+                  },
+                  "period": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "startDate": {
+                        "pattern": "^[0-9]{6}$",
+                        "type": "string",
+                        "description": "Da mm/aaaa"
+                      },
+                      "endDate": {
+                        "pattern": "^[0-9]{6}$",
+                        "type": "string",
+                        "description": "A mm/aaaa"
+                      }
+                    },
+                    "description": "Periodo di riferimento (Sezione INPS)"
+                  },
+                  "debit": {
+                    "type": "integer",
+                    "format": "int32",
+                    "description": "Importi a debito versati (eurocent)"
+                  },
+                  "credit": {
+                    "type": "integer",
+                    "format": "int32",
+                    "description": "Importi a credito compensati (eurocent)"
+                  }
+                },
+                "description": "Sezione altri enti previdenziali e assicurativi"
+              },
+              "description": "Social Security Record List"
+            }
+          },
+          "description": "Sezione Altri Enti Previdenziali"
+        }
+      }
+    },
+    "f24Simplified": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "taxPayer": {
+          "type": "object",
+          "required": [
+            "taxCode"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "taxCode": {
+              "pattern": "^([A-Z]{6}[0-9LMNPQRSTUV]{2}[ABCDEHLMPRST]{1}[0-9LMNPQRSTUV]{2}[A-Z]{1}[0-9LMNPQRSTUV]{3}[A-Z]{1})|([0-9]{11})$",
+              "type": "string",
+              "description": "Codice fiscale contribuente"
+            },
+            "personalData": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "surname",
+                "name",
+                "birthDate",
+                "sex"
+              ],
+              "properties": {
+                "surname": {
+                  "pattern": "^[ -~]{1,24}$",
+                  "type": "string",
+                  "description": "Cognome"
+                },
+                "name": {
+                  "pattern": "^[ -~]{1,20}$",
+                  "type": "string",
+                  "description": "Nome"
+                },
+                "birthDate": {
+                  "pattern": "^\\d{2}-\\d{2}-\\d{4}$",
+                  "type": "string",
+                  "description": "Data di nascita"
+                },
+                "sex": {
+                  "pattern": "^[FM]$",
+                  "type": "string",
+                  "description": "Indicare (F)emmina o (M)aschio"
+                },
+                "birthPlace": {
+                  "pattern": "^[ -~]{1,40}$",
+                  "type": "string",
+                  "description": "Luogo di nascita"
+                },
+                "birthProvince": {
+                  "pattern": "^[A-Z]{2}$",
+                  "type": "string",
+                  "description": "Provincia di nascita"
+                }
+              },
+              "description": "Dati Anagrafici"
+            },
+            "relativePersonTaxCode": {
+              "pattern": "^([A-Z]{6}[0-9LMNPQRSTUV]{2}[ABCDEHLMPRST]{1}[0-9LMNPQRSTUV]{2}[A-Z]{1}[0-9LMNPQRSTUV]{3}[A-Z]{1})|([0-9]{11})$",
+              "type": "string",
+              "description": "Codice fiscale del coobbligato, erede, genitore, tutore o curatore fallimentare"
+            },
+            "id": {
+              "pattern": "^[A-Z0-9]{2}$",
+              "type": "string",
+              "description": "Codice identificativo"
+            },
+            "document": {
+              "pattern": "^\\d{11}$",
+              "type": "string",
+              "description": "Codice identificativo of the document"
+            },
+            "office": {
+              "pattern": "^[A-Z0-9]{3}$",
+              "type": "string",
+              "description": "Codice identificativo of the office"
+            }
+          }
+        },
+        "payments": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "operationId": {
+              "pattern": "^[A-Z0-9]{18}$",
+              "type": "string",
+              "description": "Identificativo operazione"
+            },
+            "records": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "applyCost",
+                  "section",
+                  "municipality",
+                  "taxType"
+                ],
+                "properties": {
+                  "applyCost": {
+                    "type": "boolean",
+                    "description": "Indica se alla riga devono essere aggiunti i costi di notifica. Una sola riga deve essere presente con questo flag a true."
+                  },
+                  "municipality": {
+                    "pattern": "^[0-9A-Z]{4}$",
+                    "type": "string",
+                    "description": "Codice ente/prov/comune"
+                  },
+                  "reconsideration": {
+                    "type": "boolean",
+                    "description": "Flag ravvedimento"
+                  },
+                  "propertiesChanges": {
+                    "type": "boolean",
+                    "description": "Flag immobili variati"
+                  },
+                  "advancePayment": {
+                    "type": "boolean",
+                    "description": "Flag acconto"
+                  },
+                  "fullPayment": {
+                    "type": "boolean",
+                    "description": "Flag saldo"
+                  },
+                  "numberOfProperties": {
+                    "pattern": "^[0-9]{3}$",
+                    "type": "string",
+                    "description": "Numero immobili"
+                  },
+                  "taxType": {
+                    "pattern": "^[0-9A-Z]{4}$",
+                    "type": "string",
+                    "description": "Codice tributo"
+                  },
+                  "installment": {
+                    "pattern": "^[A-Z0-9]{0,4}$",
+                    "type": "string",
+                    "description": "Rateazione"
+                  },
+                  "year": {
+                    "pattern": "^[1-2][0-9]{3}$",
+                    "type": "string",
+                    "description": "Anno di riferimento"
+                  },
+                  "debit": {
+                    "type": "integer",
+                    "format": "int32",
+                    "description": "Importi a debito versati (eurocent)"
+                  },
+                  "credit": {
+                    "type": "integer",
+                    "format": "int32",
+                    "description": "Importi a credito compensati (eurocent)"
+                  },
+                  "section": {
+                    "pattern": "^(ER|RG|EL)$",
+                    "type": "string",
+                    "description": "Sezione (ER|RG|EL)"
+                  }
+                },
+                "description": "Riga semplificato"
+              },
+              "description": "Righe sezione semplificato"
+            }
+          },
+          "description": "Motivo del Pagamento"
+        }
+      }
+    },
+    "f24Excise": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "taxPayer": {
+          "type": "object",
+          "required": [
+            "taxCode"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "taxCode": {
+              "pattern": "^([A-Z]{6}[0-9LMNPQRSTUV]{2}[ABCDEHLMPRST]{1}[0-9LMNPQRSTUV]{2}[A-Z]{1}[0-9LMNPQRSTUV]{3}[A-Z]{1})|([0-9]{11})$",
+              "type": "string",
+              "description": "Codice fiscale contribuente"
+            },
+            "isNotTaxYear": {
+              "type": "boolean",
+              "description": "Anno d'imposta non coincidente con anno solare"
+            },
+            "person": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "personalData": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "surname",
+                    "name",
+                    "birthDate",
+                    "sex"
+                  ],
+                  "properties": {
+                    "surname": {
+                      "pattern": "^[ -~]{1,24}$",
+                      "type": "string",
+                      "description": "Cognome"
+                    },
+                    "name": {
+                      "pattern": "^[ -~]{1,20}$",
+                      "type": "string",
+                      "description": "Nome"
+                    },
+                    "birthDate": {
+                      "pattern": "^\\d{2}-\\d{2}-\\d{4}$",
+                      "type": "string",
+                      "description": "Data di nascita"
+                    },
+                    "sex": {
+                      "pattern": "^[FM]$",
+                      "type": "string",
+                      "description": "Indicare (F)emmina o (M)aschio"
+                    },
+                    "birthPlace": {
+                      "pattern": "^[ -~]{1,40}$",
+                      "type": "string",
+                      "description": "Luogo di nascita"
+                    },
+                    "birthProvince": {
+                      "pattern": "^[A-Z]{2}$",
+                      "type": "string",
+                      "description": "Provincia di nascita"
+                    }
+                  },
+                  "description": "Dati Anagrafici"
+                },
+                "taxAddress": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "municipality": {
+                      "pattern": "^[ -~]{1,40}$",
+                      "type": "string",
+                      "description": "Comune"
+                    },
+                    "province": {
+                      "pattern": "^[A-Z]{2}$",
+                      "type": "string",
+                      "description": "Provincia"
+                    },
+                    "address": {
+                      "pattern": "^[ -~]{1,35}$",
+                      "type": "string",
+                      "description": "Via e numero civico"
+                    }
+                  },
+                  "description": "Domicilio Fiscale"
+                }
+              },
+              "description": "Dati Anagrafici PF"
+            },
+            "company": {
               "type": "object",
               "required": [
-                "taxCode"
+                "name"
               ],
               "additionalProperties": false,
               "properties": {
-                "taxCode": {
-                  "pattern": "^([A-Z]{6}[0-9LMNPQRSTUV]{2}[ABCDEHLMPRST]{1}[0-9LMNPQRSTUV]{2}[A-Z]{1}[0-9LMNPQRSTUV]{3}[A-Z]{1})|([0-9]{11})$",
+                "name": {
+                  "pattern": "^[ -~]{1,60}$",
                   "type": "string",
-                  "description": "Codice fiscale contribuente"
+                  "description": "Denominazione"
                 },
-                "person": {
+                "taxAddress": {
                   "type": "object",
                   "additionalProperties": false,
                   "properties": {
-                    "personalData": {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "required": [
-                        "surname",
-                        "name",
-                        "birthDate",
-                        "sex"
-                      ],
-                      "properties": {
-                        "surname": {
-                          "pattern": "^[ -~]{1,24}$",
-                          "type": "string",
-                          "description": "Cognome"
-                        },
-                        "name": {
-                          "pattern": "^[ -~]{1,20}$",
-                          "type": "string",
-                          "description": "Nome"
-                        },
-                        "birthDate": {
-                          "pattern": "^\\d{2}-\\d{2}-\\d{4}$",
-                          "type": "string",
-                          "description": "Data di nascita"
-                        },
-                        "sex": {
-                          "pattern": "^[FM]$",
-                          "type": "string",
-                          "description": "Indicare (F)emmina o (M)aschio"
-                        },
-                        "birthPlace": {
-                          "pattern": "^[ -~]{1,40}$",
-                          "type": "string",
-                          "description": "Luogo di nascita"
-                        },
-                        "birthProvince": {
-                          "pattern": "^[A-Z]{2}$",
-                          "type": "string",
-                          "description": "Provincia di nascita"
-                        }
-                      },
-                      "description": "Dati Anagrafici"
-                    },
-                    "taxAddress": {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "properties": {
-                        "municipality": {
-                          "pattern": "^[ -~]{1,40}$",
-                          "type": "string",
-                          "description": "Comune"
-                        },
-                        "province": {
-                          "pattern": "^[A-Z]{2}$",
-                          "type": "string",
-                          "description": "Provincia"
-                        },
-                        "address": {
-                          "pattern": "^[ -~]{1,35}$",
-                          "type": "string",
-                          "description": "Via e numero civico"
-                        }
-                      },
-                      "description": "Domicilio Fiscale"
-                    }
-                  },
-                  "description": "Dati Anagrafici PF"
-                },
-                "company": {
-                  "type": "object",
-                  "required": [
-                    "name"
-                  ],
-                  "additionalProperties": false,
-                  "properties": {
-                    "name": {
-                      "pattern": "^[ -~]{1,60}$",
+                    "municipality": {
+                      "pattern": "^[ -~]{1,40}$",
                       "type": "string",
-                      "description": "Denominazione"
+                      "description": "Comune"
                     },
-                    "taxAddress": {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "properties": {
-                        "municipality": {
-                          "pattern": "^[ -~]{1,40}$",
-                          "type": "string",
-                          "description": "Comune"
-                        },
-                        "province": {
-                          "pattern": "^[A-Z]{2}$",
-                          "type": "string",
-                          "description": "Provincia"
-                        },
-                        "address": {
-                          "pattern": "^[ -~]{1,35}$",
-                          "type": "string",
-                          "description": "Via e numero civico"
-                        }
-                      },
-                      "description": "Domicilio Fiscale"
+                    "province": {
+                      "pattern": "^[A-Z]{2}$",
+                      "type": "string",
+                      "description": "Provincia"
+                    },
+                    "address": {
+                      "pattern": "^[ -~]{1,35}$",
+                      "type": "string",
+                      "description": "Via e numero civico"
                     }
                   },
-                  "description": "Dati Anagrafici PNF"
-                },
-                "relativePersonTaxCode": {
-                  "pattern": "^([A-Z]{6}[0-9LMNPQRSTUV]{2}[ABCDEHLMPRST]{1}[0-9LMNPQRSTUV]{2}[A-Z]{1}[0-9LMNPQRSTUV]{3}[A-Z]{1})|([0-9]{11})$",
-                  "type": "string",
-                  "description": "Codice fiscale del coobbligato, erede, genitore, tutore o curatore fallimentare"
-                },
-                "id": {
-                  "pattern": "^[A-Z0-9]{2}$",
-                  "type": "string",
-                  "description": "Codice identificativo"
+                  "description": "Domicilio Fiscale"
                 }
+              },
+              "description": "Dati Anagrafici PNF"
+            },
+            "relativePersonTaxCode": {
+              "pattern": "^([A-Z]{6}[0-9LMNPQRSTUV]{2}[ABCDEHLMPRST]{1}[0-9LMNPQRSTUV]{2}[A-Z]{1}[0-9LMNPQRSTUV]{3}[A-Z]{1})|([0-9]{11})$",
+              "type": "string",
+              "description": "Codice fiscale del coobbligato, erede, genitore, tutore o curatore fallimentare"
+            },
+            "id": {
+              "pattern": "^[A-Z0-9]{2}$",
+              "type": "string",
+              "description": "Codice identificativo"
+            }
+          }
+        },
+        "treasury": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "records": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "applyCost"
+                ],
+                "properties": {
+                  "applyCost": {
+                    "type": "boolean",
+                    "description": "Indica se alla riga devono essere aggiunti i costi di notifica. Una sola riga deve essere presente con questo flag a true."
+                  },
+                  "taxType": {
+                    "pattern": "^[A-Z0-9]{4}$",
+                    "type": "string",
+                    "description": "Codice tributo"
+                  },
+                  "installment": {
+                    "pattern": "^[A-Z0-9]{0,4}$",
+                    "type": "string",
+                    "description": "Rateazione/regione/prov./mese rif."
+                  },
+                  "year": {
+                    "pattern": "^[1-2][0-9]{3}$",
+                    "type": "string",
+                    "description": "Anno di riferimento"
+                  },
+                  "debit": {
+                    "type": "integer",
+                    "format": "int32",
+                    "description": "Importi a debito versati (eurocent)"
+                  },
+                  "credit": {
+                    "type": "integer",
+                    "format": "int32",
+                    "description": "Importi a credito compensati (eurocent)"
+                  }
+                },
+                "description": "Tax object"
+              },
+              "description": "Righe sezione erario"
+            },
+            "office": {
+              "pattern": "^[A-Z0-9]{3}$",
+              "type": "string",
+              "description": "Codice ufficio"
+            },
+            "document": {
+              "pattern": "^\\d{11}$",
+              "type": "string",
+              "description": "Codice atto"
+            }
+          },
+          "description": "Sezione Erario"
+        },
+        "inps": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "records": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "applyCost"
+                ],
+                "properties": {
+                  "applyCost": {
+                    "type": "boolean",
+                    "description": "Indica se alla riga devono essere aggiunti i costi di notifica. Una sola riga deve essere presente con questo flag a true."
+                  },
+                  "office": {
+                    "pattern": "^[0-9]{3,4}$",
+                    "type": "string",
+                    "description": "Codice sede"
+                  },
+                  "reason": {
+                    "pattern": "^[A-Z-]{3,4}$",
+                    "type": "string",
+                    "description": "Causale contributo"
+                  },
+                  "inps": {
+                    "pattern": "^[ -~]{0,17}$",
+                    "type": "string",
+                    "description": "Matricola INPS / codice INPS / filiale azienda"
+                  },
+                  "period": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "startDate": {
+                        "pattern": "^[0-9]{6}$",
+                        "type": "string",
+                        "description": "Da mm/aaaa"
+                      },
+                      "endDate": {
+                        "pattern": "^[0-9]{6}$",
+                        "type": "string",
+                        "description": "A mm/aaaa"
+                      }
+                    },
+                    "description": "Periodo di riferimento (Sezione INPS)"
+                  },
+                  "debit": {
+                    "type": "integer",
+                    "format": "int32",
+                    "description": "Importi a debito versati (eurocent)"
+                  },
+                  "credit": {
+                    "type": "integer",
+                    "format": "int32",
+                    "description": "Importi a credito compensati (eurocent)"
+                  }
+                },
+                "description": "Sezione INPS"
+              },
+              "description": "INPS Record List"
+            }
+          },
+          "description": "INPS Section (Sezione INPS) object"
+        },
+        "region": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "records": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "applyCost"
+                ],
+                "properties": {
+                  "applyCost": {
+                    "type": "boolean",
+                    "description": "Indica se alla riga devono essere aggiunti i costi di notifica. Una sola riga deve essere presente con questo flag a true."
+                  },
+                  "region": {
+                    "pattern": "^[0-9]{2}$",
+                    "type": "string",
+                    "description": "Codice regione"
+                  },
+                  "taxType": {
+                    "pattern": "^[0-9A-Z]{4}$",
+                    "type": "string",
+                    "description": "Codice tributo"
+                  },
+                  "installment": {
+                    "pattern": "^[A-Z0-9]{0,4}$",
+                    "type": "string",
+                    "description": "Rateazione"
+                  },
+                  "year": {
+                    "pattern": "^[1-2][0-9]{3}$",
+                    "type": "string",
+                    "description": "Anno di riferimento"
+                  },
+                  "debit": {
+                    "type": "integer",
+                    "format": "int32",
+                    "description": "Importi a debito versati (eurocent)"
+                  },
+                  "credit": {
+                    "type": "integer",
+                    "format": "int32",
+                    "description": "Importi a credito compensati (eurocent)"
+                  }
+                },
+                "description": "Region Record object"
+              },
+              "description": "Righe sezione regioni"
+            }
+          },
+          "description": "Sezione Regioni"
+        },
+        "localTax": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "operationId": {
+              "pattern": "^[A-Z0-9]{18}$",
+              "type": "string",
+              "description": "Identificativo operatione"
+            },
+            "records": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "applyCost",
+                  "municipality",
+                  "taxType"
+                ],
+                "properties": {
+                  "applyCost": {
+                    "type": "boolean",
+                    "description": "Indica se alla riga devono essere aggiunti i costi di notifica. Una sola riga deve essere presente con questo flag a true."
+                  },
+                  "municipality": {
+                    "pattern": "^[0-9A-Z]{4}$",
+                    "type": "string",
+                    "description": "Codice ente / codice comune"
+                  },
+                  "reconsideration": {
+                    "type": "boolean",
+                    "description": "Ravvedimento"
+                  },
+                  "propertiesChanges": {
+                    "type": "boolean",
+                    "description": "Immobili variati"
+                  },
+                  "advancePayment": {
+                    "type": "boolean",
+                    "description": "Acconto"
+                  },
+                  "fullPayment": {
+                    "type": "boolean",
+                    "description": "Saldo"
+                  },
+                  "numberOfProperties": {
+                    "pattern": "^[0-9]{3}$",
+                    "type": "string",
+                    "description": "Numero immobili"
+                  },
+                  "taxType": {
+                    "pattern": "^[0-9A-Z]{4}$",
+                    "type": "string",
+                    "description": "Codice tributo"
+                  },
+                  "installment": {
+                    "pattern": "^[A-Z0-9]{0,4}$",
+                    "type": "string",
+                    "description": "Rateazione / mese rif."
+                  },
+                  "year": {
+                    "pattern": "^[1-2][0-9]{3}$",
+                    "type": "string",
+                    "description": "Anno di riferimento"
+                  },
+                  "debit": {
+                    "type": "integer",
+                    "format": "int32",
+                    "description": "Importi a debito versati (eurocent)"
+                  },
+                  "credit": {
+                    "type": "integer",
+                    "format": "int32",
+                    "description": "Importi a credito compensati (eurocent)"
+                  }
+                },
+                "description": "LocalTax Record object"
               }
             },
-            "treasury": {
+            "deduction": {
+              "pattern": "^[0-9]{3,15}$",
+              "type": "string",
+              "description": "Detrazione"
+            }
+          },
+          "description": "Sezione IMU e Altri Tributi Locali"
+        },
+        "excise": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "records": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "applyCost"
+                ],
+                "properties": {
+                  "applyCost": {
+                    "type": "boolean",
+                    "description": "Indica se alla riga devono essere aggiunti i costi di notifica. Una sola riga deve essere presente con questo flag a true."
+                  },
+                  "institution": {
+                    "pattern": "^[A-Z]{2}$",
+                    "type": "string",
+                    "description": "Ente"
+                  },
+                  "province": {
+                    "pattern": "^[A-Z]{2}$",
+                    "type": "string",
+                    "description": "Provincia"
+                  },
+                  "id": {
+                    "pattern": "^[A-Z0-9]{17}$",
+                    "type": "string",
+                    "description": "Codice tributo"
+                  },
+                  "taxType": {
+                    "pattern": "^[0-9A-Z]{4}$",
+                    "type": "string",
+                    "description": "Codice identificativo"
+                  },
+                  "installment": {
+                    "pattern": "^[A-Z0-9]{0,4}$",
+                    "type": "string",
+                    "description": "Rateazione"
+                  },
+                  "month": {
+                    "pattern": "^[0-1][0-9]$",
+                    "type": "string",
+                    "description": "Mese"
+                  },
+                  "year": {
+                    "pattern": "^[1-2][0-9]{3}$",
+                    "type": "string",
+                    "description": "Anno di riferimento"
+                  },
+                  "debit": {
+                    "type": "integer",
+                    "format": "int32",
+                    "description": "Importi a debito versati (eurocent)"
+                  }
+                },
+                "description": "Excise Tax object"
+              },
+              "description": "Excise Tax List"
+            },
+            "office": {
+              "pattern": "^[A-Z0-9]{3}$",
+              "type": "string",
+              "description": "Codice ufficio"
+            },
+            "document": {
+              "pattern": "^\\d{11}$",
+              "type": "string",
+              "description": "Codice atto"
+            }
+          },
+          "description": "Accise"
+        }
+      },
+      "description": "F24 Excise (Accise) object"
+    },
+    "f24Elid": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "taxPayer": {
+          "type": "object",
+          "required": [
+            "taxCode"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "taxCode": {
+              "pattern": "^([A-Z]{6}[0-9LMNPQRSTUV]{2}[ABCDEHLMPRST]{1}[0-9LMNPQRSTUV]{2}[A-Z]{1}[0-9LMNPQRSTUV]{3}[A-Z]{1})|([0-9]{11})$",
+              "type": "string",
+              "description": "Codice fiscale contribuente"
+            },
+            "person": {
               "type": "object",
               "additionalProperties": false,
               "properties": {
-                "office": {
-                  "pattern": "^[A-Z0-9]{3}$",
-                  "type": "string",
-                  "description": "Codice ufficio"
-                },
-                "document": {
-                  "pattern": "^\\d{11}$",
-                  "type": "string",
-                  "description": "Codice atto"
-                },
-                "records": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "additionalProperties": false,
-                    "required": [
-                      "applyCost"
-                    ],
-                    "properties": {
-                      "applyCost": {
-                        "type": "boolean",
-                        "description": "Indica se alla riga devono essere aggiunti i costi di notifica. Una sola riga deve essere presente con questo flag a true."
-                      },
-                      "type": {
-                        "pattern": "^[A-Z]$",
-                        "type": "string",
-                        "description": "Tipo"
-                      },
-                      "id": {
-                        "pattern": "^[A-Z0-9]{17}$",
-                        "type": "string",
-                        "description": "Elementi identificativi"
-                      },
-                      "taxType": {
-                        "pattern": "^[A-Z0-9]{4}$",
-                        "type": "string",
-                        "description": "Codice"
-                      },
-                      "year": {
-                        "pattern": "^[1-2][0-9]{3}$",
-                        "type": "string",
-                        "description": "Anno di riferimento"
-                      },
-                      "debit": {
-                        "type": "integer",
-                        "format": "int32",
-                        "description": "Importi a debito versati (eurocent)"
-                      }
+                "personalData": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "surname",
+                    "name",
+                    "birthDate",
+                    "sex"
+                  ],
+                  "properties": {
+                    "surname": {
+                      "pattern": "^[ -~]{1,24}$",
+                      "type": "string",
+                      "description": "Cognome"
                     },
-                    "description": "Riga sezione Erario"
+                    "name": {
+                      "pattern": "^[ -~]{1,20}$",
+                      "type": "string",
+                      "description": "Nome"
+                    },
+                    "birthDate": {
+                      "pattern": "^\\d{2}-\\d{2}-\\d{4}$",
+                      "type": "string",
+                      "description": "Data di nascita"
+                    },
+                    "sex": {
+                      "pattern": "^[FM]$",
+                      "type": "string",
+                      "description": "Indicare (F)emmina o (M)aschio"
+                    },
+                    "birthPlace": {
+                      "pattern": "^[ -~]{1,40}$",
+                      "type": "string",
+                      "description": "Luogo di nascita"
+                    },
+                    "birthProvince": {
+                      "pattern": "^[A-Z]{2}$",
+                      "type": "string",
+                      "description": "Provincia di nascita"
+                    }
                   },
-                  "description": "Righe sezione erario"
+                  "description": "Dati Anagrafici"
+                },
+                "taxAddress": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "municipality": {
+                      "pattern": "^[ -~]{1,40}$",
+                      "type": "string",
+                      "description": "Comune"
+                    },
+                    "province": {
+                      "pattern": "^[A-Z]{2}$",
+                      "type": "string",
+                      "description": "Provincia"
+                    },
+                    "address": {
+                      "pattern": "^[ -~]{1,35}$",
+                      "type": "string",
+                      "description": "Via e numero civico"
+                    }
+                  },
+                  "description": "Domicilio Fiscale"
                 }
               },
-              "description": "Sezione Erario e Altro"
+              "description": "Dati Anagrafici PF"
+            },
+            "company": {
+              "type": "object",
+              "required": [
+                "name"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "name": {
+                  "pattern": "^[ -~]{1,60}$",
+                  "type": "string",
+                  "description": "Denominazione"
+                },
+                "taxAddress": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "municipality": {
+                      "pattern": "^[ -~]{1,40}$",
+                      "type": "string",
+                      "description": "Comune"
+                    },
+                    "province": {
+                      "pattern": "^[A-Z]{2}$",
+                      "type": "string",
+                      "description": "Provincia"
+                    },
+                    "address": {
+                      "pattern": "^[ -~]{1,35}$",
+                      "type": "string",
+                      "description": "Via e numero civico"
+                    }
+                  },
+                  "description": "Domicilio Fiscale"
+                }
+              },
+              "description": "Dati Anagrafici PNF"
+            },
+            "relativePersonTaxCode": {
+              "pattern": "^([A-Z]{6}[0-9LMNPQRSTUV]{2}[ABCDEHLMPRST]{1}[0-9LMNPQRSTUV]{2}[A-Z]{1}[0-9LMNPQRSTUV]{3}[A-Z]{1})|([0-9]{11})$",
+              "type": "string",
+              "description": "Codice fiscale del coobbligato, erede, genitore, tutore o curatore fallimentare"
+            },
+            "id": {
+              "pattern": "^[A-Z0-9]{2}$",
+              "type": "string",
+              "description": "Codice identificativo"
             }
           }
+        },
+        "treasury": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "office": {
+              "pattern": "^[A-Z0-9]{3}$",
+              "type": "string",
+              "description": "Codice ufficio"
+            },
+            "document": {
+              "pattern": "^\\d{11}$",
+              "type": "string",
+              "description": "Codice atto"
+            },
+            "records": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "applyCost"
+                ],
+                "properties": {
+                  "applyCost": {
+                    "type": "boolean",
+                    "description": "Indica se alla riga devono essere aggiunti i costi di notifica. Una sola riga deve essere presente con questo flag a true."
+                  },
+                  "type": {
+                    "pattern": "^[A-Z]$",
+                    "type": "string",
+                    "description": "Tipo"
+                  },
+                  "id": {
+                    "pattern": "^[A-Z0-9]{17}$",
+                    "type": "string",
+                    "description": "Elementi identificativi"
+                  },
+                  "taxType": {
+                    "pattern": "^[A-Z0-9]{4}$",
+                    "type": "string",
+                    "description": "Codice"
+                  },
+                  "year": {
+                    "pattern": "^[1-2][0-9]{3}$",
+                    "type": "string",
+                    "description": "Anno di riferimento"
+                  },
+                  "debit": {
+                    "type": "integer",
+                    "format": "int32",
+                    "description": "Importi a debito versati (eurocent)"
+                  }
+                },
+                "description": "Riga sezione Erario"
+              },
+              "description": "Righe sezione erario"
+            }
+          },
+          "description": "Sezione Erario e Altro"
         }
       }
     }
