@@ -16,7 +16,6 @@ import it.pagopa.pn.f24.middleware.dao.f24file.F24FileRequestDao;
 import it.pagopa.pn.f24.middleware.dao.f24metadataset.F24MetadataSetDao;
 import it.pagopa.pn.f24.middleware.eventbus.EventBridgeProducer;
 
-import org.junit.Ignore;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
