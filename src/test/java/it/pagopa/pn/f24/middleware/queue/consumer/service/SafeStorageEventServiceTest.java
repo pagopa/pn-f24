@@ -123,7 +123,67 @@ class SafeStorageEventServiceTest {
         StepVerifier.create(safeStorageEventService.handleSafeStorageResponse(response))
                 .expectComplete()
                 .verify();
+
+        verify(f24FileRequestDao, times(1)).updateTransactionalFileAndRequests(any(), any());
+        verify(pdfSetReadyEventProducer, times(1)).sendEvent((PnF24PdfSetReadyEvent) any());
     }
 
+    @Test
+    void testHandleSafeStorageResponseOkForDuplicatedRequestFromSafeStorageForFileInDone() {
+        FileDownloadResponse response = new FileDownloadResponse();
+        response.setKey("key_0_test");
+        response.setDocumentType(f24Config.getSafeStorageF24DocType());
+
+        F24File f24File = new F24File();
+        f24File.setPk("CACHE#setId#200#0_0");
+        f24File.setFileKey("key_0_test");
+        f24File.setStatus(F24FileStatus.DONE);
+        List<String> requestIds = new ArrayList<>();
+        requestIds.add("REQUEST#request0");
+        f24File.setRequestIds(requestIds);
+        when(f24FileCacheDao.getItemByFileKey(any()))
+                .thenReturn(Mono.just(f24File));
+
+        F24Request f24Request = new F24Request();
+        f24Request.setPk("REQUEST#request0");
+        f24Request.setRequestId("request0");
+        f24Request.setStatus(F24RequestStatus.DONE);
+        Map<String, F24Request.FileRef> fileRefMap = new HashMap<>();
+        fileRefMap.put("CACHE#setId#200#0_0", new F24Request.FileRef(""));
+        f24Request.setFiles(fileRefMap);
+        f24Request.setRecordVersion(1);
+        when(f24FileRequestDao.getItem(any()))
+                .thenReturn(Mono.just(f24Request));
+        when(f24FileRequestDao.getItem(any(), anyBoolean()))
+                .thenReturn(Mono.just(f24Request));
+
+        StepVerifier.create(safeStorageEventService.handleSafeStorageResponse(response))
+                .expectComplete()
+                .verify();
+
+        verify(f24FileRequestDao, times(0)).updateTransactionalFileAndRequests(any(), any());
+        verify(pdfSetReadyEventProducer, times(0)).sendEvent((PnF24PdfSetReadyEvent) any());
+    }
+
+    @Test
+    void testHandleSafeStorageResponseOkForDuplicatedRequestFromSafeStorageForFileInDoner() {
+        FileDownloadResponse response = new FileDownloadResponse();
+        response.setKey("key_0_test");
+        response.setDocumentType(f24Config.getSafeStorageF24DocType());
+
+        F24File f24File = new F24File();
+        f24File.setPk("CACHE#setId#200#0_0");
+        f24File.setFileKey("key_0_test");
+        f24File.setStatus(F24FileStatus.DONE);
+        when(f24FileCacheDao.getItemByFileKey(any()))
+                .thenReturn(Mono.just(f24File));
+
+        StepVerifier.create(safeStorageEventService.handleSafeStorageResponse(response))
+                .expectComplete()
+                .verify();
+
+        verify(f24FileCacheDao, times(0)).setStatusDone(any());
+        verify(f24FileRequestDao, times(0)).updateTransactionalFileAndRequests(any(), any());
+    }
 }
 

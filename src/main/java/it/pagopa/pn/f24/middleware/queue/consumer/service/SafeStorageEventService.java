@@ -43,7 +43,7 @@ public class SafeStorageEventService {
         try {
             log.logStartingProcess(processName);
 
-            if(response.getDocumentType().equalsIgnoreCase(f24Config.getSafeStorageF24DocType())) {
+            if (response.getDocumentType().equalsIgnoreCase(f24Config.getSafeStorageF24DocType())) {
                 return handleF24FileKey(response)
                         .doOnNext(unused -> log.logEndingProcess(processName))
                         .doOnError(throwable -> log.logEndingProcess(processName, false, throwable.getMessage()));
@@ -52,7 +52,7 @@ public class SafeStorageEventService {
                 log.logEndingProcess(processName, false, "Unsupported document type");
                 return Mono.empty();
             }
-        } catch (Exception ex){
+        } catch (Exception ex) {
             log.logEndingProcess(processName, false, ex.getMessage());
             throw ex;
         }
@@ -65,9 +65,14 @@ public class SafeStorageEventService {
     }
 
     private Mono<Void> updateFileStatusAndRelatedRequests(F24File f24File) {
-        if(f24File.getRequestIds() == null || f24File.getRequestIds().isEmpty()) {
-            log.debug("F24File with pk: {}, has not related requests", f24File.getPk());
-            return updateF24FileStatusInDone(f24File);
+        if (f24File.getRequestIds() == null || f24File.getRequestIds().isEmpty()) {
+            if (f24File.getStatus() == F24FileStatus.DONE) {
+                log.debug("F24File with pk: {}, already in status DONE", f24File.getPk());
+                return Mono.empty();
+            } else {
+                log.debug("F24File with pk: {}, has not related requests", f24File.getPk());
+                return updateF24FileStatusInDone(f24File);
+            }
         }
 
         log.debug("F24File with pk: {}, has related requests with id: {}", f24File.getPk(), f24File.getRequestIds());
@@ -83,7 +88,12 @@ public class SafeStorageEventService {
 
     private Mono<Void> updateFileAndRequests(F24File f24FileToUpdate) {
         return this.buildF24RequestsToUpdate(f24FileToUpdate)
-                .flatMap(f24RequestsToUpdate -> updateTransactionalFileAndRequests(f24RequestsToUpdate, f24FileToUpdate))
+                .flatMap(f24RequestsToUpdate -> {
+                    if (f24FileToUpdate.getStatus() != F24FileStatus.DONE) {
+                        return updateTransactionalFileAndRequests(f24RequestsToUpdate, f24FileToUpdate);
+                    }
+                    return Mono.just(f24RequestsToUpdate);
+                })
                 .flatMap(this::checkIfRequestsAreCompleted);
     }
 
@@ -146,11 +156,11 @@ public class SafeStorageEventService {
         return Flux.fromIterable(f24Requests)
                 .flatMap(f24Request -> f24RequestDao.getItem(f24Request.getRequestId(), true))
                 .flatMap(consistentF24Request -> {
-                    if(allRequestFilesHaveFileKey(consistentF24Request.getFiles())) {
+                    if (allRequestFilesHaveFileKey(consistentF24Request.getFiles()) && F24RequestStatus.DONE != consistentF24Request.getStatus()) {
                         return sendPdfSetReadyEvent(consistentF24Request);
                     }
 
-                    log.debug("F24Request with pk: {} has other files to process.", consistentF24Request.getPk());
+                    log.debug("F24Request with pk: {} and status: {} does not need to send an event.", consistentF24Request.getPk(), consistentF24Request.getStatus());
                     return Mono.empty();
                 })
                 .then();
