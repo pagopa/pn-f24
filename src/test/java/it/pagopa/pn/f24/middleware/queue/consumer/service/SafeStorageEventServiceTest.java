@@ -124,8 +124,8 @@ class SafeStorageEventServiceTest {
                 .expectComplete()
                 .verify();
 
-        verify(f24FileRequestDao,times(1)).updateTransactionalFileAndRequests(any(), any());
-        verify(pdfSetReadyEventProducer,times(1)).sendEvent((PnF24PdfSetReadyEvent) any());
+        verify(f24FileRequestDao, times(1)).updateTransactionalFileAndRequests(any(), any());
+        verify(pdfSetReadyEventProducer, times(1)).sendEvent((PnF24PdfSetReadyEvent) any());
     }
 
     @Test
@@ -161,10 +161,29 @@ class SafeStorageEventServiceTest {
                 .expectComplete()
                 .verify();
 
-        verify(f24FileRequestDao,times(0)).updateTransactionalFileAndRequests(any(), any());
-        verify(pdfSetReadyEventProducer,times(0)).sendEvent((PnF24PdfSetReadyEvent) any());
-
+        verify(f24FileRequestDao, times(0)).updateTransactionalFileAndRequests(any(), any());
+        verify(pdfSetReadyEventProducer, times(0)).sendEvent((PnF24PdfSetReadyEvent) any());
     }
 
+    @Test
+    void testHandleSafeStorageResponseOkForDuplicatedRequestFromSafeStorageForFileInDoner() {
+        FileDownloadResponse response = new FileDownloadResponse();
+        response.setKey("key_0_test");
+        response.setDocumentType(f24Config.getSafeStorageF24DocType());
+
+        F24File f24File = new F24File();
+        f24File.setPk("CACHE#setId#200#0_0");
+        f24File.setFileKey("key_0_test");
+        f24File.setStatus(F24FileStatus.DONE);
+        when(f24FileCacheDao.getItemByFileKey(any()))
+                .thenReturn(Mono.just(f24File));
+
+        StepVerifier.create(safeStorageEventService.handleSafeStorageResponse(response))
+                .expectComplete()
+                .verify();
+
+        verify(f24FileCacheDao, times(0)).setStatusDone(any());
+        verify(f24FileRequestDao, times(0)).updateTransactionalFileAndRequests(any(), any());
+    }
 }
 
