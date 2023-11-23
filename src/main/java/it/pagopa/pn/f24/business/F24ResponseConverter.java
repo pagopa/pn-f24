@@ -14,4 +14,5 @@ public  class F24ResponseConverter {
         f24Response.setSha256(fileDownloadResponseInt.getChecksum());
         return f24Response;
     }
+
 }
