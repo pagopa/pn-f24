@@ -311,7 +311,7 @@ public class F24ServiceImpl implements F24Service {
         return f24FileCacheDao.getItem(setId, fcost, pathTokensInString)
                 .flatMap(f24File -> {
                     if (f24File.getStatus().equals(F24FileStatus.DONE)) {
-                        return safeStorageService.getFile(f24File.getFileKey(), false).map(FileDownloadResponseInt::getDownload)
+                        return safeStorageService.getFile(f24File.getFileKey(), false)
                                 .map(fileDownloadResponseInt -> {
                                     log.info("pdf found for setId: {} pathTokens: {}", setId, pathTokensInString);
                                     return F24ResponseConverter.fileDownloadInfoToF24Response(fileDownloadResponseInt);
@@ -323,7 +323,7 @@ public class F24ServiceImpl implements F24Service {
                     }
 
                     // il file è stato generato poco tempo fa, avviso di attendere
-                    return Mono.just(F24ResponseConverter.fileDownloadInfoToF24Response(buildRetryAfterResponse().getDownload()));
+                    return Mono.just(F24ResponseConverter.fileDownloadInfoToF24Response(buildRetryAfterResponse()));
 
                 })
                 .switchIfEmpty(Mono.defer(() -> generateFromMetadata(setId, pathTokensInString, fcost)));
@@ -351,7 +351,7 @@ public class F24ServiceImpl implements F24Service {
                         log.debug("Polling timeout occurred, replying with retryAfter");
                         return Mono.just(buildRetryAfterResponse());
                     })
-                    .map(fileDownloadResponseInt -> F24ResponseConverter.fileDownloadInfoToF24Response(fileDownloadResponseInt.getDownload()));
+                    .map(F24ResponseConverter::fileDownloadInfoToF24Response);
             });
     }
 

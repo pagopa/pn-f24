@@ -401,6 +401,18 @@ components:
           description: >-
             URL per il download del contenuto del documento.
             example: 'https://preloadpn.aws.amazon.......'
+        sha256:
+          type: string
+          description: >-
+            SHA256 del contenuto del file.
+        contentType:
+          type: string
+          description: Il MIME format del contenuto del file che si intende caricare
+          example: 'application/pdf'
+        contentLength:
+          type: number
+          example: 54092
+          description: dmensione, in byte, del contenuto.
         retryAfter:
           type: number
           format: int32
