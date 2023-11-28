@@ -167,7 +167,7 @@ public class MetadataValidatorImpl implements MetadataValidator {
         try {
             Validator validator = ValidatorFactory.createValidator(f24Form);
             validator.validate();
-        } catch (ResourceException | ProcessingException | IOException e) {
+        } catch (ResourceException | ProcessingException | IOException | IllegalArgumentException e) {
             metadataValidationIssues.add(createIssue(metadataToValidate, e.getMessage(), PnF24ExceptionCodes.ERROR_CODE_F24_METADATA_VALIDATION_ERROR));
         }
         log.info("End checkMetadata");
