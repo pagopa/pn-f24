@@ -6,6 +6,7 @@ import it.pagopa.pn.commons.pnclients.CommonBaseClient;
 import it.pagopa.pn.f24.config.F24Config;
 import it.pagopa.pn.f24.dto.safestorage.FileCreationWithContentRequest;
 import it.pagopa.pn.f24.exception.PnF24ExceptionCodes;
+import it.pagopa.pn.f24.exception.PnFileNotFoundException;
 import it.pagopa.pn.f24.generated.openapi.msclient.safestorage.api.FileDownloadApi;
 import it.pagopa.pn.f24.generated.openapi.msclient.safestorage.api.FileUploadApi;
 import it.pagopa.pn.f24.generated.openapi.msclient.safestorage.model.FileCreationRequest;
@@ -16,11 +17,13 @@ import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 
 import java.io.BufferedInputStream;
@@ -53,14 +56,28 @@ public class PnSafeStorageClientImpl extends CommonBaseClient implements PnSafeS
         fileCreationRequest.setDocumentType(fileCreationRequestWithContent.getDocumentType());
         fileCreationRequest.setStatus(fileCreationRequestWithContent.getStatus());
 
-        return fileUploadApi.createFile( this.f24Config.getSafeStorageCxId(),"SHA-256", sha256,  fileCreationRequest )
-                .doOnError( res -> log.error("File creation error - documentType={} filesize={} sha256={}", fileCreationRequest.getDocumentType(), fileCreationRequestWithContent.getContent().length, sha256));
+        return fileUploadApi.createFile(this.f24Config.getSafeStorageCxId(), "SHA-256", sha256, fileCreationRequest)
+                .doOnError(res -> log.error("File creation error - documentType={} filesize={} sha256={}", fileCreationRequest.getDocumentType(), fileCreationRequestWithContent.getContent().length, sha256));
     }
 
     @Override
     public Mono<FileDownloadResponse> getFile(String fileKey, boolean metadataOnly) {
         log.logInvokingExternalService(PnLogger.EXTERNAL_SERVICES.PN_SAFE_STORAGE, "getFile");
-        return fileDownloadApi.getFile(fileKey, f24Config.getSafeStorageCxId(), metadataOnly);
+        return fileDownloadApi.getFile(fileKey, f24Config.getSafeStorageCxId(), metadataOnly)
+                .onErrorResume(WebClientResponseException.class, error -> {
+                    log.warn("Exception in call getFile fileKey={} error={}", fileKey, error);
+                    if (error.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
+                        log.warn("File not found from safeStorage fileKey={} error={}", fileKey, error);
+                        String errorDetail = "File non trovato. fileKey=" + fileKey;
+                        return Mono.error(
+                                new PnFileNotFoundException(
+                                        errorDetail,
+                                        error
+                                )
+                        );
+                    }
+                    return Mono.error(error);
+                });
     }
 
     @Override
@@ -80,18 +97,14 @@ public class PnSafeStorageClientImpl extends CommonBaseClient implements PnSafeS
 
             ResponseEntity<String> res = restTemplate.exchange(url, method, req, String.class);
 
-            if (res.getStatusCodeValue() != org.springframework.http.HttpStatus.OK.value())
-            {
+            if (res.getStatusCodeValue() != org.springframework.http.HttpStatus.OK.value()) {
                 throw new PnInternalException("File upload failed", PnF24ExceptionCodes.ERROR_CODE_F24_UPLOADFILEERROR);
             }
 
-        } catch (PnInternalException ee)
-        {
+        } catch (PnInternalException ee) {
             log.error("uploadContent PnInternalException uploading file", ee);
             throw ee;
-        }
-        catch (Exception ee)
-        {
+        } catch (Exception ee) {
             log.error("uploadContent Exception uploading file", ee);
             throw new PnInternalException("Exception uploading file", PnF24ExceptionCodes.ERROR_CODE_F24_UPLOADFILEERROR, ee);
         }

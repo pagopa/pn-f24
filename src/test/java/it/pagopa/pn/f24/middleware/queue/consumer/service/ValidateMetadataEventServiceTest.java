@@ -12,6 +12,7 @@ import it.pagopa.pn.f24.dto.MetadataToValidate;
 import it.pagopa.pn.f24.dto.safestorage.FileDownloadInfoInt;
 import it.pagopa.pn.f24.dto.safestorage.FileDownloadResponseInt;
 import it.pagopa.pn.f24.exception.PnDbConflictException;
+import it.pagopa.pn.f24.exception.PnFileNotFoundException;
 import it.pagopa.pn.f24.exception.PnNotFoundException;
 import it.pagopa.pn.f24.generated.openapi.server.v1.dto.F24Metadata;
 import it.pagopa.pn.f24.middleware.dao.f24metadataset.F24MetadataSetDao;
@@ -98,7 +99,7 @@ class ValidateMetadataEventServiceTest {
 
         when(f24MetadataSetDao.getItem(any()))
                 .thenReturn(Mono.just(f24MetadataSet));
-        when(f24MetadataSetDao.getItem(any(),anyBoolean()))
+        when(f24MetadataSetDao.getItem(any(), anyBoolean()))
                 .thenReturn(Mono.just(f24MetadataSet));
         when(safeStorageService.getFile(f24MetadataRef.getFileKey(), false))
                 .thenReturn(Mono.just(fileDownloadResponseInt));
@@ -145,7 +146,7 @@ class ValidateMetadataEventServiceTest {
 
         when(f24MetadataSetDao.getItem(any()))
                 .thenReturn(Mono.just(f24MetadataSet));
-        when(f24MetadataSetDao.getItem(any(),anyBoolean()))
+        when(f24MetadataSetDao.getItem(any(), anyBoolean()))
                 .thenReturn(Mono.just(f24MetadataSet));
         when(safeStorageService.getFile(f24MetadataRef.getFileKey(), false))
                 .thenReturn(Mono.just(fileDownloadResponseInt));
@@ -192,7 +193,7 @@ class ValidateMetadataEventServiceTest {
 
         when(f24MetadataSetDao.getItem(any()))
                 .thenReturn(Mono.just(f24MetadataSet));
-        when(f24MetadataSetDao.getItem(any(),anyBoolean()))
+        when(f24MetadataSetDao.getItem(any(), anyBoolean()))
                 .thenReturn(Mono.just(f24MetadataSet));
         when(safeStorageService.getFile(f24MetadataRef.getFileKey(), false))
                 .thenReturn(Mono.just(fileDownloadResponseInt));
@@ -219,6 +220,50 @@ class ValidateMetadataEventServiceTest {
         StepVerifier.create(validateMetadataEventService.handleMetadataValidation(new ValidateMetadataSetEvent.Payload("42")))
                 .expectError(PnNotFoundException.class)
                 .verify();
+    }
+
+    @Test
+    void testStartMetadataValidationFilekeyNotFoundOnSafestorage() {
+
+        F24MetadataSet f24MetadataSet = new F24MetadataSet();
+        F24MetadataRef f24MetadataRef = new F24MetadataRef();
+        F24Metadata f24Metadata = new F24Metadata();
+        MetadataToValidate metadataToValidate = new MetadataToValidate();
+
+        metadataToValidate.setMetadataFile("f24MetadataRef".getBytes());
+        metadataToValidate.setRef(f24MetadataRef);
+        metadataToValidate.setPathTokensKey("testPathTokensKey");
+        metadataToValidate.setF24Metadata(f24Metadata);
+
+        f24MetadataSet.setStatus(F24MetadataStatus.TO_VALIDATE);
+        f24MetadataSet.setFileKeys(Map.of("test", f24MetadataRef));
+        f24MetadataSet.setHaveToSendValidationEvent(true);
+        f24MetadataSet.setSetId("testSetId");
+        f24MetadataSet.setValidatorCxId("testValidatorCxId");
+
+        f24MetadataRef.setFileKey("test");
+        Long maxSize = -1L;
+
+        FileDownloadResponseInt fileDownloadResponseInt = new FileDownloadResponseInt();
+
+        FileDownloadInfoInt fileDownloadInfoInt = new FileDownloadInfoInt();
+        fileDownloadInfoInt.setUrl("testUrl");
+
+        fileDownloadResponseInt.setDownload(fileDownloadInfoInt);
+
+
+        when(f24MetadataSetDao.getItem(any()))
+                .thenReturn(Mono.just(f24MetadataSet));
+        when(f24MetadataSetDao.getItem(any(), anyBoolean()))
+                .thenReturn(Mono.just(f24MetadataSet));
+        when(safeStorageService.getFile(any(), anyBoolean()))
+                .thenReturn(Mono.error(new PnFileNotFoundException("", new Exception())));
+        when(eventBridgeProducer.sendEvent((PnF24MetadataValidationEndEvent) any())).thenReturn(Mono.empty());
+        when(f24MetadataSetDao.setF24MetadataSetStatusValidationEnded(f24MetadataSet))
+                .thenReturn(Mono.just(f24MetadataSet));
+
+        StepVerifier.create(validateMetadataEventService.handleMetadataValidation(new ValidateMetadataSetEvent.Payload("42")))
+                .verifyComplete();
     }
 
 
