@@ -83,7 +83,7 @@ class MetadataValidatorImplTest {
 
         f24MetadataRef.setSha256(checksum);
 
-        List <F24MetadataValidationIssue> result = metadataValidatorImpl.validateMetadata(metadataToValidate);
+        List<F24MetadataValidationIssue> result = metadataValidatorImpl.validateMetadata(metadataToValidate);
 
         Assertions.assertFalse(result.isEmpty());
 
@@ -140,7 +140,7 @@ class MetadataValidatorImplTest {
 
         f24MetadataRef.setSha256(checksum);
 
-        List <F24MetadataValidationIssue> result = metadataValidatorImpl.validateMetadata(metadataToValidate);
+        List<F24MetadataValidationIssue> result = metadataValidatorImpl.validateMetadata(metadataToValidate);
 
         Assertions.assertFalse(result.isEmpty());
 
@@ -194,10 +194,9 @@ class MetadataValidatorImplTest {
                 .thenReturn(f24Metadata);
 
 
-
         f24MetadataRef.setSha256(Sha256Handler.computeSha256("Stringify"));
 
-        List <F24MetadataValidationIssue> result = metadataValidatorImpl.validateMetadata(metadataToValidate);
+        List<F24MetadataValidationIssue> result = metadataValidatorImpl.validateMetadata(metadataToValidate);
 
         Assertions.assertFalse(result.isEmpty());
 
@@ -257,7 +256,7 @@ class MetadataValidatorImplTest {
 
         f24MetadataRef.setSha256(checksum);
 
-        List <F24MetadataValidationIssue> result = metadataValidatorImpl.validateMetadata(metadataToValidate);
+        List<F24MetadataValidationIssue> result = metadataValidatorImpl.validateMetadata(metadataToValidate);
 
         Assertions.assertFalse(result.isEmpty());
 
@@ -279,7 +278,7 @@ class MetadataValidatorImplTest {
         when(jsonService.parseMetadataFile(Mockito.any()))
                 .thenThrow(RuntimeException.class);
 
-        List <F24MetadataValidationIssue> result = metadataValidatorImpl.validateMetadata(metadataToValidate);
+        List<F24MetadataValidationIssue> result = metadataValidatorImpl.validateMetadata(metadataToValidate);
 
         Assertions.assertFalse(result.isEmpty());
 
@@ -308,7 +307,59 @@ class MetadataValidatorImplTest {
         when(jsonService.validate(Mockito.<F24Metadata>any()))
                 .thenReturn(errors);
 
-        List <F24MetadataValidationIssue> result = metadataValidatorImpl.validateMetadata(metadataToValidate);
+        List<F24MetadataValidationIssue> result = metadataValidatorImpl.validateMetadata(metadataToValidate);
+
+        Assertions.assertFalse(result.isEmpty());
+
+    }
+
+    @Test
+    void testValidateMetadataGetMetadataIsNull() {
+
+        F24MetadataRef f24MetadataRef = new F24MetadataRef();
+        f24MetadataRef.setApplyCost(true);
+        f24MetadataRef.setFileKey("File Key");
+
+        F24Metadata f24Metadata = new F24Metadata();
+        F24Standard f24Standard = new F24Standard();
+
+        TaxPayerStandard taxPayerStandard = new TaxPayerStandard();
+        f24Standard.setTaxPayer(taxPayerStandard);
+
+        TreasurySection treasurySection = new TreasurySection();
+        f24Standard.setTreasury(treasurySection);
+
+        RegionSection regionSection = new RegionSection();
+        f24Standard.setRegion(regionSection);
+
+        InpsSection inpsSection = new InpsSection();
+        f24Standard.setInps(inpsSection);
+
+        LocalTaxSection localTaxSection = new LocalTaxSection();
+        f24Standard.setLocalTax(localTaxSection);
+
+        SocialSecuritySection socialSecuritySection = new SocialSecuritySection();
+        f24Standard.setSocialSecurity(socialSecuritySection);
+
+
+        MetadataToValidate metadataToValidate = new MetadataToValidate();
+        metadataToValidate.setMetadataFile("".getBytes());
+        metadataToValidate.setRef(f24MetadataRef);
+        metadataToValidate.setPathTokensKey("ABC123");
+        metadataToValidate.setF24Metadata(f24Metadata);
+
+        when(jsonService.stringifyObject(Mockito.<F24Metadata>any()))
+                .thenReturn("Stringify Object");
+        when(jsonService.validate(Mockito.<F24Metadata>any()))
+                .thenReturn(new HashSet<>());
+        when(jsonService.parseMetadataFile(Mockito.any()))
+                .thenReturn(f24Metadata);
+
+        String checksum = Sha256Handler.computeSha256("Stringify Object");
+
+        f24MetadataRef.setSha256(checksum);
+
+        List<F24MetadataValidationIssue> result = metadataValidatorImpl.validateMetadata(metadataToValidate);
 
         Assertions.assertFalse(result.isEmpty());
 

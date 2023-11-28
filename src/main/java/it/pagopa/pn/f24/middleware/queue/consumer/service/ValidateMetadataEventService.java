@@ -2,6 +2,7 @@ package it.pagopa.pn.f24.middleware.queue.consumer.service;
 
 import it.pagopa.pn.api.dto.events.PnF24MetadataValidationEndEvent;
 import it.pagopa.pn.f24.exception.PnDbConflictException;
+import it.pagopa.pn.f24.exception.PnFileNotFoundException;
 import it.pagopa.pn.f24.service.MetadataValidator;
 import it.pagopa.pn.f24.dto.*;
 import it.pagopa.pn.f24.exception.PnF24ExceptionCodes;
@@ -96,6 +97,10 @@ public class ValidateMetadataEventService {
         final int DOWNLOAD_WHOLE_FILE = -1;
         return safeStorageService.getFile(fileKey, false)
                 .flatMap(fileDownloadResponseInt -> safeStorageService.downloadPieceOfContent(fileKey, fileDownloadResponseInt.getDownload().getUrl(), DOWNLOAD_WHOLE_FILE))
+                .onErrorResume(PnFileNotFoundException.class, exception -> {
+                    log.warn("Error downloading file {}, not found on safeStorage", fileKey, exception);
+                    return Mono.just(new byte[0]);
+                })
                 .doOnError(throwable -> log.warn("Error downloading file with fileKey {}", fileKey, throwable));
     }
 
