@@ -26,10 +26,12 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
+import java.io.FileNotFoundException;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-
+@ExtendWith(SpringExtension.class)
 class SafeStorageServiceImplTest {
     @Mock
     private PnSafeStorageClient safeStorageClient;
@@ -42,7 +44,6 @@ class SafeStorageServiceImplTest {
     }
 
     @Test
-    @ExtendWith(SpringExtension.class)
     void getFile() {
         //GIVEN
         FileDownloadResponse fileDownloadResponse = new FileDownloadResponse();
@@ -69,7 +70,6 @@ class SafeStorageServiceImplTest {
     }
 
     @Test
-    @ExtendWith(SpringExtension.class)
     void getFileError() {
         //GIVEN
         when(safeStorageClient.getFile(Mockito.anyString(), Mockito.anyBoolean()))
@@ -82,7 +82,6 @@ class SafeStorageServiceImplTest {
     }
 
     @Test
-    @ExtendWith(SpringExtension.class)
     void createAndUploadContent() {
         //GIVEN
         FileCreationWithContentRequest fileCreationWithContentRequest = new FileCreationWithContentRequest();
@@ -105,7 +104,6 @@ class SafeStorageServiceImplTest {
     }
 
     @Test
-    @ExtendWith(SpringExtension.class)
     void createAndUploadContentError() {
         //GIVEN
         FileCreationWithContentRequest fileCreationWithContentRequest = new FileCreationWithContentRequest();
@@ -122,11 +120,8 @@ class SafeStorageServiceImplTest {
 
 
     @Test
-    @ExtendWith(SpringExtension.class)
     void downloadPieceOfContent() {
         //GIVEN
-
-
         when(safeStorageClient.downloadPieceOfContent(Mockito.anyString(), Mockito.anyLong()))
                 .thenReturn(new byte[0]);
 
@@ -143,15 +138,14 @@ class SafeStorageServiceImplTest {
     @Test
     void downloadPieceOfContentShouldGenerateErrorMono() {
 
-        // Chiamata al metodo downloadPieceOfContent con parametri appropriati che genereranno un errore
         String fileKey = "yourFileKey";
         String url = "yourInvalidUrl";
         long maxSize = 1000L;
 
-        Mono<byte[]> resultMono = safeStorageService.downloadPieceOfContent(fileKey, url, maxSize);
+        when(safeStorageClient.downloadPieceOfContent(Mockito.anyString(), Mockito.anyLong()))
+                .thenThrow(new PnInternalException("test", "test"));
 
-        // Verifica che il resultMono generi un'errore di tipo PnInternalException
-        StepVerifier.create(resultMono)
+        StepVerifier.create(safeStorageService.downloadPieceOfContent(fileKey, url, maxSize))
                 .expectError(PnInternalException.class)
                 .verify();
     }
