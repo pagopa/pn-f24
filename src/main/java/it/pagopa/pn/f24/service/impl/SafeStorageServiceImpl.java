@@ -98,7 +98,7 @@ public class SafeStorageServiceImpl implements SafeStorageService {
                     MDC.remove(MDCUtils.MDC_PN_CTX_SAFESTORAGE_FILEKEY);
                     log.debug("downloadPieceOfContent file ok key={} url={} read size={}", fileKey, url, res==null?null:res.length);
                 })
-                .onErrorResume((err) -> {
+                .onErrorResume(err -> {
                     log.error("Cannot download content key={} url={}", fileKey, url, err);
                     MDC.remove(MDCUtils.MDC_PN_CTX_SAFESTORAGE_FILEKEY);
                     return Mono.error(err);
