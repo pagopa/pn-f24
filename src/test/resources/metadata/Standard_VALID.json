@@ -1,0 +1,16 @@
+{
+  "f24Standard": {
+    "taxPayer": {
+      "taxCode": "RSSMLB80A01A200D",
+      "isNotTaxYear": true,
+      "company": {
+        "name": "TEST RAGIONE SOCIALE",
+        "taxAddress": {
+          "municipality": "MILANO",
+          "province": "MI",
+          "address": "VIA LARGA 21"
+        }
+      }
+    }
+  }
+}
