@@ -87,6 +87,64 @@ public class ExciseMetadataInspector implements MetadataInspector {
 
         }
     }
+    @Override
+    public double getTotalAmount(F24Metadata f24Metadata) {
+        double debit = 0;
+        if (f24Metadata.getF24Excise() != null && f24Metadata.getF24Excise().getInps() != null)
+            debit = getDebitInps(f24Metadata.getF24Excise());
+
+        if (f24Metadata.getF24Excise() != null && f24Metadata.getF24Excise().getRegion() != null)
+            debit = getDebitRegion(f24Metadata.getF24Excise());
+
+        if (f24Metadata.getF24Excise() != null && f24Metadata.getF24Excise().getLocalTax() != null)
+            debit = getDebitLocalTax(f24Metadata.getF24Excise());
+
+        if (f24Metadata.getF24Excise() != null && f24Metadata.getF24Excise().getTreasury() != null)
+            debit = getDebitTreasury(f24Metadata.getF24Excise());
+        debit = debit / 100;
+        return debit;
+    }
+    private double getDebitTreasury(F24Excise f24Excise) {
+        int debit = 0;
+        if (f24Excise.getTreasury() != null && f24Excise.getTreasury().getRecords() != null) {
+            for (int i = 0; i < f24Excise.getTreasury().getRecords().size(); i++) {
+                if (f24Excise.getTreasury().getRecords().get(i).getDebit() == null) {
+                    debit = debit + f24Excise.getInps().getRecords().get(i).getDebit();
+                }
+            }
+        }
+        return debit;
+    }
+
+    private double getDebitInps(F24Excise f24Excise) {
+        int debit = 0;
+        if (f24Excise.getInps() != null && f24Excise.getInps().getRecords() != null) {
+            for (int i = 0; i < f24Excise.getInps().getRecords().size(); i++) {
+                debit = debit + f24Excise.getInps().getRecords().get(i).getDebit();
+            }
+        }
+        return debit;
+    }
+
+    private double getDebitRegion(F24Excise f24Excise) {
+        int debit = 0;
+        if (f24Excise.getRegion() != null && f24Excise.getRegion().getRecords() != null) {
+            for (int i = 0; i < f24Excise.getRegion().getRecords().size(); i++) {
+                debit = debit + f24Excise.getRegion().getRecords().get(i).getDebit();
+            }
+        }
+        return debit;
+    }
+
+    private double getDebitLocalTax(F24Excise f24Excise) {
+        int debit = 0;
+        if (f24Excise.getLocalTax() != null && f24Excise.getLocalTax().getRecords() != null) {
+            for (int i = 0; i < f24Excise.getLocalTax().getRecords().size(); i++) {
+                debit = debit + f24Excise.getLocalTax().getRecords().get(i).getDebit();
+            }
+        }
+        return debit;
+    }
 
     private void tryAddCostToTreasuryRecords(F24Excise f24Excise, Integer cost) {
         if (f24Excise.getTreasury() != null && f24Excise.getTreasury().getRecords() != null) {

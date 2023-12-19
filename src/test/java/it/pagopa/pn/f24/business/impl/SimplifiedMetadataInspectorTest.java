@@ -64,6 +64,14 @@ class SimplifiedMetadataInspectorTest {
         F24Metadata f24Metadata = new F24Metadata();
         assertEquals(ApplyCostValidation.REQUIRED_APPLY_COST_NOT_GIVEN, simplifiedMetadataInspector.checkApplyCost(f24Metadata, true));
     }
+    @Test
+    void testGetTotalAmount() {
+        SimplifiedMetadataInspector simplifiedMetadataInspector = new SimplifiedMetadataInspector();
+
+        F24Metadata f24Metadata = getF24MetadataSimplifiedWithRecord(true, 100);
+
+        assertEquals(0, simplifiedMetadataInspector.getTotalAmount(f24Metadata));
+    }
 
     @Test
     void testAddCostToDebit() {

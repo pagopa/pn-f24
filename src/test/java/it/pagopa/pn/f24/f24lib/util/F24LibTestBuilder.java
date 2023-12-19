@@ -1,10 +1,19 @@
 package it.pagopa.pn.f24.f24lib.util;
 
+import it.pagopa.pn.f24.business.MetadataInspector;
+import it.pagopa.pn.f24.business.MetadataInspectorFactory;
 import it.pagopa.pn.f24.dto.F24MetadataValidationIssue;
+import it.pagopa.pn.f24.dto.F24Type;
 import it.pagopa.pn.f24.dto.MetadataToValidate;
+import it.pagopa.pn.f24.f24lib.parser.IntegratedField;
+import it.pagopa.pn.f24.f24lib.parser.MetadataFieldsMapperFactory;
+import it.pagopa.pn.f24.f24lib.parser.PdfParser;
+import it.pagopa.pn.f24.f24lib.parser.PdfParserReporter;
+import it.pagopa.pn.f24.f24lib.parser.mapper.MetadataFieldsToPdfFieldsMapper;
 import it.pagopa.pn.f24.f24lib.validator.ExpectedValidationOutcome;
 import it.pagopa.pn.f24.f24lib.validator.MetadataToValidateBuilder;
 import it.pagopa.pn.f24.f24lib.validator.TestCaseParser;
+import it.pagopa.pn.f24.generated.openapi.server.v1.dto.F24Metadata;
 import it.pagopa.pn.f24.service.F24Generator;
 import it.pagopa.pn.f24.service.JsonService;
 import it.pagopa.pn.f24.service.MetadataValidator;
@@ -16,6 +25,7 @@ import org.springframework.stereotype.Service;
 import java.util.Date;
 import java.util.List;
 
+import static it.pagopa.pn.f24.util.Utility.getF24TypeFromMetadata;
 
 @Service
 @Slf4j
@@ -33,7 +43,11 @@ public class F24LibTestBuilder {
             long initTestMs = new Date().getTime();
             log.info("Starting test on testCase : {}", testCase);
             MetadataToValidate metadataToValidate = MetadataToValidateBuilder.metaBuilder(testCase, shouldHaveApplyCost);
-            performValidationTest(testCase, metadataToValidate);
+            boolean isValid = performValidationTest(testCase, metadataToValidate);
+
+            if (isValid) {
+                performPdfParsing(metadataToValidate.getMetadataFile());
+            }
 
             long endTestMs = new Date().getTime();
             log.info("Ended test on testCase : {}, executed in : {} ms", testCase, endTestMs - initTestMs);
@@ -42,12 +56,62 @@ public class F24LibTestBuilder {
         }
     }
 
-    private void performValidationTest(String testCase, MetadataToValidate metadataToValidate) {
+    private boolean performValidationTest(String testCase, MetadataToValidate metadataToValidate) {
         List<ExpectedValidationOutcome> expectedValidationOutcomes = TestCaseParser.decodeExpectedOutcomes(testCase);
         log.info("Obtained this expectations from testCase : {}", expectedValidationOutcomes);
         List<F24MetadataValidationIssue> validationIssues = validator.validateMetadata(metadataToValidate);
         log.info("Issues found : {}", validationIssues);
         expectedValidationOutcomes.forEach(expectedValidationOutcome -> expectedValidationOutcome.performAssertions(validationIssues));
+
+        return validationIssues.isEmpty();
+    }
+
+    private void performPdfParsing(byte[] metadataFile) {
+        F24Metadata f24Metadata = jsonService.parseMetadataFile(metadataFile);
+
+        byte[] generatedPdf = f24Generator.generate(f24Metadata);
+
+        PdfParser parser = new PdfParser(generatedPdf);
+
+        int nPages = parser.numberOfPages();
+        F24Type f24Type = getF24TypeFromMetadata(f24Metadata);
+        if (checkIfGeneratedPdfHasCopies(nPages, f24Type)) {
+            log.info("Generated PDF has copies, the parsing won't be executed.");
+            return;
+        }
+
+        try {
+            log.info("Starting pdf parsing");
+            MetadataFieldsToPdfFieldsMapper metadataFieldsToPdfFieldsMapper = MetadataFieldsMapperFactory.getMapper(f24Type);
+            List<IntegratedField> integratedField = metadataFieldsToPdfFieldsMapper.connectMetadataFieldsToPdfFields(f24Metadata);
+            PdfParserReporter pdfParserReporter = new PdfParserReporter(parser, integratedField);
+            pdfParserReporter.executeAnalysisAndProduceReport();
+
+            MetadataInspector metadataInspector = MetadataInspectorFactory.getInspector(f24Type);
+            double totalMetadataDebit = metadataInspector.getTotalAmount(f24Metadata);
+            double totalAmountPdf = parser.getTotalAmountPdf();
+            log.info("Total amount in pdf is {}", totalAmountPdf);
+
+            if (totalMetadataDebit != totalAmountPdf) {
+                throw new LibTestException("Total amount in metadata: " + totalMetadataDebit + " is different from total amount in pdf: " + totalAmountPdf);
+            }
+            log.info("Total amount in metadata is equal to total amount in pdf");
+        } finally {
+            parser.closeDocument();
+        }
+    }
+
+    private boolean checkIfGeneratedPdfHasCopies(int nPages, F24Type f24Type) {
+        switch(f24Type) {
+            case F24_ELID, F24_STANDARD, F24_EXCISE -> {
+                return nPages > 3;
+            }
+            case F24_SIMPLIFIED -> {
+                return nPages > 1;
+            }
+        }
+
+        return true;
     }
 
 

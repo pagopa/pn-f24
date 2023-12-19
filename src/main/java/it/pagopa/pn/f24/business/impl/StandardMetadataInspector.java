@@ -70,12 +70,12 @@ public class StandardMetadataInspector implements MetadataInspector {
 
             invalidApplyCostFound += countElementsByPredicate(f24Standard.getLocalTax().getRecords(), localTax -> localTax.getApplyCost() && (localTax.getCredit() != null && localTax.getCredit() > 0));
         }
-        if(f24Standard.getSocialSecurity() != null && f24Standard.getSocialSecurity().getRecords() != null) {
+        if (f24Standard.getSocialSecurity() != null && f24Standard.getSocialSecurity().getRecords() != null) {
             validApplyCostFound += countElementsByPredicate(f24Standard.getSocialSecurity().getRecords(), socialRec -> socialRec.getApplyCost() && (socialRec.getCredit() == null || socialRec.getCredit() == 0));
 
             invalidApplyCostFound += countElementsByPredicate(f24Standard.getSocialSecurity().getRecords(), socialRec -> socialRec.getApplyCost() && (socialRec.getCredit() != null && socialRec.getCredit() > 0));
         }
-        if(f24Standard.getSocialSecurity() != null && f24Standard.getSocialSecurity().getSocSecRecords() != null) {
+        if (f24Standard.getSocialSecurity() != null && f24Standard.getSocialSecurity().getSocSecRecords() != null) {
             validApplyCostFound += countElementsByPredicate(f24Standard.getSocialSecurity().getSocSecRecords(), socSecRec -> socSecRec.getApplyCost() && (socSecRec.getCredit() == null || socSecRec.getCredit() == 0));
 
             invalidApplyCostFound += countElementsByPredicate(f24Standard.getSocialSecurity().getSocSecRecords(), socSecRec -> socSecRec.getApplyCost() && (socSecRec.getCredit() != null && socSecRec.getCredit() > 0));
@@ -113,6 +113,92 @@ public class StandardMetadataInspector implements MetadataInspector {
             }
         }
     }
+
+    @Override
+    public double getTotalAmount(F24Metadata f24Metadata) {
+        double debit = 0;
+        if (f24Metadata.getF24Standard() != null && f24Metadata.getF24Standard().getTreasury() != null)
+            debit = getDebitTreasury(f24Metadata.getF24Standard());
+
+        if (f24Metadata.getF24Standard() != null && f24Metadata.getF24Standard().getInps() != null)
+            debit = getDebitInps(f24Metadata.getF24Standard());
+
+        if (f24Metadata.getF24Standard() != null && f24Metadata.getF24Standard().getRegion() != null)
+            debit = getDebitRegion(f24Metadata.getF24Standard());
+
+        if (f24Metadata.getF24Standard() != null && f24Metadata.getF24Standard().getLocalTax() != null)
+            debit = getDebitLocalTax(f24Metadata.getF24Standard());
+
+        if (f24Metadata.getF24Standard() != null && f24Metadata.getF24Standard().getSocialSecurity() != null)
+            debit = getDebitSocialSecurityINAIL(f24Metadata.getF24Standard());
+
+        if (f24Metadata.getF24Standard() != null && f24Metadata.getF24Standard().getSocialSecurity().getSocSecRecords() != null)
+            debit = getDebitSocialSecurityRecords(f24Metadata.getF24Standard());
+        debit = debit / 100;
+        return debit;
+    }
+
+    private double getDebitSocialSecurityINAIL(F24Standard f24Standard) {
+        int debit = 0;
+        if (f24Standard.getSocialSecurity() != null && f24Standard.getSocialSecurity().getRecords() != null) {
+            for (int i = 0; i < f24Standard.getSocialSecurity().getRecords().size(); i++) {
+                debit = debit + f24Standard.getSocialSecurity().getRecords().get(i).getDebit();
+            }
+        }
+        return debit;
+    }
+    private double getDebitSocialSecurityRecords(F24Standard f24Standard) {
+        int debit = 0;
+        if (f24Standard.getSocialSecurity() != null && f24Standard.getSocialSecurity().getSocSecRecords() != null) {
+            for (int i = 0; i < f24Standard.getSocialSecurity().getSocSecRecords().size(); i++) {
+                debit = debit + f24Standard.getSocialSecurity().getSocSecRecords().get(i).getDebit();
+            }
+        }
+        return debit;
+    }
+
+    private double getDebitTreasury(F24Standard f24Standard) {
+        int debit = 0;
+        if (f24Standard.getTreasury() != null && f24Standard.getTreasury().getRecords() != null) {
+            for (int i = 0; i < f24Standard.getTreasury().getRecords().size(); i++) {
+                if (f24Standard.getTreasury().getRecords().get(i).getDebit() == null) {
+                    debit = debit + f24Standard.getInps().getRecords().get(i).getDebit();
+                }
+            }
+        }
+        return debit;
+    }
+
+    private double getDebitInps(F24Standard f24Standard) {
+        int debit = 0;
+        if (f24Standard.getInps() != null && f24Standard.getInps().getRecords() != null) {
+            for (int i = 0; i < f24Standard.getInps().getRecords().size(); i++) {
+                debit = debit + f24Standard.getInps().getRecords().get(i).getDebit();
+            }
+        }
+        return debit;
+    }
+
+    private double getDebitRegion(F24Standard f24Standard) {
+        int debit = 0;
+        if (f24Standard.getRegion() != null && f24Standard.getRegion().getRecords() != null) {
+            for (int i = 0; i < f24Standard.getRegion().getRecords().size(); i++) {
+                debit = debit + f24Standard.getRegion().getRecords().get(i).getDebit();
+            }
+        }
+        return debit;
+    }
+
+    private double getDebitLocalTax(F24Standard f24Standard) {
+        int debit = 0;
+        if (f24Standard.getLocalTax() != null && f24Standard.getLocalTax().getRecords() != null) {
+            for (int i = 0; i < f24Standard.getLocalTax().getRecords().size(); i++) {
+                debit = debit + f24Standard.getLocalTax().getRecords().get(i).getDebit();
+            }
+        }
+        return debit;
+    }
+
 
     private void tryAddCostToInpsRecords(F24Standard f24Standard, Integer cost) {
         if (f24Standard.getInps() != null && f24Standard.getInps().getRecords() != null) {
