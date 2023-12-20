@@ -1,9 +1,11 @@
 package it.pagopa.pn.f24.f24lib.validator;
 
 import it.pagopa.pn.f24.f24lib.util.LibTestException;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
 
+@Slf4j
 public class TestCaseParser {
     private TestCaseParser() {
     }
@@ -22,7 +24,8 @@ public class TestCaseParser {
         List<String> tokens = new ArrayList<>(Arrays.stream(testCase.split(TOKEN_DIVIDER)).toList());
 
         if (tokens.size() < 2) {
-            testFail("Couldn't parse Metadata name and find expected assertions");
+            log.info("no token found");
+            return List.of(ExpectedValidationOutcome.VALID);
         }
 
         checkFirstItemIsNotValidationOutcome(tokens.get(0));

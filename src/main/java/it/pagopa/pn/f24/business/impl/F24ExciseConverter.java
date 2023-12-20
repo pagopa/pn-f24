@@ -69,6 +69,7 @@ public class F24ExciseConverter extends F24Converter {
 
     private org.f24.dto.component.ExciseTax convertExciseRecord(ExciseTax inputExciseTax) {
         org.f24.dto.component.ExciseTax exciseTax = new org.f24.dto.component.ExciseTax();
+        exciseTax.setMunicipality(inputExciseTax.getInstitution());
         exciseTax.setIdCode(inputExciseTax.getId());
         exciseTax.setYear(inputExciseTax.getYear());
         exciseTax.setMonth(inputExciseTax.getMonth());
