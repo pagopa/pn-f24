@@ -60,7 +60,7 @@ public class F24LibTestBuilder {
         List<ExpectedValidationOutcome> expectedValidationOutcomes = TestCaseParser.decodeExpectedOutcomes(testCase);
         log.info("Obtained this expectations from testCase : {}", expectedValidationOutcomes);
         List<F24MetadataValidationIssue> validationIssues = validator.validateMetadata(metadataToValidate);
-        log.info("Issues found : {}", validationIssues);
+        printIssue(validationIssues);
         expectedValidationOutcomes.forEach(expectedValidationOutcome -> expectedValidationOutcome.performAssertions(validationIssues));
 
         return validationIssues.isEmpty();
@@ -114,5 +114,20 @@ public class F24LibTestBuilder {
         return true;
     }
 
+    private void printIssue(List<F24MetadataValidationIssue> issues) {
+        if (issues.isEmpty()) {
+            log.info("No issues found");
+            return;
+        }
+        StringBuilder sb = new StringBuilder();
+        sb.append("Issue found : \n");
+        issues.forEach(issue -> {
+            sb.append("Error detail: ").append(issue.getDetail()).append("\n");
+            sb.append("Error element: ").append(issue.getElement()).append("\n");
+            sb.append("Error code: ").append(issue.getCode()).append("\n");
+            sb.append("\n");
+        });
 
+        log.info(String.valueOf(sb));
+    }
 }
