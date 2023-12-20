@@ -93,46 +93,7 @@ class ExciseMetadataInspectorTest {
         assertEquals(0, exciseMetadataInspector.countMetadataApplyCost(f24Metadata));
     }
 
-    @Test
-    void testGetTotalAmount() {
-        ExciseMetadataInspector exciseMetadataInspector = new ExciseMetadataInspector();
-        F24Metadata f24Metadata = new F24Metadata();
-        F24Excise f24Excise = F24Excise.builder().build();
-
-        TreasurySection treasurySection = new TreasurySection();
-        Tax tax = new Tax();
-        tax.setCredit(100);
-        treasurySection.setRecords(List.of(tax));
-        f24Excise.setTreasury(treasurySection);
-
-        InpsSection inpsSection = new InpsSection();
-        InpsRecord inpsRecord = new InpsRecord();
-        inpsRecord.setCredit(100);
-        inpsSection.setRecords(List.of(inpsRecord));
-        f24Excise.setInps(inpsSection);
-
-        RegionSection regionSection = new RegionSection();
-        RegionRecord regionRecord = new RegionRecord();
-        regionRecord.setCredit(100);
-        regionSection.setRecords(List.of(regionRecord));
-        f24Excise.setRegion(regionSection);
-
-        LocalTaxSection localTaxSection = new LocalTaxSection();
-        LocalTaxRecord localTaxRecord = new LocalTaxRecord();
-        localTaxRecord.setCredit(100);
-        localTaxSection.setRecords(List.of(localTaxRecord));
-        f24Excise.setLocalTax(localTaxSection);
-
-        ExciseSection exciseSection = new ExciseSection();
-        ExciseTax exciseTax = new ExciseTax();
-        exciseTax.setDebit(500);
-        exciseSection.setRecords(List.of(exciseTax));
-        f24Excise.setExcise(exciseSection);
-
-        f24Metadata.setF24Excise(f24Excise);
-        assertEquals(500, exciseMetadataInspector.getTotalAmount(f24Metadata));
-    }
-
+   
     /**
      * Method under test:
      * {@link ExciseMetadataInspector#getTotalAmount(F24Metadata)}

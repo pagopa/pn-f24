@@ -5,6 +5,7 @@ import it.pagopa.pn.f24.business.MetadataInspectorFactory;
 import it.pagopa.pn.f24.dto.F24MetadataValidationIssue;
 import it.pagopa.pn.f24.dto.F24Type;
 import it.pagopa.pn.f24.dto.MetadataToValidate;
+import it.pagopa.pn.f24.f24lib.exception.LibTestException;
 import it.pagopa.pn.f24.f24lib.parser.IntegratedField;
 import it.pagopa.pn.f24.f24lib.parser.MetadataFieldsMapperFactory;
 import it.pagopa.pn.f24.f24lib.parser.PdfParser;
@@ -70,7 +71,6 @@ public class F24LibTestBuilder {
         F24Metadata f24Metadata = jsonService.parseMetadataFile(metadataFile);
 
         byte[] generatedPdf = f24Generator.generate(f24Metadata);
-
         PdfParser parser = new PdfParser(generatedPdf);
 
         int nPages = parser.numberOfPages();

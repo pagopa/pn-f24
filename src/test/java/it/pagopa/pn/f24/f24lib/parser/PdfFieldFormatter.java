@@ -1,7 +1,7 @@
 package it.pagopa.pn.f24.f24lib.parser;
 
 
-import it.pagopa.pn.f24.f24lib.util.LibTestException;
+import it.pagopa.pn.f24.f24lib.exception.LibTestException;
 
 import java.util.function.Function;
 

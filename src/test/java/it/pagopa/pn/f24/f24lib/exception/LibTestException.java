@@ -1,4 +1,4 @@
-package it.pagopa.pn.f24.f24lib.util;
+package it.pagopa.pn.f24.f24lib.exception;
 
 public class LibTestException extends RuntimeException {
 

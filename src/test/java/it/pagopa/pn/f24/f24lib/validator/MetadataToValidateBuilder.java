@@ -2,7 +2,7 @@ package it.pagopa.pn.f24.f24lib.validator;
 
 import it.pagopa.pn.f24.dto.F24MetadataRef;
 import it.pagopa.pn.f24.dto.MetadataToValidate;
-import it.pagopa.pn.f24.f24lib.util.LibTestException;
+import it.pagopa.pn.f24.f24lib.exception.LibTestException;
 import it.pagopa.pn.f24.util.Sha256Handler;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;

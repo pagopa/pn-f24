@@ -56,14 +56,14 @@ public class ElidMetadataFieldsToPdfFieldsMapper extends MetadataFieldsToPdfFiel
             integratedField.add(new IntegratedField(DOCUMENT_CODE.getName(), F24_ELID + "treasury", f24Elid.getTreasury().getDocument()));
         }
         if (!treasuryAndOtherSection.getRecords().isEmpty()) {
-            for (int i = 0; i <= treasuryAndOtherSection.getRecords().size(); i++) {
+            for (int i = 0; i < treasuryAndOtherSection.getRecords().size(); i++) {
                 TreasuryRecord record = treasuryAndOtherSection.getRecords().get(i);
                 int index = i + 1;
                 if (StringUtils.isNotBlank(record.getType())) {
                     integratedField.add(new IntegratedField(TYPE.getName() + index, F24_ELID + "treasury["+i+"].type", record.getType()));
                 }
                 if (StringUtils.isNotBlank(record.getId())) {
-                    integratedField.add(new IntegratedField(ID_CODE.getName() + index, F24_ELID + "treasury["+i+"].id", record.getId()));
+                    integratedField.add(new IntegratedField(ID_ELEMENT.getName() + index, F24_ELID + "treasury["+i+"].id", record.getId()));
                 }
                 if (StringUtils.isNotBlank(record.getTaxType())) {
                     integratedField.add(new IntegratedField(TAX_TYPE_CODE.getName() + index, F24_ELID + "treasury["+i+"].taxType", record.getTaxType()));

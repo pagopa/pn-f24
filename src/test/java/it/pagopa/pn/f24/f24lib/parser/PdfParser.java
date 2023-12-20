@@ -1,6 +1,6 @@
 package it.pagopa.pn.f24.f24lib.parser;
 
-import it.pagopa.pn.f24.f24lib.util.LibTestException;
+import it.pagopa.pn.f24.f24lib.exception.LibTestException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
@@ -42,7 +42,7 @@ public class PdfParser {
         }
 
         if (field == null) {
-            throw new LibTestException("Field " + fieldName + "not found in pdf form");
+            throw new LibTestException("Field " + fieldName + " not found in pdf form");
         }
 
         return field.getValueAsString();

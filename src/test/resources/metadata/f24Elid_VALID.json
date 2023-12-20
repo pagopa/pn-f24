@@ -1,0 +1,46 @@
+{
+  "f24Elid": {
+    "taxPayer": {
+      "taxCode": "RSSMLB80A01A200D",
+      "person": {
+        "personalData": {
+          "surname": "ROSSI",
+          "name": "MARIO ALBERTO",
+          "birthDate": "01-01-1980",
+          "sex": "M",
+          "birthPlace": "MILANO",
+          "birthProvince": "MI"
+        },
+        "taxAddress": {
+          "municipality": "ROMA",
+          "province": "RM",
+          "address": "VIA GIORGIONE N. 110"
+        }
+      },
+      "relativePersonTaxCode": "RSSMLB80A01A200D",
+      "id": "Q7"
+    },
+    "treasury": {
+      "records": [
+        {
+          "applyCost": false,
+          "type": "F",
+          "id": "ASD123QWR456ZXC78",
+          "taxType": "SFGE",
+          "year": "2023",
+          "debit": "1283277"
+        },
+        {
+          "applyCost": false,
+          "type": "F",
+          "id": "ASD123QWR456ZXC78",
+          "taxType": "SFGE",
+          "year": "2023",
+          "debit": "1283277"
+        }
+      ],
+      "office": "NKA",
+      "document": "99662216965"
+    }
+  }
+}

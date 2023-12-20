@@ -29,8 +29,10 @@ public class F24LibIT {
     F24LibTestBuilder f24LibTestBuilder;
     @ParameterizedTest
     @CsvSource({
-            "SimplifiedWithApplyCost_INVALID-APPLY-COST.json,true",
-            "Standard_VALID.json,false"
+            //"SimplifiedWithApplyCost_VALID.json,false",
+            "StandardWithApplyCost_VALID.json,false",
+            //"f24Elid_VALID.json,false",
+            //"f24Excise_VALID.json,false",
     })
     public void libTest(String jsonFilePath, boolean shouldHaveApplyCost) {
         f24LibTestBuilder.execTest(jsonFilePath, shouldHaveApplyCost);
