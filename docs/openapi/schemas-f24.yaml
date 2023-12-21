@@ -42,6 +42,19 @@ components:
         taxAddress:
           $ref: "#/components/schemas/TaxAddress"
       description: Dati Anagrafici PNF
+    CompanyDataSimplified:
+      type: object
+      required:
+        - name
+      additionalProperties: false
+      properties:
+        name:
+          pattern: ^[ -~]{1,60}$
+          type: string
+          description: Denominazione
+        taxAddress:
+          $ref: "#/components/schemas/TaxAddress"
+      description: Dati Anagrafici PNF
     TaxPayerStandard:
       type: object
       required:
@@ -104,6 +117,8 @@ components:
           description: Codice fiscale contribuente
         personalData:
           $ref: "#/components/schemas/PersonalData"
+        company:
+          $ref: "#/components/schemas/CompanyDataSimplified"
         relativePersonTaxCode:
           pattern: ^([A-Z]{6}[0-9LMNPQRSTUV]{2}[ABCDEHLMPRST]{1}[0-9LMNPQRSTUV]{2}[A-Z]{1}[0-9LMNPQRSTUV]{3}[A-Z]{1})|([0-9]{11})$
           type: string

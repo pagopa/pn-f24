@@ -2,6 +2,7 @@ package it.pagopa.pn.f24.business.impl;
 
 import it.pagopa.pn.f24.generated.openapi.server.v1.dto.*;
 import it.pagopa.pn.f24.business.F24Converter;
+import org.f24.dto.component.CompanyData;
 import org.f24.dto.component.PaymentReasonRecord;
 import org.f24.dto.component.PaymentReasonSection;
 import org.f24.dto.component.PersonData;
@@ -14,15 +15,15 @@ public class F24SimplifiedConverter extends F24Converter {
         org.f24.dto.form.F24Simplified formF24Simplified = new org.f24.dto.form.F24Simplified();
         F24Simplified f24Simplified = f24Metadata.getF24Simplified();
 
-        if(f24Simplified == null) {
+        if (f24Simplified == null) {
             return formF24Simplified;
         }
 
-        if(f24Simplified.getTaxPayer() != null) {
+        if (f24Simplified.getTaxPayer() != null) {
             formF24Simplified.setTaxPayer(this.convertTaxPayer(f24Simplified.getTaxPayer()));
         }
 
-        if(f24Simplified.getPayments() != null) {
+        if (f24Simplified.getPayments() != null) {
             formF24Simplified.setPaymentReasonSection(this.convertPaymentReasonSection(f24Simplified.getPayments()));
         }
         return formF24Simplified;
@@ -36,18 +37,28 @@ public class F24SimplifiedConverter extends F24Converter {
         taxPayer.setDocumentCode(inputTaxPayer.getDocument());
         taxPayer.setRelativePersonTaxCode(inputTaxPayer.getRelativePersonTaxCode());
 
-        if(inputTaxPayer.getPersonalData() != null) {
+        if (inputTaxPayer.getPersonalData() != null) {
             PersonData personData = new PersonData();
             personData.setPersonalData(this.convertPersonalData(inputTaxPayer.getPersonalData()));
             taxPayer.setPersonData(personData);
         }
+        if (inputTaxPayer.getCompany() != null) {
+            taxPayer.setCompanyData(this.convertCompany(inputTaxPayer.getCompany()));
+        }
         return taxPayer;
     }
+
+    private CompanyData convertCompany(CompanyDataSimplified company) {
+        CompanyData companyData = new CompanyData();
+        companyData.setName(company.getName());
+        return companyData;
+    }
+
 
     private PaymentReasonSection convertPaymentReasonSection(SimplifiedPaymentSection payments) {
         PaymentReasonSection paymentReasonSection = new PaymentReasonSection();
         paymentReasonSection.setOperationId(payments.getOperationId());
-        if(payments.getRecords() != null) {
+        if (payments.getRecords() != null) {
             paymentReasonSection.setReasonRecordList(
                     payments.getRecords()
                             .stream()
