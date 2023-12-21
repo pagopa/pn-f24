@@ -52,8 +52,6 @@ components:
           pattern: ^[ -~]{1,60}$
           type: string
           description: Denominazione
-        taxAddress:
-          $ref: "#/components/schemas/TaxAddress"
       description: Dati Anagrafici PNF
     TaxPayerStandard:
       type: object
