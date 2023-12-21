@@ -40,13 +40,17 @@ public class F24LibTestBuilder {
 
 
     public void execTest(String testCase, boolean shouldHaveApplyCost) {
+        execTest(testCase, shouldHaveApplyCost, false);
+    }
+
+    public void execTest(String testCase, boolean shouldHaveApplyCost, boolean shouldParsePdf) {
         try {
             long initTestMs = new Date().getTime();
             log.info("Starting test on testCase : {}", testCase);
             MetadataToValidate metadataToValidate = MetadataToValidateBuilder.metaBuilder(testCase, shouldHaveApplyCost);
             boolean isValid = performValidationTest(testCase, metadataToValidate);
 
-            if (isValid) {
+            if (isValid && shouldParsePdf) {
                 performPdfParsing(metadataToValidate.getMetadataFile());
             }
 

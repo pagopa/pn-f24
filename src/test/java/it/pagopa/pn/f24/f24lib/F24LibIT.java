@@ -34,7 +34,15 @@ public class F24LibIT {
             //"f24Elid_VALID.json,false",
             //"f24Excise_VALID.json,false",
     })
-    public void libTest(String jsonFilePath, boolean shouldHaveApplyCost) {
+    public void libTestWithoutPdfParsing(String jsonFilePath, boolean shouldHaveApplyCost) {
         f24LibTestBuilder.execTest(jsonFilePath, shouldHaveApplyCost);
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "StandardWithApplyCost_VALID.json,false",
+    })
+    public void libTestWithPdfParsing(String jsonFilePath, boolean shouldHaveApplyCost) {
+        f24LibTestBuilder.execTest(jsonFilePath, shouldHaveApplyCost, true);
     }
 }

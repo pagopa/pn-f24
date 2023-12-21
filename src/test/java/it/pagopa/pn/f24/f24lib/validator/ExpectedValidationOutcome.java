@@ -1,9 +1,9 @@
 package it.pagopa.pn.f24.f24lib.validator;
 
 import it.pagopa.pn.f24.dto.F24MetadataValidationIssue;
+import it.pagopa.pn.f24.f24lib.exception.LibTestException;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.jupiter.api.Assertions;
 
 import java.util.Arrays;
 import java.util.List;
@@ -17,11 +17,17 @@ import static it.pagopa.pn.f24.exception.PnF24ExceptionCodes.*;
 @Slf4j
 public enum ExpectedValidationOutcome {
     VALID("VALID", (issueList) -> {
-        Assertions.assertTrue(issueList.isEmpty());
+        if(!issueList.isEmpty()) {
+            throw new LibTestException("Metadata did not pass the validation stage");
+        }
+
         log.info("Assertion verified, Metadata is valid");
     }),
     INVALID("INVALID", (issueList) -> {
-        Assertions.assertFalse(issueList.isEmpty());
+        if(issueList.isEmpty()) {
+            throw new LibTestException("Metadata passed the validation stage");
+        }
+
         reportIssues(issueList);
     }),
     INVALID_APPLY_COST("INVALID-APPLY-COST", (issueList) -> {
@@ -29,7 +35,9 @@ public enum ExpectedValidationOutcome {
                 .filter(issue -> issue.getCode().equals(ERROR_CODE_F24_METADATA_VALIDATION_INCONSISTENT_APPLY_COST))
                 .findFirst();
 
-        Assertions.assertTrue(optIssue.isPresent());
+        if(optIssue.isEmpty()) {
+            throw new LibTestException("Metadata hasn't invalid apply cost error");
+        }
 
         reportIssues(List.of(optIssue.get()));
     }),
@@ -38,7 +46,9 @@ public enum ExpectedValidationOutcome {
                 .filter(issue -> issue.getCode().equals(ERROR_CODE_F24_METADATA_PARSING))
                 .findFirst();
 
-        Assertions.assertTrue(optIssue.isPresent());
+        if(optIssue.isEmpty()) {
+            throw new LibTestException("Metadata hasn't invalid json error");
+        }
 
         reportIssues(List.of(optIssue.get()));
     }),
@@ -47,7 +57,9 @@ public enum ExpectedValidationOutcome {
                 .filter(issue -> issue.getCode().equals(ERROR_CODE_F24_METADATA_VALIDATION_ERROR))
                 .findFirst();
 
-        Assertions.assertTrue(optIssue.isPresent());
+        if(optIssue.isEmpty()) {
+            throw new LibTestException("Metadata hasn't invalid metadata error");
+        }
 
         reportIssues(List.of(optIssue.get()));
     }),
@@ -56,7 +68,9 @@ public enum ExpectedValidationOutcome {
                 .filter(issue -> issue.getCode().equals(ERROR_CODE_F24_METADATA_VALIDATION_MULTI_TYPE))
                 .findFirst();
 
-        Assertions.assertTrue(optIssue.isPresent());
+        if(optIssue.isEmpty()) {
+            throw new LibTestException("Metadata hasn't multi type error");
+        }
 
         reportIssues(List.of(optIssue.get()));
     });
