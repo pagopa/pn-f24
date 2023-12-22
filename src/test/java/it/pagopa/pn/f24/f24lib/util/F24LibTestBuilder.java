@@ -79,9 +79,8 @@ public class F24LibTestBuilder {
 
         int nPages = parser.numberOfPages();
         F24Type f24Type = getF24TypeFromMetadata(f24Metadata);
-        if (checkIfGeneratedPdfHasCopies(nPages, f24Type)) {
-            log.info("Generated PDF has copies, the parsing won't be executed.");
-            return;
+        if (pdfHasCopies(nPages, f24Type)) {
+            log.info("The generated PDF has copies therefore the analysis will not be performed.");
         }
 
         try {
@@ -94,18 +93,17 @@ public class F24LibTestBuilder {
             MetadataInspector metadataInspector = MetadataInspectorFactory.getInspector(f24Type);
             double totalMetadataDebit = metadataInspector.getTotalAmount(f24Metadata);
             double totalAmountPdf = parser.getTotalAmountPdf();
-            log.info("Total amount in pdf is {}", totalAmountPdf);
 
             if (totalMetadataDebit != totalAmountPdf) {
                 throw new LibTestException("Total amount in metadata: " + totalMetadataDebit + " is different from total amount in pdf: " + totalAmountPdf);
             }
-            log.info("Total amount in metadata is equal to total amount in pdf");
+            log.info("The total debt defined in the metadata is congruent with the total debt set on the pdf. Debt: {}", totalAmountPdf);
         } finally {
             parser.closeDocument();
         }
     }
 
-    private boolean checkIfGeneratedPdfHasCopies(int nPages, F24Type f24Type) {
+    private boolean pdfHasCopies(int nPages, F24Type f24Type) {
         switch(f24Type) {
             case F24_ELID, F24_STANDARD, F24_EXCISE -> {
                 return nPages > 3;
