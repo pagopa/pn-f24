@@ -118,22 +118,22 @@ public class StandardMetadataInspector implements MetadataInspector {
     public double getTotalAmount(F24Metadata f24Metadata) {
         double debit = 0;
         if (f24Metadata.getF24Standard() != null && f24Metadata.getF24Standard().getTreasury() != null)
-            debit = getDebitTreasury(f24Metadata.getF24Standard());
+            debit += getDebitTreasury(f24Metadata.getF24Standard());
 
         if (f24Metadata.getF24Standard() != null && f24Metadata.getF24Standard().getInps() != null)
-            debit = getDebitInps(f24Metadata.getF24Standard());
+            debit += getDebitInps(f24Metadata.getF24Standard());
 
         if (f24Metadata.getF24Standard() != null && f24Metadata.getF24Standard().getRegion() != null)
-            debit = getDebitRegion(f24Metadata.getF24Standard());
+            debit += getDebitRegion(f24Metadata.getF24Standard());
 
         if (f24Metadata.getF24Standard() != null && f24Metadata.getF24Standard().getLocalTax() != null)
-            debit = getDebitLocalTax(f24Metadata.getF24Standard());
+            debit += getDebitLocalTax(f24Metadata.getF24Standard());
 
         if (f24Metadata.getF24Standard() != null && f24Metadata.getF24Standard().getSocialSecurity() != null)
-            debit = getDebitSocialSecurityINAIL(f24Metadata.getF24Standard());
+            debit += getDebitSocialSecurityINAIL(f24Metadata.getF24Standard());
 
         if (f24Metadata.getF24Standard() != null && f24Metadata.getF24Standard().getSocialSecurity().getSocSecRecords() != null)
-            debit = getDebitSocialSecurityRecords(f24Metadata.getF24Standard());
+            debit += getDebitSocialSecurityRecords(f24Metadata.getF24Standard());
         debit = debit / 100;
         return debit;
     }
@@ -161,8 +161,8 @@ public class StandardMetadataInspector implements MetadataInspector {
         int debit = 0;
         if (f24Standard.getTreasury() != null && f24Standard.getTreasury().getRecords() != null) {
             for (int i = 0; i < f24Standard.getTreasury().getRecords().size(); i++) {
-                if (f24Standard.getTreasury().getRecords().get(i).getDebit() == null) {
-                    debit = debit + f24Standard.getInps().getRecords().get(i).getDebit();
+                if (f24Standard.getTreasury().getRecords().get(i).getDebit() != null) {
+                    debit = debit + f24Standard.getTreasury().getRecords().get(i).getDebit();
                 }
             }
         }

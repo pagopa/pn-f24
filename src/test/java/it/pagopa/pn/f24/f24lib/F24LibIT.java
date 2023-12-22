@@ -27,12 +27,15 @@ import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 public class F24LibIT {
     @Autowired
     F24LibTestBuilder f24LibTestBuilder;
+
     @ParameterizedTest
     @CsvSource({
-            //"SimplifiedWithApplyCost_VALID.json,false",
             "StandardWithApplyCost_VALID.json,false",
-            //"f24Elid_VALID.json,false",
-            //"f24Excise_VALID.json,false",
+            "StandardWithApplyCost_VALID.json,false",
+            "f24Elid_VALID.json,false",
+            "f24Excise_VALID.json,false",
+            "SimplifiedWithApplyCost.json,true",
+            "SimplifiedWithApplyCost_INVALID-APPLY-COST.json,true",
     })
     public void libTestWithoutPdfParsing(String jsonFilePath, boolean shouldHaveApplyCost) {
         f24LibTestBuilder.execTest(jsonFilePath, shouldHaveApplyCost);
@@ -40,7 +43,10 @@ public class F24LibIT {
 
     @ParameterizedTest
     @CsvSource({
+            "f24Elid_VALID.json,false",
             "StandardWithApplyCost_VALID.json,false",
+            "SimplifiedWithApplyCost.json,true",
+            "SimplifiedPNFWithApplyCost.json,true"
     })
     public void libTestWithPdfParsing(String jsonFilePath, boolean shouldHaveApplyCost) {
         f24LibTestBuilder.execTest(jsonFilePath, shouldHaveApplyCost, true);
