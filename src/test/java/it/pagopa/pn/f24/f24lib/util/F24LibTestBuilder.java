@@ -81,6 +81,7 @@ public class F24LibTestBuilder {
         F24Type f24Type = getF24TypeFromMetadata(f24Metadata);
         if (pdfHasCopies(nPages, f24Type)) {
             log.info("The generated PDF has copies therefore the analysis will not be performed.");
+            return;
         }
 
         try {
