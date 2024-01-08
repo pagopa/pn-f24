@@ -6,10 +6,12 @@ import it.pagopa.pn.f24.dto.safestorage.FileCreationResponseInt;
 import it.pagopa.pn.f24.dto.safestorage.FileCreationWithContentRequest;
 import it.pagopa.pn.f24.dto.safestorage.FileDownloadInfoInt;
 import it.pagopa.pn.f24.dto.safestorage.FileDownloadResponseInt;
+import it.pagopa.pn.f24.exception.PnFileNotFoundException;
 import it.pagopa.pn.f24.generated.openapi.msclient.safestorage.model.FileDownloadResponse;
 import it.pagopa.pn.f24.middleware.msclient.safestorage.PnSafeStorageClient;
 import it.pagopa.pn.f24.service.SafeStorageService;
 import it.pagopa.pn.f24.util.Sha256Handler;
+import lombok.CustomLog;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
@@ -87,7 +89,7 @@ public class SafeStorageServiceImpl implements SafeStorageService {
     }
 
     @Override
-    public Mono<byte[]> downloadPieceOfContent(String fileKey, String url, long maxSize) {
+    public Mono<byte[]> downloadPieceOfContent(final String fileKey, String url, long maxSize) {
         MDC.put(MDCUtils.MDC_PN_CTX_SAFESTORAGE_FILEKEY, fileKey);
         log.debug("Start call downloadPieceOfContent - fileKey={} url={} maxSize={}", fileKey, url, maxSize);
 
@@ -96,10 +98,10 @@ public class SafeStorageServiceImpl implements SafeStorageService {
                     MDC.remove(MDCUtils.MDC_PN_CTX_SAFESTORAGE_FILEKEY);
                     log.debug("downloadPieceOfContent file ok key={} url={} read size={}", fileKey, url, res==null?null:res.length);
                 })
-                .onErrorResume( err ->{
-                    log.error("Cannot download content ", err);
+                .onErrorResume(err -> {
+                    log.error("Cannot download content key={} url={}", fileKey, url, err);
                     MDC.remove(MDCUtils.MDC_PN_CTX_SAFESTORAGE_FILEKEY);
-                    return Mono.error(new PnInternalException("Cannot update metadata", ERROR_CODE_F24_READ_FILE_ERROR, err));
+                    return Mono.error(err);
                 });
     }
 }

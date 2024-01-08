@@ -28,6 +28,7 @@ import reactor.core.publisher.Mono;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
 import java.net.URI;
 import java.net.URL;
 
@@ -65,9 +66,9 @@ public class PnSafeStorageClientImpl extends CommonBaseClient implements PnSafeS
         log.logInvokingExternalService(PnLogger.EXTERNAL_SERVICES.PN_SAFE_STORAGE, "getFile");
         return fileDownloadApi.getFile(fileKey, f24Config.getSafeStorageCxId(), metadataOnly)
                 .onErrorResume(WebClientResponseException.class, error -> {
-                    log.warn("Exception in call getFile fileKey={} error={}", fileKey, error);
+                    log.warn("Exception in call getFile fileKey={}", fileKey, error);
                     if (error.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
-                        log.warn("File not found from safeStorage fileKey={} error={}", fileKey, error);
+                        log.warn("File not found from safeStorage fileKey={}", fileKey, error);
                         String errorDetail = "File non trovato. fileKey=" + fileKey;
                         return Mono.error(
                                 new PnFileNotFoundException(
@@ -124,6 +125,11 @@ public class PnSafeStorageClientImpl extends CommonBaseClient implements PnSafeS
                     break;
             }
             return fileOutputStream.toByteArray();
+        } catch (FileNotFoundException fe) {
+            log.warn("File not found from safeStorage using url={}", url, fe);
+            String errorDetail = "File not found using url=" + url;
+
+            throw new PnFileNotFoundException(errorDetail, fe);
         } catch (Exception e) {
             log.error("Cannot read file content", e);
             throw new PnInternalException("cannot download content", PnF24ExceptionCodes.ERROR_CODE_F24_READ_FILE_ERROR, e);
