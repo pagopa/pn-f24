@@ -45,6 +45,13 @@ class ElidMetadataInspectorTest {
     }
 
     @Test
+    void testGetTotalAmount() {
+        ElidMetadataInspector elidMetadataInspector = new ElidMetadataInspector();
+        F24Metadata f24Metadata = getF24MetadataElidWithRecord(true);
+        assertEquals(0, elidMetadataInspector.getTotalAmount(f24Metadata));
+    }
+
+    @Test
     void testCheckApplyCostFailWithRequiredButNotGiven() {
         ElidMetadataInspector elidMetadataInspector = new ElidMetadataInspector();
         F24Metadata f24Metadata = getF24MetadataElidWithRecord(false);

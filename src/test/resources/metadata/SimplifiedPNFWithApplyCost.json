@@ -1,0 +1,97 @@
+{
+	"f24Simplified": {
+		"taxPayer": {
+			"taxCode": "RSSMLB80A01A200D",
+			"company": {
+				"name": "MARIO ALBERTO"
+			},
+			"office": "FRH",
+			"document": "29542848644",
+			"relativePersonTaxCode": "TDITLC46H54C619Q",
+			"id": "T0"
+		},
+		"payments": {
+			"operationId": "123456789012345678",
+			"records": [
+				{
+					"applyCost": true,
+					"section": "ER",
+					"taxType": "0021",
+					"municipality": "1211",
+					"reconsideration": true,
+					"propertiesChanges": false,
+					"advancePayment": true,
+					"fullPayment": false,
+					"numberOfProperties": "124",
+					"year": "2000",
+					"debit": "604"
+				},
+				{
+					"applyCost": false,
+					"section": "ER",
+					"taxType": "0021",
+					"municipality": "1211",
+					"reconsideration": true,
+					"propertiesChanges": true,
+					"advancePayment": true,
+					"fullPayment": true,
+					"numberOfProperties": "268",
+					"year": "2001",
+					"debit": "604"
+				},
+				{
+					"applyCost": false,
+					"section": "ER",
+					"taxType": "0021",
+					"municipality": "1211",
+					"reconsideration": true,
+					"propertiesChanges": false,
+					"advancePayment": false,
+					"fullPayment": false,
+					"numberOfProperties": "121",
+					"year": "2002",
+					"debit": "604"
+				},
+				{
+					"applyCost": false,
+					"section": "ER",
+					"taxType": "0021",
+					"municipality": "1211",
+					"reconsideration": true,
+					"propertiesChanges": false,
+					"advancePayment": true,
+					"fullPayment": false,
+					"numberOfProperties": "191",
+					"year": "2003",
+					"debit": "604"
+				},
+				{
+					"applyCost": false,
+					"section": "ER",
+					"taxType": "0021",
+					"municipality": "1211",
+					"reconsideration": true,
+					"propertiesChanges": false,
+					"advancePayment": true,
+					"fullPayment": false,
+					"numberOfProperties": "191",
+					"year": "2004",
+					"debit": "604"
+				},
+				{
+					"applyCost": false,
+					"section": "ER",
+					"taxType": "0021",
+					"municipality": "1211",
+					"reconsideration": true,
+					"propertiesChanges": false,
+					"advancePayment": true,
+					"fullPayment": false,
+					"numberOfProperties": "222",
+					"year": "2005",
+					"debit": "604"
+				}
+			]
+		}
+	}
+}

@@ -1,0 +1,166 @@
+{
+  "f24Standard": {
+    "taxPayer": {
+      "taxCode": "RSSMLB80A01A200D",
+      "isNotTaxYear": true,
+      "company": {
+        "name": "TEST RAGIONE SOCIALE",
+        "taxAddress": {
+          "municipality": "MILANO",
+          "province": "MI",
+          "address": "VIA LARGA 21"
+        }
+      }
+    },
+    "treasury": {
+      "records": [
+        {
+          "applyCost": false,
+          "taxType": "A0C1",
+          "installment": "A01L",
+          "year": 2017,
+          "debit": 1000,
+          "credit": 0
+        },
+        {
+          "applyCost": false,
+          "taxType": "A0C1",
+          "installment": "A01L",
+          "year": 2017,
+          "debit": 1000,
+          "credit": 0
+        },
+        {
+          "applyCost": false,
+          "taxType": "A0C1",
+          "installment": "A01L",
+          "year": 2017,
+          "debit": 1000,
+          "credit": 0
+        }
+      ],
+      "office": "A01",
+      "document": "29542848644"
+    },
+    "inps": {
+      "records": [
+        {
+          "applyCost": false,
+          "office": "001",
+          "reason": "ALLL",
+          "inps": "000010101001",
+          "period": {
+            "startDate": "403120",
+            "endDate": "084198"
+          },
+          "debit": "84",
+          "credit": "0"
+        },
+        {
+          "applyCost": false,
+          "office": "001",
+          "reason": "ALLL",
+          "inps": "000010101001",
+          "period": {
+            "startDate": "403120",
+            "endDate": "084198"
+          },
+          "debit": "84",
+          "credit": "0"
+        },
+        {
+          "applyCost": false,
+          "office": "001",
+          "reason": "ALLL",
+          "inps": "000010101001",
+          "period": {
+            "startDate": "403120",
+            "endDate": "084198"
+          },
+          "debit": "84",
+          "credit": "0"
+        }
+      ]
+    },
+    "region": {
+      "records": [
+        {
+          "applyCost": false,
+          "region": "01",
+          "taxType": "A0C1",
+          "installment": "A01L",
+          "year": 2017,
+          "debit": 1000,
+          "credit": 0
+        },
+        {
+          "applyCost": false,
+          "region": "01",
+          "taxType": "A0C1",
+          "installment": "A01L",
+          "year": 2017,
+          "debit": 1000,
+          "credit": 0
+        },
+        {
+          "applyCost": false,
+          "region": "01",
+          "taxType": "A0C1",
+          "installment": "A01L",
+          "year": 2017,
+          "debit": 1000,
+          "credit": 0
+        }
+      ]
+    },
+    "localTax": {
+      "operationId": "A0VU5WBKUUJPCBE8AK",
+      "records": [
+        {
+          "applyCost": false,
+          "municipality": "99YZ",
+          "reconsideration": true,
+          "propertiesChanges": true,
+          "advancePayment": true,
+          "fullPayment": true,
+          "numberOfProperties": "433",
+          "taxType": "0943",
+          "installment": "43CV",
+          "year": "2432",
+          "debit": "1000",
+          "credit": "0"
+        }
+      ],
+      "deduction": "97091877"
+    },
+    "socialSecurity": {
+      "records": [
+        {
+          "applyCost": false,
+          "office": "69605",
+          "company": "47858729",
+          "control": "54",
+          "refNumber": "792244",
+          "reason": "B",
+          "debit": "60",
+          "credit": "0"
+        }
+      ],
+      "socSecRecords": [
+        {
+          "applyCost": false,
+          "institution": "0001",
+          "office": "69605",
+          "reason": "G1D",
+          "position": "693850961",
+          "period": {
+            "startDate": "150401",
+            "endDate": "671726"
+          },
+          "debit": "36",
+          "credit": "0"
+        }
+      ]
+    }
+  }
+}
