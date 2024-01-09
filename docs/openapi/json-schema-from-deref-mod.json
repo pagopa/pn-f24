@@ -604,6 +604,21 @@
               },
               "description": "Dati Anagrafici"
             },
+            "company": {
+              "type": "object",
+              "required": [
+                "name"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "name": {
+                  "pattern": "^[ -~]{1,60}$",
+                  "type": "string",
+                  "description": "Denominazione"
+                }
+              },
+              "description": "Dati Anagrafici PNF"
+            },
             "relativePersonTaxCode": {
               "pattern": "^([A-Z]{6}[0-9LMNPQRSTUV]{2}[ABCDEHLMPRST]{1}[0-9LMNPQRSTUV]{2}[A-Z]{1}[0-9LMNPQRSTUV]{3}[A-Z]{1})|([0-9]{11})$",
               "type": "string",
