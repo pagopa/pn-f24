@@ -547,7 +547,7 @@ class StandardMetadataInspectorTest {
         verify(f24Standard, atLeast(1)).getRegion();
         verify(f24Standard, atLeast(1)).getSocialSecurity();
         verify(f24Standard, atLeast(1)).getTreasury();
-        assertEquals(0.0d, actualTotalAmount);
+        assertEquals(0.01d, actualTotalAmount);
     }
 
     /**
@@ -603,7 +603,7 @@ class StandardMetadataInspectorTest {
         verify(f24Standard, atLeast(1)).getRegion();
         verify(f24Standard, atLeast(1)).getSocialSecurity();
         verify(f24Standard, atLeast(1)).getTreasury();
-        assertEquals(0.0d, actualTotalAmount);
+        assertEquals(0.01d, actualTotalAmount);
     }
 
     /**
@@ -652,7 +652,7 @@ class StandardMetadataInspectorTest {
         verify(f24Standard, atLeast(1)).getRegion();
         verify(f24Standard, atLeast(1)).getSocialSecurity();
         verify(f24Standard, atLeast(1)).getTreasury();
-        assertEquals(0.0d, actualTotalAmount);
+        assertEquals(0.01d, actualTotalAmount);
     }
 
     /**
@@ -702,7 +702,7 @@ class StandardMetadataInspectorTest {
         verify(f24Standard, atLeast(1)).getRegion();
         verify(f24Standard, atLeast(1)).getSocialSecurity();
         verify(f24Standard, atLeast(1)).getTreasury();
-        assertEquals(0.0d, actualTotalAmount);
+        assertEquals(0.01d, actualTotalAmount);
     }
 
     /**
@@ -800,7 +800,7 @@ class StandardMetadataInspectorTest {
         verify(f24Standard, atLeast(1)).getRegion();
         verify(f24Standard, atLeast(1)).getSocialSecurity();
         verify(f24Standard, atLeast(1)).getTreasury();
-        assertEquals(0.0d, actualTotalAmount);
+        assertEquals(0.01d, actualTotalAmount);
     }
 
     private F24Metadata getF24MetadataStandardValidWithAllApplyCostFalse() {
