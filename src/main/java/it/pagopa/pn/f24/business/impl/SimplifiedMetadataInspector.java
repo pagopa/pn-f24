@@ -21,7 +21,15 @@ public class SimplifiedMetadataInspector implements MetadataInspector {
 
         return applyCostCounter;
     }
-
+    @Override
+    public double getTotalAmount(F24Metadata f24Metadata){
+        double debit=0;
+        for (int i = 0; i < f24Metadata.getF24Simplified().getPayments().getRecords().size(); i++) {
+            debit= debit+f24Metadata.getF24Simplified().getPayments().getRecords().get(i).getDebit();
+        }
+        debit=debit/100;
+        return debit;
+    }
     public ApplyCostValidation checkApplyCost(F24Metadata f24Metadata, boolean requiredApplyCost) {
         F24Simplified f24Simplified = f24Metadata.getF24Simplified();
         if (f24Simplified == null) {
@@ -40,7 +48,6 @@ public class SimplifiedMetadataInspector implements MetadataInspector {
         return MetadataInspector.verifyApplyCost(requiredApplyCost, validApplyCostFound, invalidApplyCostFound);
 
     }
-
     @Override
     public void addCostToDebit(F24Metadata f24Metadata, Integer cost) {
         if (f24Metadata.getF24Simplified() != null) {

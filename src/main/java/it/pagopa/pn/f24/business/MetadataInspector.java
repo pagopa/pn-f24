@@ -11,6 +11,7 @@ public interface MetadataInspector {
 
     ApplyCostValidation checkApplyCost(F24Metadata f24Metadata, boolean requiredApplyCost);
 
+    double getTotalAmount(F24Metadata f24Metadata);
 
     static Integer convertDebitSum(Integer debit, int cost) {
         int debitInt = debit == null ? 0 : debit;

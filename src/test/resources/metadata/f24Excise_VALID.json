@@ -1,0 +1,145 @@
+{
+  "f24Excise": {
+    "taxPayer": {
+      "taxCode": "RSSMLB80A01A200D",
+      "isNotTaxYear": true,
+      "person": {
+        "personalData": {
+          "surname": "ROSSI",
+          "name": "MARIO ALBERTO",
+          "birthDate": "01-01-1980",
+          "sex": "M",
+          "birthPlace": "MILANO",
+          "birthProvince": "MI"
+        },
+        "taxAddress": {
+          "municipality": "ROMA",
+          "province": "RM",
+          "address": "VIA GIORGIONE N. 110"
+        }
+      },
+      "relativePersonTaxCode": "RSSMLB80A01A200D",
+      "id": "Q7"
+    },
+    "treasury": {
+      "records": [
+        {
+          "applyCost": false,
+          "taxType": "SFGE",
+          "installment": "1N7",
+          "year": "2023",
+          "debit": "1283277",
+          "credit": "0"
+        },
+        {
+          "applyCost": false,
+          "taxType": "SFGE",
+          "installment": "1N7",
+          "year": "2023",
+          "debit": "1283277",
+          "credit": "0"
+        }
+      ],
+      "office": "NKA",
+      "document": "99662216965"
+    },
+    "inps": {
+      "records": [
+        {
+          "applyCost": false,
+          "office": "155",
+          "reason": "HYF",
+          "inps": "lapyt",
+          "period": {
+            "startDate": "032023",
+            "endDate": "042023"
+          },
+          "debit": "0",
+          "credit": "30172"
+        },
+        {
+          "applyCost": false,
+          "office": "155",
+          "reason": "TAG",
+          "inps": "mamal",
+          "period": {
+            "startDate": "042023",
+            "endDate": "052023"
+          },
+          "debit": "8521",
+          "credit": "0"
+        }
+      ]
+    },
+    "region": {
+      "records": [
+        {
+          "applyCost": false,
+          "region": "01",
+          "taxType": "94HY",
+          "installment": "9KL",
+          "year": "2023",
+          "debit": "9183722",
+          "credit": "0"
+        },
+        {
+          "applyCost": false,
+          "region": "01",
+          "taxType": "86HY",
+          "installment": "9KL",
+          "year": "2023",
+          "debit": "9183722",
+          "credit": "0"
+        }
+      ]
+    },
+    "localTax": {
+      "operationId": "DQ3SOV5WK3KYRSOWO5",
+      "records": [
+        {
+          "applyCost": false,
+          "municipality": "RAMZ",
+          "reconsideration": true,
+          "propertiesChanges": true,
+          "advancePayment": true,
+          "fullPayment": true,
+          "numberOfProperties": "670",
+          "taxType": "8383",
+          "installment": "C1",
+          "year": "2020",
+          "debit": "2923",
+          "credit": "0"
+        }
+      ],
+      "deduction": "12934"
+    },
+    "excise": {
+      "records": [
+        {
+          "applyCost": false,
+          "institution": "NA",
+          "province": "KT",
+          "id": "6FQN195TSPW87DY2V",
+          "taxType": "4YEA",
+          "installment": "KEA",
+          "month": "03",
+          "year": "2021",
+          "debit": "201"
+        },
+        {
+          "applyCost": false,
+          "institution": "NA",
+          "province": "KT",
+          "id": "6FQN195TSPW87DY2V",
+          "taxType": "4YEA",
+          "installment": "KEA",
+          "month": "05",
+          "year": "2022",
+          "debit": "3021"
+        }
+      ],
+      "office": "TZQ",
+      "document": "84635602429"
+    }
+  }
+}
