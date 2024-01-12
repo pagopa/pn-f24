@@ -212,7 +212,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Problem'
 
-  /f24-private/pdf/numberOfPages/{setId}:
+  /f24-private/pdf/{setId}/number-of-pages:
     get:
       tags:
         - F24Controller
@@ -230,7 +230,8 @@ paths:
                 type: object
                 properties:
                   numberOfPages:
-                    type: number
+                    type: integer
+                    format: int32
         "400":
           description: Bad request
           content:
