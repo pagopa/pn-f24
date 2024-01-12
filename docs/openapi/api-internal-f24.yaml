@@ -212,6 +212,44 @@ paths:
               schema:
                 $ref: '#/components/schemas/Problem'
 
+  /f24-private/pdf/numberOfPages/{setId}:
+    get:
+      tags:
+        - F24Controller
+      description: Calcola il numero totale di pagine prodotte dal sottoinsieme di pdf appartenenti al set di metadati indicato.
+      operationId: getTotalNumberOfPages
+      parameters:
+        - $ref: '#/components/parameters/pathSetId'
+        - $ref: '#/components/parameters/queryPathTokens'
+      responses:
+        "200":
+          description: Numero di pagine totali calcolato
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  numberOfPages:
+                    type: number
+        "400":
+          description: Bad request
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        "404":
+          description: Not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        "500":
+          description: Internal error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+
       callbacks:
         sendEventToEventBridge:
           arnEventBus:
@@ -577,7 +615,7 @@ components:
     queryPathTokens:
       in: query
       name: pathTokens
-      description: Identificativi che determinano un solo F24 all'interno dell'insieme
+      description: Identificativi che in base alla composizione possono determinare un sottoinsieme di F24 oppure un singolo F24 all'interno dell'insieme
       required: true
       schema:
         type: array
