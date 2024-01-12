@@ -223,15 +223,11 @@ paths:
         - $ref: '#/components/parameters/queryPathTokens'
       responses:
         "200":
-          description: Numero di pagine totali calcolato
+          description: Numero pagine totali calcolate.
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  numberOfPages:
-                    type: integer
-                    format: int32
+                $ref: '#/components/schemas/NumberOfPagesResponse'
         "400":
           description: Bad request
           content:
@@ -548,6 +544,17 @@ components:
             codice di errore _man mano che si trovano casi aggiungerli alla lista seguente_
             - __F4__ : sono rimasto basito (non è serio)
             - __BO__ : mi è andata una bruschetta nell'occhio (non è serio)
+
+    ############################################################################################
+    ###                      RISPOSTA API CALCOLO NUMERO PAGINE DI UN SOTTOINSIEME DI PDF    ###
+    ############################################################################################
+    NumberOfPagesResponse:
+      type: object
+      properties:
+        numberOfPages:
+          type: integer
+          format: int32
+
 
     ############################################################################################
     ###                      METADATA                                                        ###
