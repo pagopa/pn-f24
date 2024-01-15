@@ -1,5 +1,6 @@
 package it.pagopa.pn.f24.business.impl;
 
+import static org.f24.service.pdf.util.FieldEnum.TAX_RECORDS_NUMBER;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.mock;
@@ -38,6 +39,7 @@ import it.pagopa.pn.f24.generated.openapi.server.v1.dto.TreasurySection;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
 
@@ -865,6 +867,54 @@ class StandardMetadataInspectorTest {
         f24Metadata.setF24Standard(f24Standard);
 
         return f24Metadata;
+    }
+
+    @Test
+    void calculateExpectedNumberOfPagesWhenMetadataHasOneRecord() {
+
+        TreasurySection treasurySection = new TreasurySection();
+        treasurySection.setRecords(createListOfRecords(1));
+        InpsSection inpsSection = new InpsSection();
+        inpsSection.setRecords(List.of(new InpsRecord()));
+        RegionSection regionSection = new RegionSection();
+        regionSection.setRecords(List.of(new RegionRecord()));
+        LocalTaxSection localTaxSection = new LocalTaxSection();
+        localTaxSection.setRecords(List.of(new LocalTaxRecord()));
+        SocialSecuritySection socialSecuritySection = new SocialSecuritySection();
+        socialSecuritySection.setRecords(List.of(new InailRecord()));
+        socialSecuritySection.setSocSecRecords(List.of(new SocialSecurityRecord()));
+
+
+        F24Standard f24Standard = new F24Standard();
+        f24Standard.setTreasury(treasurySection);
+        f24Standard.setInps(inpsSection);
+        f24Standard.setRegion(regionSection);
+        f24Standard.setLocalTax(localTaxSection);
+        f24Standard.setSocialSecurity(socialSecuritySection);
+        F24Metadata f24Metadata = new F24Metadata();
+        f24Metadata.setF24Standard(f24Standard);
+
+        StandardMetadataInspector standardMetadataInspector = new StandardMetadataInspector();
+        assertEquals(3, standardMetadataInspector.getExpectedNumberOfPages(f24Metadata));
+    }
+
+    @Test
+    void calculateExpectedNumberOfPagesWhenMetadataHasManyRecords() {
+
+        TreasurySection treasurySection = new TreasurySection();
+        treasurySection.setRecords(createListOfRecords(TAX_RECORDS_NUMBER.getRecordsNum() + 1));
+
+        F24Standard f24Standard = new F24Standard();
+        f24Standard.setTreasury(treasurySection);
+        F24Metadata f24Metadata = new F24Metadata();
+        f24Metadata.setF24Standard(f24Standard);
+
+        StandardMetadataInspector standardMetadataInspector = new StandardMetadataInspector();
+        assertEquals(6, standardMetadataInspector.getExpectedNumberOfPages(f24Metadata));
+    }
+
+    private List<Tax> createListOfRecords(int num) {
+        return Stream.generate(Tax::new).limit(num).toList();
     }
 
 }

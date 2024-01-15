@@ -5,8 +5,11 @@ import it.pagopa.pn.f24.dto.ApplyCostValidation;
 import it.pagopa.pn.f24.generated.openapi.server.v1.dto.*;
 
 import static it.pagopa.pn.f24.util.Utility.countElementsByPredicate;
+import static org.f24.service.pdf.util.FieldEnum.REASON_RECORDS_NUMBER;
 
 public class SimplifiedMetadataInspector implements MetadataInspector {
+    private static final int SIMPLIFIED_DEFAULT_NUMBER_OF_COPIES = 1;
+
     @Override
     public int countMetadataApplyCost(F24Metadata f24Metadata) {
         F24Simplified f24Simplified = f24Metadata.getF24Simplified();
@@ -59,5 +62,21 @@ public class SimplifiedMetadataInspector implements MetadataInspector {
                 }
             }
         }
+    }
+
+    @Override
+    public int getExpectedNumberOfPages(F24Metadata f24Metadata) {
+        if(f24Metadata.getF24Simplified() == null) {
+            return 0;
+        }
+
+        int pages = 1;
+        F24Simplified f24Simplified = f24Metadata.getF24Simplified();
+        if(f24Simplified.getPayments() != null && f24Simplified.getPayments().getRecords() != null) {
+            int numRecords = f24Simplified.getPayments().getRecords().size();
+            pages = MetadataInspector.getTotalPagesNecessaryForSection(numRecords, REASON_RECORDS_NUMBER.getRecordsNum(), pages);
+        }
+
+        return pages * SIMPLIFIED_DEFAULT_NUMBER_OF_COPIES;
     }
 }

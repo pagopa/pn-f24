@@ -5,8 +5,11 @@ import it.pagopa.pn.f24.dto.ApplyCostValidation;
 import it.pagopa.pn.f24.generated.openapi.server.v1.dto.*;
 
 import static it.pagopa.pn.f24.util.Utility.countElementsByPredicate;
+import static org.f24.service.pdf.util.FieldEnum.TREASURY_RECORDS_NUMBER;
 
 public class ElidMetadataInspector implements MetadataInspector {
+    private static final int ELID_DEFAULT_NUMBER_OF_COPIES = 3;
+
     @Override
     public int countMetadataApplyCost(F24Metadata f24Metadata) {
         F24Elid f24Elid = f24Metadata.getF24Elid();
@@ -59,5 +62,21 @@ public class ElidMetadataInspector implements MetadataInspector {
                 }
             }
         }
+    }
+
+    @Override
+    public int getExpectedNumberOfPages(F24Metadata f24Metadata) {
+        if(f24Metadata.getF24Elid() == null) {
+            return 0;
+        }
+
+        int pages = 1;
+        F24Elid f24Elid = f24Metadata.getF24Elid();
+        if(f24Elid.getTreasury() != null && f24Elid.getTreasury().getRecords() != null) {
+            int numRecords = f24Elid.getTreasury().getRecords().size();
+            pages = MetadataInspector.getTotalPagesNecessaryForSection(numRecords, TREASURY_RECORDS_NUMBER.getRecordsNum(), pages);
+        }
+
+        return pages * ELID_DEFAULT_NUMBER_OF_COPIES;
     }
 }

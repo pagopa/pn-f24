@@ -1,10 +1,14 @@
 package it.pagopa.pn.f24.business.impl;
 
+import static org.f24.service.pdf.util.FieldEnum.TREASURY_RECORDS_NUMBER;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import it.pagopa.pn.f24.dto.ApplyCostValidation;
 import it.pagopa.pn.f24.generated.openapi.server.v1.dto.*;
+
 import java.util.List;
+import java.util.stream.Stream;
+
 import org.junit.jupiter.api.Test;
 
 class ElidMetadataInspectorTest {
@@ -89,6 +93,40 @@ class ElidMetadataInspectorTest {
         F24Metadata f24Metadata = new F24Metadata();
         f24Metadata.setF24Elid(f24Elid);
         return f24Metadata;
+    }
+
+    @Test
+    void calculateExpectedNumberOfPagesWhenMetadataHasOneRecord() {
+
+        TreasuryAndOtherSection treasuryAndOtherSection = new TreasuryAndOtherSection();
+        treasuryAndOtherSection.setRecords(createListOfRecords(1));
+
+        F24Elid f24Elid = new F24Elid();
+        f24Elid.setTreasury(treasuryAndOtherSection);
+        F24Metadata f24Metadata = new F24Metadata();
+        f24Metadata.setF24Elid(f24Elid);
+
+        ElidMetadataInspector elidMetadataInspector = new ElidMetadataInspector();
+        assertEquals(3, elidMetadataInspector.getExpectedNumberOfPages(f24Metadata));
+    }
+
+    @Test
+    void calculateExpectedNumberOfPagesWhenMetadataHasManyRecords() {
+
+        TreasuryAndOtherSection treasuryAndOtherSection = new TreasuryAndOtherSection();
+        treasuryAndOtherSection.setRecords(createListOfRecords(TREASURY_RECORDS_NUMBER.getRecordsNum() + 1));
+
+        F24Elid f24Elid = new F24Elid();
+        f24Elid.setTreasury(treasuryAndOtherSection);
+        F24Metadata f24Metadata = new F24Metadata();
+        f24Metadata.setF24Elid(f24Elid);
+
+        ElidMetadataInspector elidMetadataInspector = new ElidMetadataInspector();
+        assertEquals(6, elidMetadataInspector.getExpectedNumberOfPages(f24Metadata));
+    }
+
+    private List<TreasuryRecord> createListOfRecords(int num) {
+        return Stream.generate(TreasuryRecord::new).limit(num).toList();
     }
 
 }

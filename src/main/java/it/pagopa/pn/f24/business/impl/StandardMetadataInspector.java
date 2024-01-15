@@ -6,9 +6,12 @@ import it.pagopa.pn.f24.generated.openapi.server.v1.dto.*;
 import lombok.extern.slf4j.Slf4j;
 
 import static it.pagopa.pn.f24.util.Utility.*;
+import static org.f24.service.pdf.util.FieldEnum.*;
 
 @Slf4j
 public class StandardMetadataInspector implements MetadataInspector {
+
+    private static final int STANDARD_DEFAULT_NUMBER_OF_COPIES = 3;
 
     public int countMetadataApplyCost(F24Metadata f24Metadata) {
         F24Standard f24Standard = f24Metadata.getF24Standard();
@@ -253,5 +256,46 @@ public class StandardMetadataInspector implements MetadataInspector {
                 }
             }
         }
+    }
+
+    @Override
+    public int getExpectedNumberOfPages(F24Metadata f24Metadata) {
+        if(f24Metadata.getF24Standard() == null) {
+            return 0;
+        }
+
+        int pages = 1;
+        F24Standard f24Standard = f24Metadata.getF24Standard();
+        if (f24Standard.getTreasury() != null && f24Standard.getTreasury().getRecords() != null) {
+            int recordsNum = f24Standard.getTreasury().getRecords().size();
+            pages = MetadataInspector.getTotalPagesNecessaryForSection(recordsNum, TAX_RECORDS_NUMBER.getRecordsNum(), pages);
+        }
+
+        if (f24Standard.getInps() != null && f24Standard.getInps().getRecords() != null) {
+            int recordsNum = f24Standard.getInps().getRecords().size();
+            pages = MetadataInspector.getTotalPagesNecessaryForSection(recordsNum, UNIV_RECORDS_NUMBER.getRecordsNum(), pages);
+        }
+
+        if (f24Standard.getRegion() != null && f24Standard.getRegion().getRecords() != null) {
+            int recordsNum = f24Standard.getRegion().getRecords().size();
+            pages = MetadataInspector.getTotalPagesNecessaryForSection(recordsNum, UNIV_RECORDS_NUMBER.getRecordsNum(), pages);
+        }
+
+        if (f24Standard.getLocalTax() != null && f24Standard.getLocalTax().getRecords() != null) {
+            int recordsNum = f24Standard.getLocalTax().getRecords().size();
+            pages = MetadataInspector.getTotalPagesNecessaryForSection(recordsNum, UNIV_RECORDS_NUMBER.getRecordsNum(), pages);
+        }
+
+        if (f24Standard.getSocialSecurity() != null && f24Standard.getSocialSecurity().getRecords() != null) {
+            int recordsNum = f24Standard.getSocialSecurity().getRecords().size();
+            pages = MetadataInspector.getTotalPagesNecessaryForSection(recordsNum, INAIL_RECORDS_NUMBER.getRecordsNum(), pages);
+        }
+
+        if (f24Standard.getSocialSecurity() != null && f24Standard.getSocialSecurity().getSocSecRecords() != null) {
+            int recordsNum = f24Standard.getSocialSecurity().getSocSecRecords().size();
+            pages = MetadataInspector.getTotalPagesNecessaryForSection(recordsNum, SOC_RECORDS_NUMBER.getRecordsNum(), pages);
+        }
+
+        return pages * STANDARD_DEFAULT_NUMBER_OF_COPIES;
     }
 }

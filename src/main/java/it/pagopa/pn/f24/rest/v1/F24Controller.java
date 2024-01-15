@@ -2,6 +2,7 @@ package it.pagopa.pn.f24.rest.v1;
 
 import it.pagopa.pn.f24.generated.openapi.server.v1.api.F24ControllerApi;
 import it.pagopa.pn.f24.generated.openapi.server.v1.dto.*;
+import it.pagopa.pn.f24.service.F24ParserService;
 import it.pagopa.pn.f24.service.F24Service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -19,10 +20,13 @@ public class F24Controller implements F24ControllerApi {
 
     private final F24Service f24Service;
 
+    private final F24ParserService f24ParserService;
+
     private final Scheduler scheduler;
 
-    public F24Controller(F24Service f24Service, Scheduler scheduler) {
+    public F24Controller(F24Service f24Service, F24ParserService f24ParserService, Scheduler scheduler) {
         this.f24Service = f24Service;
+        this.f24ParserService = f24ParserService;
         this.scheduler = scheduler;
     }
 
@@ -52,5 +56,11 @@ public class F24Controller implements F24ControllerApi {
         return f24Service.preparePDF(xPagopaF24CxId, requestId, prepareF24Request)
                 .map(requestAccepted -> ResponseEntity.status(HttpStatus.ACCEPTED).body(requestAccepted))
                 .publishOn(scheduler);
+    }
+
+    @Override
+    public Mono<ResponseEntity<NumberOfPagesResponse>> getTotalNumberOfPages(String setId, List<String> pathTokens,  final ServerWebExchange exchange) {
+        return f24ParserService.getTotalPagesFromMetadataSet(setId, pathTokens)
+                .map(numberOfPagesResponse -> ResponseEntity.status(HttpStatus.OK).body(numberOfPagesResponse));
     }
 }
