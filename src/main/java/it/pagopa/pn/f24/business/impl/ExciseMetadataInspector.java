@@ -5,8 +5,11 @@ import it.pagopa.pn.f24.dto.ApplyCostValidation;
 import it.pagopa.pn.f24.generated.openapi.server.v1.dto.*;
 
 import static it.pagopa.pn.f24.util.Utility.countElementsByPredicate;
+import static org.f24.service.pdf.util.FieldEnum.*;
 
 public class ExciseMetadataInspector implements MetadataInspector {
+    private static final int EXCISE_DEFAULT_NUMBER_OF_COPIES = 3;
+
     @Override
     public int countMetadataApplyCost(F24Metadata f24Metadata) {
         F24Excise f24Excise = f24Metadata.getF24Excise();
@@ -199,6 +202,41 @@ public class ExciseMetadataInspector implements MetadataInspector {
                 }
             }
         }
+    }
+
+    @Override
+    public int getExpectedNumberOfPages(F24Metadata f24Metadata) {
+        if(f24Metadata.getF24Excise() == null) {
+            return 0;
+        }
+
+        int pages = 1;
+        F24Excise f24Excise = f24Metadata.getF24Excise();
+        if (f24Excise.getTreasury() != null && f24Excise.getTreasury().getRecords() != null) {
+            int recordsNum = f24Excise.getTreasury().getRecords().size();
+            pages = MetadataInspector.getTotalPagesNecessaryForSection(recordsNum, TAX_RECORDS_NUMBER.getRecordsNum(), pages);
+        }
+
+        if (f24Excise.getInps() != null && f24Excise.getInps().getRecords() != null) {
+            int recordsNum = f24Excise.getInps().getRecords().size();
+            pages = MetadataInspector.getTotalPagesNecessaryForSection(recordsNum, UNIV_RECORDS_NUMBER.getRecordsNum(), pages);
+        }
+
+        if (f24Excise.getRegion() != null && f24Excise.getRegion().getRecords() != null) {
+            int recordsNum = f24Excise.getRegion().getRecords().size();
+            pages = MetadataInspector.getTotalPagesNecessaryForSection(recordsNum, UNIV_RECORDS_NUMBER.getRecordsNum(), pages);
+        }
+
+        if (f24Excise.getLocalTax() != null && f24Excise.getLocalTax().getRecords() != null) {
+            int recordsNum = f24Excise.getLocalTax().getRecords().size();
+            pages = MetadataInspector.getTotalPagesNecessaryForSection(recordsNum, UNIV_RECORDS_NUMBER.getRecordsNum(), pages);
+        }
+
+        if(f24Excise.getExcise() != null && f24Excise.getExcise().getRecords() != null) {
+            int recordsNum = f24Excise.getExcise().getRecords().size();
+            pages = MetadataInspector.getTotalPagesNecessaryForSection(recordsNum, EXCISE_TAX_RECORDS_NUMBER.getRecordsNum(), pages);
+        }
+        return pages * EXCISE_DEFAULT_NUMBER_OF_COPIES;
     }
 }
 

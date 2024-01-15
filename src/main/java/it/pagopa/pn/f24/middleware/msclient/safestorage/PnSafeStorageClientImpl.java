@@ -31,6 +31,8 @@ import java.io.ByteArrayOutputStream;
 import java.net.URI;
 import java.net.URL;
 
+import static it.pagopa.pn.f24.exception.PnF24ExceptionCodes.ERROR_MESSAGE_F24_FILE_WITH_FILEKEY_NOT_FOUND;
+
 @Component
 @CustomLog
 public class PnSafeStorageClientImpl extends CommonBaseClient implements PnSafeStorageClient {
@@ -65,13 +67,12 @@ public class PnSafeStorageClientImpl extends CommonBaseClient implements PnSafeS
         log.logInvokingExternalService(PnLogger.EXTERNAL_SERVICES.PN_SAFE_STORAGE, "getFile");
         return fileDownloadApi.getFile(fileKey, f24Config.getSafeStorageCxId(), metadataOnly)
                 .onErrorResume(WebClientResponseException.class, error -> {
-                    log.warn("Exception in call getFile fileKey={} error={}", fileKey, error);
+                    log.warn("Exception in call getFile fileKey={}", fileKey, error);
                     if (error.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
-                        log.warn("File not found from safeStorage fileKey={} error={}", fileKey, error);
-                        String errorDetail = "File non trovato. fileKey=" + fileKey;
+                        log.warn("File not found from safeStorage fileKey={}", fileKey, error);
                         return Mono.error(
                                 new PnFileNotFoundException(
-                                        errorDetail,
+                                        String.format(ERROR_MESSAGE_F24_FILE_WITH_FILEKEY_NOT_FOUND, fileKey),
                                         error
                                 )
                         );

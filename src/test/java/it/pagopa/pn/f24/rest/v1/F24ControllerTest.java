@@ -7,7 +7,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import it.pagopa.pn.f24.generated.openapi.server.v1.dto.F24Response;
+import it.pagopa.pn.f24.generated.openapi.server.v1.dto.NumberOfPagesResponse;
 import it.pagopa.pn.f24.generated.openapi.server.v1.dto.RequestAccepted;
+import it.pagopa.pn.f24.service.F24ParserService;
 import it.pagopa.pn.f24.service.F24Service;
 
 import org.junit.jupiter.api.Test;
@@ -35,6 +37,8 @@ import java.util.List;
 class F24ControllerTest {
     @MockBean
     private F24Service f24Service;
+    @MockBean
+    private F24ParserService f24ParserService;
     @Autowired
     private F24Controller f24Controller;
     @MockBean
@@ -123,6 +127,28 @@ class F24ControllerTest {
         f24Controller.preparePDF("42", "42", null, new DefaultServerWebExchange(serverHttpRequestDecorator,
                 response, webSessionManager, codecConfigurer, new AcceptHeaderLocaleContextResolver()));
         verify(f24Service).preparePDF(any(), any(), any());
+        verify(serverHttpRequestDecorator).getId();
+        verify(serverHttpRequestDecorator, atLeast(1)).getHeaders();
+        verify(webSessionManager).getSession(any());
+    }
+
+    /**
+     * Method under test:
+     * {@link F24Controller#getTotalNumberOfPages(String, List, ServerWebExchange)}
+     */
+    @Test
+    void testGetTotalNumberOfPages() {
+        when(f24ParserService.getTotalPagesFromMetadataSet(any(), any())).thenReturn((Mono<NumberOfPagesResponse>) mock(Mono.class));
+        ServerHttpRequestDecorator serverHttpRequestDecorator = mock(ServerHttpRequestDecorator.class);
+        when(serverHttpRequestDecorator.getHeaders()).thenReturn(new HttpHeaders());
+        when(serverHttpRequestDecorator.getId()).thenReturn("https://example.org/example");
+        MockServerHttpResponse response = new MockServerHttpResponse();
+        WebSessionManager webSessionManager = mock(WebSessionManager.class);
+        when(webSessionManager.getSession(any())).thenReturn((Mono<WebSession>) mock(Mono.class));
+        DefaultServerCodecConfigurer codecConfigurer = new DefaultServerCodecConfigurer();
+        f24Controller.getTotalNumberOfPages("42", List.of("42"), new DefaultServerWebExchange(serverHttpRequestDecorator,
+                response, webSessionManager, codecConfigurer, new AcceptHeaderLocaleContextResolver()));
+        verify(f24ParserService).getTotalPagesFromMetadataSet(any(), any());
         verify(serverHttpRequestDecorator).getId();
         verify(serverHttpRequestDecorator, atLeast(1)).getHeaders();
         verify(webSessionManager).getSession(any());

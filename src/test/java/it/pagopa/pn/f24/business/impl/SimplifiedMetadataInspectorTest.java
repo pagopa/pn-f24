@@ -1,5 +1,6 @@
 package it.pagopa.pn.f24.business.impl;
 
+import static org.f24.service.pdf.util.FieldEnum.REASON_RECORDS_NUMBER;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import it.pagopa.pn.f24.dto.ApplyCostValidation;
@@ -9,6 +10,8 @@ import it.pagopa.pn.f24.generated.openapi.server.v1.dto.F24Simplified;
 import it.pagopa.pn.f24.generated.openapi.server.v1.dto.SimplifiedPaymentRecord;
 import it.pagopa.pn.f24.generated.openapi.server.v1.dto.SimplifiedPaymentSection;
 import java.util.List;
+import java.util.stream.Stream;
+
 import org.junit.jupiter.api.Test;
 
 class SimplifiedMetadataInspectorTest {
@@ -103,6 +106,40 @@ class SimplifiedMetadataInspectorTest {
         f24Simplified.setPayments(simplifiedPaymentSection);
 
         return f24Metadata;
+    }
+
+    @Test
+    void calculateExpectedNumberOfPagesWhenMetadataHasOneRecord() {
+
+        SimplifiedPaymentSection simplifiedPaymentSection = new SimplifiedPaymentSection();
+        simplifiedPaymentSection.setRecords(createListOfRecords(1));
+
+        F24Simplified f24Simplified = new F24Simplified();
+        f24Simplified.setPayments(simplifiedPaymentSection);
+        F24Metadata f24Metadata = new F24Metadata();
+        f24Metadata.setF24Simplified(f24Simplified);
+
+        SimplifiedMetadataInspector simplifiedMetadataInspector = new SimplifiedMetadataInspector();
+        assertEquals(1, simplifiedMetadataInspector.getExpectedNumberOfPages(f24Metadata));
+    }
+
+    @Test
+    void calculateExpectedNumberOfPagesWhenMetadataHasManyRecords() {
+
+        SimplifiedPaymentSection simplifiedPaymentSection = new SimplifiedPaymentSection();
+        simplifiedPaymentSection.setRecords(createListOfRecords(REASON_RECORDS_NUMBER.getRecordsNum() + 1));
+
+        F24Simplified f24Simplified = new F24Simplified();
+        f24Simplified.setPayments(simplifiedPaymentSection);
+        F24Metadata f24Metadata = new F24Metadata();
+        f24Metadata.setF24Simplified(f24Simplified);
+
+        SimplifiedMetadataInspector simplifiedMetadataInspector = new SimplifiedMetadataInspector();
+        assertEquals(2, simplifiedMetadataInspector.getExpectedNumberOfPages(f24Metadata));
+    }
+
+    private List<SimplifiedPaymentRecord> createListOfRecords(int num) {
+        return Stream.generate(SimplifiedPaymentRecord::new).limit(num).toList();
     }
 
 }

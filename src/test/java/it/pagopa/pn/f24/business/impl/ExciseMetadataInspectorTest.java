@@ -1,5 +1,6 @@
 package it.pagopa.pn.f24.business.impl;
 
+import static org.f24.service.pdf.util.FieldEnum.TAX_RECORDS_NUMBER;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.mock;
@@ -37,6 +38,7 @@ import it.pagopa.pn.f24.generated.openapi.server.v1.dto.TreasurySection;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
 
@@ -668,6 +670,52 @@ class ExciseMetadataInspectorTest {
         f24Metadata.setF24Excise(f24Excise);
 
         return f24Metadata;
+    }
+
+    @Test
+    void calculateExpectedNumberOfPagesWhenMetadataHasOneRecord() {
+
+        TreasurySection treasurySection = new TreasurySection();
+        treasurySection.setRecords(createListOfRecords(1));
+        InpsSection inpsSection = new InpsSection();
+        inpsSection.setRecords(List.of(new InpsRecord()));
+        RegionSection regionSection = new RegionSection();
+        regionSection.setRecords(List.of(new RegionRecord()));
+        LocalTaxSection localTaxSection = new LocalTaxSection();
+        localTaxSection.setRecords(List.of(new LocalTaxRecord()));
+        ExciseSection exciseSection = new ExciseSection();
+        exciseSection.setRecords(List.of(new ExciseTax()));
+
+        F24Excise f24Excise = new F24Excise();
+        f24Excise.setInps(inpsSection);
+        f24Excise.setRegion(regionSection);
+        f24Excise.setExcise(exciseSection);
+        f24Excise.setTreasury(treasurySection);
+        f24Excise.setLocalTax(localTaxSection);
+        F24Metadata f24Metadata = new F24Metadata();
+        f24Metadata.setF24Excise(f24Excise);
+
+        ExciseMetadataInspector exciseMetadataInspector = new ExciseMetadataInspector();
+        assertEquals(3, exciseMetadataInspector.getExpectedNumberOfPages(f24Metadata));
+    }
+
+    @Test
+    void calculateExpectedNumberOfPagesWhenMetadataHasManyRecords() {
+
+        TreasurySection treasurySection = new TreasurySection();
+        treasurySection.setRecords(createListOfRecords(TAX_RECORDS_NUMBER.getRecordsNum() + 1));
+
+        F24Excise f24Excise = new F24Excise();
+        f24Excise.setTreasury(treasurySection);
+        F24Metadata f24Metadata = new F24Metadata();
+        f24Metadata.setF24Excise(f24Excise);
+
+        ExciseMetadataInspector exciseMetadataInspector = new ExciseMetadataInspector();
+        assertEquals(6, exciseMetadataInspector.getExpectedNumberOfPages(f24Metadata));
+    }
+
+    private List<Tax> createListOfRecords(int num) {
+        return Stream.generate(Tax::new).limit(num).toList();
     }
 }
 
