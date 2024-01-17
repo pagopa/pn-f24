@@ -94,5 +94,16 @@ class UtilityTest {
         f24Metadata.f24Elid(new F24Elid());
         assertEquals(F24Type.F24_ELID, Utility.getF24TypeFromMetadata(f24Metadata));
     }
+
+    @Test
+    void testSplitListInBatches() {
+        List<String> listToSplit = List.of("one", "two", "three", "four");
+        assertEquals(2, Utility.splitListInBatches(listToSplit, 2).size());
+    }
+
+    @Test
+    void testSplitListInBatchesWhenSourceListIsNull() {
+        assertEquals(0, Utility.splitListInBatches(null, 2).size());
+    }
 }
 
