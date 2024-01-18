@@ -6,6 +6,7 @@ import it.pagopa.pn.f24.dto.F24MetadataSet;
 import it.pagopa.pn.f24.exception.PnF24ExceptionCodes;
 import it.pagopa.pn.f24.exception.PnNotFoundException;
 import it.pagopa.pn.f24.generated.openapi.server.v1.dto.F24Metadata;
+import it.pagopa.pn.f24.generated.openapi.server.v1.dto.MetadataPages;
 import it.pagopa.pn.f24.generated.openapi.server.v1.dto.NumberOfPagesResponse;
 import it.pagopa.pn.f24.middleware.dao.f24metadataset.F24MetadataSetDao;
 import it.pagopa.pn.f24.service.F24ParserService;
@@ -15,7 +16,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
 
 import java.util.List;
 
@@ -60,18 +60,25 @@ public class F24ParserServiceImpl implements F24ParserService {
                 .toList();
     }
 
-    private Mono<Integer> executeMultiDownloadAndCalculatePages(List<String> fileKeys) {
+    private Mono<List<MetadataPages>> executeMultiDownloadAndCalculatePages(List<String> fileKeys) {
         return Flux.fromIterable(fileKeys)
-                .parallel()
-                .runOn(Schedulers.boundedElastic())
-                .flatMap(fileKey -> metadataDownloader.downloadMetadata(fileKey)
-                                .map(this::calculateTotalPages)
-                                .doOnNext(totalPage -> log.debug("Calculated {} pages on metadata with fileKey: {}", totalPage, fileKey))
-                )
-                .reduce(Integer::sum);
+                .flatMap(this::getNumOfPagesForMetadata)
+                .collectList();
     }
 
-    private int calculateTotalPages(F24Metadata f24Metadata) {
+    private Mono<MetadataPages> getNumOfPagesForMetadata(String fileKey) {
+        return metadataDownloader.downloadMetadata(fileKey)
+                .map(this::calculatePdfExpectedPages)
+                .map(numPages -> {
+                    log.debug("Calculated {} pages on metadata with fileKey: {}", numPages, fileKey);
+                    MetadataPages metadataPages = new MetadataPages();
+                    metadataPages.setNumberOfPages(numPages);
+                    metadataPages.setFileKey(fileKey);
+                    return metadataPages;
+                });
+    }
+
+    private int calculatePdfExpectedPages(F24Metadata f24Metadata) {
         MetadataInspector inspector = MetadataInspectorFactory.getInspector(Utility.getF24TypeFromMetadata(f24Metadata));
         return inspector.getExpectedNumberOfPages(f24Metadata);
     }
