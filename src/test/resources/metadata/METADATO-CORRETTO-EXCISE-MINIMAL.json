@@ -1,0 +1,57 @@
+{
+  "f24Excise": {
+    "taxPayer": {
+      "taxCode": "RSSMLB80A01A200D",
+      "isNotTaxYear": true,
+      "company": {
+          "name": "PagoPa S.P.A",
+          "taxAddress": {
+
+          }
+      }
+    },
+    "treasury": {
+      "records": [
+        {
+          "applyCost": true
+        }
+        
+      ]
+    },
+    "inps": {
+      "records": [
+        {
+          "applyCost": false
+        }
+	
+      ]
+    },
+    "region": {
+      "records": [
+        {
+          "applyCost": false
+        }
+		
+      ]
+    },
+    "localTax": {
+
+      "records": [
+        {
+          "applyCost": false,
+          "municipality": "RAMZ",
+          "taxType": "8383"
+        }
+      ]
+    },
+    "excise": {
+      "records": [
+        {
+          "applyCost": false
+        }
+		
+       
+      ]
+    }
+  }
+}

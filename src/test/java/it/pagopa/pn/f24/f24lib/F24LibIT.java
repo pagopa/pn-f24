@@ -36,6 +36,10 @@ public class F24LibIT {
             "f24Excise_VALID.json,false",
             "SimplifiedWithApplyCost.json,true",
             "SimplifiedWithApplyCost_INVALID-APPLY-COST.json,true",
+            "METADATO-CORRETTO-ELID-MINIMAL.json,true",
+            "METADATO-CORRETTO-EXCISE-MINIMAL.json,true",
+            "METADATO-CORRETTO-SIMPL-MINIMAL.json,true",
+            "METADATO-CORRETTO-STAND-MINIMAL.json,true",
     })
     public void libTestWithoutPdfParsing(String jsonFilePath, boolean shouldHaveApplyCost) {
         f24LibTestBuilder.execTest(jsonFilePath, shouldHaveApplyCost);
