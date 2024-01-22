@@ -1,0 +1,65 @@
+{
+	"f24Standard": {
+		"taxPayer": {
+			"taxCode": "RSSMRA80A01F205X",
+			"isNotTaxYear": true,
+			"person": {
+				"personalData": {
+					"surname": "ROSSI",
+					"name": "MARIO",
+					"birthDate": "01-01-1980",
+					"sex": "M"
+				},
+				"taxAddress": {
+				}
+			}
+		},
+		"treasury": {
+			"records": [
+				{
+					"applyCost": true
+
+				}			
+			]
+		},
+		"inps": {
+			"records": [
+				{
+					"applyCost": false
+				}
+			]
+		},
+		"region": {
+			"records": [
+				{
+					"applyCost": false
+				}
+			]
+		},
+		"localTax": {
+			"operationId": "A0VU5WBKUUJPCBE8AK",
+			"records": [
+				{
+					"applyCost": false,
+					"municipality": "99YZ",
+					"taxType": "0943"
+				}
+			]
+		},
+		"socialSecurity": {
+			"records": [
+				{
+					"applyCost": false
+				}
+			],
+			"socSecRecords": [
+				{
+					"applyCost": false,
+					"period": {
+
+					}
+				}
+			]
+		}
+	}
+}

@@ -74,7 +74,7 @@ public class F24ParserServiceImplTest {
         when(metadataDownloader.downloadMetadata(any())).thenReturn(getMetadataWithOneRecord());
 
         StepVerifier.create(f24ParserService.getTotalPagesFromMetadataSet("test", List.of("0")))
-                .expectNextMatches(next -> next.getNumberOfPages() == 3)
+                .expectNextMatches(next -> next.getF24Set().size() == 1 && next.getF24Set().get(0).getNumberOfPages() == 3)
                 .verifyComplete();
     }
 
