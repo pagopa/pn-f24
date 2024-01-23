@@ -41,14 +41,16 @@ public class ElidMetadataInspector implements MetadataInspector {
         return MetadataInspector.verifyApplyCost(requiredApplyCost, validApplyCostFound, invalidApplyCostFound);
 
     }
+
     @Override
-    public double getTotalAmount(F24Metadata f24Metadata){
-        double debit=0;
+    public double getTotalAmount(F24Metadata f24Metadata) {
+        double debit = 0;
         for (int i = 0; i < f24Metadata.getF24Elid().getTreasury().getRecords().size(); i++) {
-            debit= debit+f24Metadata.getF24Elid().getTreasury().getRecords().get(i).getDebit();
+            if (f24Metadata.getF24Elid().getTreasury().getRecords().get(i).getDebit() != null) {
+                debit = debit + f24Metadata.getF24Elid().getTreasury().getRecords().get(i).getDebit();
+            }
         }
-        debit=debit/100;
-        return debit;
+        return debit / 100;
     }
 
     @Override

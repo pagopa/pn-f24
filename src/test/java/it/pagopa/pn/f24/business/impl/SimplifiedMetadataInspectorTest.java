@@ -55,9 +55,10 @@ class SimplifiedMetadataInspectorTest {
     }
 
     @Test
+    //todo:Manu
     void testCheckApplyCostFailWithInvalidApplyCost() {
         SimplifiedMetadataInspector simplifiedMetadataInspector = new SimplifiedMetadataInspector();
-        F24Metadata f24Metadata = getF24MetadataSimplifiedWithRecord(true, 100);
+        F24Metadata f24Metadata = getF24MetadataSimplifiedWithRecord(true, 100, 100);
         assertEquals(ApplyCostValidation.INVALID_APPLY_COST_GIVEN, simplifiedMetadataInspector.checkApplyCost(f24Metadata, true));
     }
 
@@ -71,7 +72,7 @@ class SimplifiedMetadataInspectorTest {
     void testGetTotalAmount() {
         SimplifiedMetadataInspector simplifiedMetadataInspector = new SimplifiedMetadataInspector();
 
-        F24Metadata f24Metadata = getF24MetadataSimplifiedWithRecord(true, 100);
+        F24Metadata f24Metadata = getF24MetadataSimplifiedWithRecord(true, 100, 100);
 
         assertEquals(0, simplifiedMetadataInspector.getTotalAmount(f24Metadata));
     }
@@ -88,14 +89,14 @@ class SimplifiedMetadataInspectorTest {
     }
 
     private F24Metadata getF24MetadataSimplifiedWithRecord(boolean applyCost) {
-        return getF24MetadataSimplifiedWithRecord(applyCost, null);
+        return getF24MetadataSimplifiedWithRecord(applyCost, null, null);
     }
 
-    private F24Metadata getF24MetadataSimplifiedWithRecord(boolean applyCost, Integer credit) {
+    private F24Metadata getF24MetadataSimplifiedWithRecord(boolean applyCost, Integer debit, Integer credit) {
         SimplifiedPaymentRecord simplifiedPaymentRecord = new SimplifiedPaymentRecord();
         simplifiedPaymentRecord.setApplyCost(applyCost);
+        simplifiedPaymentRecord.setDebit(debit);
         simplifiedPaymentRecord.setCredit(credit);
-        simplifiedPaymentRecord.setDebit(0);
 
         SimplifiedPaymentSection simplifiedPaymentSection = new SimplifiedPaymentSection();
         simplifiedPaymentSection.setRecords(List.of(simplifiedPaymentRecord));

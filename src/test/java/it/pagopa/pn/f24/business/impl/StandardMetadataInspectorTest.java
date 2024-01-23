@@ -515,7 +515,7 @@ class StandardMetadataInspectorTest {
         ArrayList<InpsRecord> records = new ArrayList<>();
         InpsRecord.InpsRecordBuilder officeResult = InpsRecord.builder()
                 .applyCost(true)
-                .credit(1)
+                .credit(0)
                 .debit(1)
                 .inps("Inps")
                 .office("Office");
@@ -605,7 +605,7 @@ class StandardMetadataInspectorTest {
         verify(f24Standard, atLeast(1)).getRegion();
         verify(f24Standard, atLeast(1)).getSocialSecurity();
         verify(f24Standard, atLeast(1)).getTreasury();
-        assertEquals(0.01d, actualTotalAmount);
+        assertEquals(0.00, actualTotalAmount);
     }
 
     /**
@@ -619,8 +619,8 @@ class StandardMetadataInspectorTest {
         ArrayList<RegionRecord> records = new ArrayList<>();
         RegionRecord buildResult = RegionRecord.builder()
                 .applyCost(true)
-                .credit(1)
-                .debit(1)
+                .credit(2)
+                .debit(2)
                 .installment("Installment")
                 .region("us-east-2")
                 .taxType("Tax Type")
@@ -654,7 +654,7 @@ class StandardMetadataInspectorTest {
         verify(f24Standard, atLeast(1)).getRegion();
         verify(f24Standard, atLeast(1)).getSocialSecurity();
         verify(f24Standard, atLeast(1)).getTreasury();
-        assertEquals(0.01d, actualTotalAmount);
+        assertEquals(0.00, actualTotalAmount);
     }
 
     /**
@@ -671,7 +671,7 @@ class StandardMetadataInspectorTest {
                 .company("Company")
                 .control("Control")
                 .credit(1)
-                .debit(1)
+                .debit(3)
                 .office("Office")
                 .reason("Just cause")
                 .refNumber("42")
@@ -704,8 +704,9 @@ class StandardMetadataInspectorTest {
         verify(f24Standard, atLeast(1)).getRegion();
         verify(f24Standard, atLeast(1)).getSocialSecurity();
         verify(f24Standard, atLeast(1)).getTreasury();
-        assertEquals(0.01d, actualTotalAmount);
+        assertEquals(0.02d, actualTotalAmount);
     }
+
 
     /**
      * Method under test:
@@ -752,7 +753,7 @@ class StandardMetadataInspectorTest {
         verify(f24Standard, atLeast(1)).getRegion();
         verify(f24Standard, atLeast(1)).getSocialSecurity();
         verify(f24Standard, atLeast(1)).getTreasury();
-        assertEquals(0.01d, actualTotalAmount);
+        assertEquals(0.00, actualTotalAmount);
     }
 
     /**
@@ -802,7 +803,69 @@ class StandardMetadataInspectorTest {
         verify(f24Standard, atLeast(1)).getRegion();
         verify(f24Standard, atLeast(1)).getSocialSecurity();
         verify(f24Standard, atLeast(1)).getTreasury();
-        assertEquals(0.01d, actualTotalAmount);
+        assertEquals(0.00, actualTotalAmount);
+    }
+
+    @Test
+    void testGetTotalAmountDoubleRecord() {
+        StandardMetadataInspector standardMetadataInspector = new StandardMetadataInspector();
+
+        ArrayList<SocialSecurityRecord> socSecRecords = new ArrayList<>();
+        SocialSecurityRecord.SocialSecurityRecordBuilder officeResult = SocialSecurityRecord.builder()
+                .applyCost(true)
+                .credit(2)
+                .debit(0)
+                .institution("Institution")
+                .office("Office");
+        Period period = Period.builder().endDate("2020-03-01").startDate("2020-03-01").build();
+        SocialSecurityRecord buildResult = officeResult.period(period).position("Position").reason("Just cause").build();
+        socSecRecords.add(buildResult);
+        SocialSecurityRecord.SocialSecurityRecordBuilder officeResult2 = SocialSecurityRecord.builder()
+                .applyCost(true)
+                .credit(0)
+                .debit(2)
+                .institution("Institution2")
+                .office("Office2");
+        Period period2 = Period.builder().endDate("2020-03-01").startDate("2020-03-01").build();
+        SocialSecurityRecord buildResult2 = officeResult2.period(period2).position("Position2").reason("Just cause 2").build();
+        socSecRecords.add(buildResult2);
+
+        SocialSecuritySection.SocialSecuritySectionBuilder builderResult = SocialSecuritySection.builder();
+        SocialSecuritySection buildResult3 = builderResult.records(new ArrayList<>()).socSecRecords(socSecRecords).build();
+
+        F24Standard f24Standard = mock(F24Standard.class);
+        InpsSection.InpsSectionBuilder builderResult2 = InpsSection.builder();
+        InpsSection buildResult4 = builderResult2.records(new ArrayList<>()).build();
+        when(f24Standard.getInps()).thenReturn(buildResult4);
+
+        LocalTaxSection.LocalTaxSectionBuilder operationIdResult = LocalTaxSection.builder()
+                .deduction("Deduction")
+                .operationId("42");
+        LocalTaxSection buildResult5 = operationIdResult.records(new ArrayList<>()).build();
+        when(f24Standard.getLocalTax()).thenReturn(buildResult5);
+
+        RegionSection.RegionSectionBuilder builderResult3 = RegionSection.builder();
+        RegionSection buildResult6 = builderResult3.records(new ArrayList<>()).build();
+        when(f24Standard.getRegion()).thenReturn(buildResult6);
+
+        when(f24Standard.getSocialSecurity()).thenReturn(buildResult3);
+
+        TreasurySection.TreasurySectionBuilder officeResult3 = TreasurySection.builder()
+                .document("Document")
+                .office("Office");
+        TreasurySection buildResult7 = officeResult3.records(new ArrayList<>()).build();
+        when(f24Standard.getTreasury()).thenReturn(buildResult7);
+
+        double actualTotalAmount = standardMetadataInspector.getTotalAmount(
+                new F24Metadata(f24Standard, mock(F24Simplified.class), mock(F24Excise.class), mock(F24Elid.class)));
+
+        verify(f24Standard, atLeast(1)).getInps();
+        verify(f24Standard, atLeast(1)).getLocalTax();
+        verify(f24Standard, atLeast(1)).getRegion();
+        verify(f24Standard, atLeast(1)).getSocialSecurity();
+        verify(f24Standard, atLeast(1)).getTreasury();
+
+        assertEquals(0.0, actualTotalAmount);
     }
 
     private F24Metadata getF24MetadataStandardValidWithAllApplyCostFalse() {

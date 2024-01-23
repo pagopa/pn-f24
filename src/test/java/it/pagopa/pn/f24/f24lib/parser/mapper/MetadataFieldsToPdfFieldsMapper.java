@@ -215,17 +215,20 @@ public abstract class MetadataFieldsToPdfFieldsMapper {
                 if (StringUtils.isNotBlank(localTaxRecord.getMunicipality())) {
                     integratedField.add(new IntegratedField(MUNICIPALITY_CODE.getName()+sectionId + index, prefix + "[" + i + "]." + "municipality", localTaxRecord.getMunicipality()));
                 }
-                if (!localTaxRecord.getReconsideration()) {
-                    integratedField.add(new IntegratedField(RECONSIDERATION.getName()+sectionId + index, prefix + "[" + i + "]." + "reconsideration", convertBooleanToString(localTaxRecord.getReconsideration())));
+                if (Boolean.TRUE.equals(localTaxRecord.getReconsideration())) {
+                    integratedField.add(new IntegratedField(RECONSIDERATION.getName() + index, prefix + "[" + i + "]." + "reconsideration", convertBooleanToString(localTaxRecord.getReconsideration())));
                 }
-                if (!localTaxRecord.getPropertiesChanges()) {
-                    integratedField.add(new IntegratedField(PROPERTIES_CHANGED.getName()+sectionId + index, prefix + "[" + i + "]." + "propertiesChanges", convertBooleanToString(localTaxRecord.getPropertiesChanges())));
+                if (StringUtils.isNotBlank(localTaxRecord.getNumberOfProperties())) {
+                    integratedField.add(new IntegratedField(NUMBER_OF_PROPERTIES.getName() + index, prefix + "[" + i + "]." + "numberOfProperties", localTaxRecord.getNumberOfProperties()));
                 }
-                if (!localTaxRecord.getAdvancePayment()) {
-                    integratedField.add(new IntegratedField(ADVANCE_PAYMENT.getName()+sectionId + index, prefix + "[" + i + "]." + "advancePayment", convertBooleanToString(localTaxRecord.getAdvancePayment())));
+                if (Boolean.TRUE.equals(localTaxRecord.getPropertiesChanges())) {
+                    integratedField.add(new IntegratedField(PROPERTIES_CHANGED.getName() + index, prefix + "[" + i + "]." + "propertiesChanges", convertBooleanToString(localTaxRecord.getPropertiesChanges())));
                 }
-                if (!localTaxRecord.getFullPayment()) {
-                    integratedField.add(new IntegratedField(FULL_PAYMENT.getName()+sectionId + index, prefix + "[" + i + "]." + "fullPayment", convertBooleanToString(localTaxRecord.getFullPayment())));
+                if (Boolean.TRUE.equals(localTaxRecord.getAdvancePayment())) {
+                    integratedField.add(new IntegratedField(ADVANCE_PAYMENT.getName() + index, prefix + "[" + i + "]." + "advancePayment", convertBooleanToString(localTaxRecord.getAdvancePayment())));
+                }
+                if (Boolean.TRUE.equals(localTaxRecord.getFullPayment())) {
+                    integratedField.add(new IntegratedField(FULL_PAYMENT.getName() + index, prefix + "[" + i + "]." + "fullPayment", convertBooleanToString(localTaxRecord.getFullPayment())));
                 }
                 if (StringUtils.isNotBlank(localTaxRecord.getTaxType())) {
                     integratedField.add(new IntegratedField(TAX_TYPE_CODE.getName()+sectionId + index, prefix + "[" + i + "]." + "taxType", localTaxRecord.getTaxType()));
