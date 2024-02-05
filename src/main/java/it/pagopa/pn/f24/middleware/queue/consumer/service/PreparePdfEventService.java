@@ -164,7 +164,7 @@ public class PreparePdfEventService {
         }
         /*
         Se sono qui, ho trovato il file in uno dei seguenti status: TO_PROCESS / GENERATED
-        Li considero tutti come file in elaborazione, quindi gli aggiungo la requestId.
+        Li considero entrambi come file in elaborazione, quindi provo ad associargli la requestId.
         */
         log.debug("File with pk: {} in status : {}. Adding requestId {} to the file", f24File.getPk(), f24File.getStatus(), f24Request.getRequestId());
         addRequestIdToFile(f24File, f24Request.getRequestId());
@@ -176,8 +176,19 @@ public class PreparePdfEventService {
         if(actualRequestIds == null) {
             f24File.setRequestIds(Stream.of(requestId).collect(Collectors.toList()));
         } else {
-            f24File.getRequestIds().add(requestId);
+            // Se il requestId non è già associato al file, viene aggiunto.
+            if(isRequestIdNotAssociatedToFile(requestId, f24File.getRequestIds())) {
+                f24File.getRequestIds().add(requestId);
+            }
         }
+    }
+
+    private boolean isRequestIdNotAssociatedToFile(String requestIdToAssociate, List<String> fileRequestIds) {
+        return fileRequestIds
+                .stream()
+                .filter(reqId -> reqId.equalsIgnoreCase(requestIdToAssociate))
+                .findFirst()
+                .isEmpty();
     }
 
     private F24File createNewF24FileForRequestId(F24Request f24Request, Integer cost, String pathTokensInString) {
@@ -209,15 +220,15 @@ public class PreparePdfEventService {
             log.debug("There are {} files to process and {} files to create, sending GeneratePdf event", f24FilesProcessing.size(), f24FilesToCreate.size());
 
             return Mono.fromRunnable(() -> sendGeneratePdfEvents(f24FilesToCreate))
-                .doOnError(throwable -> log.warn("Error sending preparePdf", throwable))
-                .then(updateF24RequestAndF24File(preparePdfLists));
+                .doOnError(throwable -> log.warn("Error sending preparePdf event", throwable))
+                .then(Mono.defer(() -> updateF24RequestAndF24File(preparePdfLists)));
         } else {
             log.debug("All files ({}) are already processed, sending PdfSetReady Event", f24FilesReady.size());
 
             f24Request.setFiles(buildF24RequestFiles(preparePdfLists));
             return pdfSetReadyEventProducer.sendEvent(PnF24AsyncEventBuilderHelper.buildPdfSetReadyEvent(f24Request))
-                    .doOnError(throwable -> log.warn("Error sending PdfSetReady event"))
-                    .then(updateF24RequestStatus(preparePdfLists))
+                    .doOnError(throwable -> log.warn("Error sending PdfSetReady event", throwable))
+                    .then(Mono.defer(() -> updateF24RequestStatus(preparePdfLists)))
                     .then();
         }
     }

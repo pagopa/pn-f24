@@ -4,6 +4,7 @@ import it.pagopa.pn.commons.exceptions.PnInternalException;
 import it.pagopa.pn.f24.dto.F24Type;
 import it.pagopa.pn.f24.generated.openapi.server.v1.dto.F24Metadata;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -32,5 +33,19 @@ public class Utility {
 
     public static String convertPathTokensList(List<String> pathTokens) {
         return String.join("_", pathTokens);
+    }
+
+    public static <T> List<List<T>> splitListInBatches(List<T> list, final int batchSize) {
+        List<List<T>> batches = new ArrayList<>();
+        if(list != null) {
+            final int listSize = list.size();
+            for (int i = 0; i < listSize; i += batchSize) {
+                batches.add(new ArrayList<>(
+                        list.subList(i, Math.min(listSize, i + batchSize)))
+                );
+            }
+        }
+
+        return batches;
     }
 }

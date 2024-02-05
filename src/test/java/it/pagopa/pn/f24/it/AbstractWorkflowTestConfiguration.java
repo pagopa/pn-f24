@@ -48,8 +48,8 @@ public class AbstractWorkflowTestConfiguration {
     }
 
     @Bean
-    public MomProducer<GeneratePdfEvent> generatePdfEventMomProducer(GeneratePdfEventService generatePdfEventService) {
-        return new GeneratePdfSqsProducerMock(generatePdfEventService);
+    public MomProducer<GeneratePdfEvent> generatePdfEventMomProducer(GeneratePdfEventService generatePdfEventService, F24FileCacheDaoMock f24FileCacheDaoMock) {
+        return new GeneratePdfSqsProducerMock(generatePdfEventService, f24FileCacheDaoMock);
     }
 
     @Bean
