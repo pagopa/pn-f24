@@ -13,6 +13,7 @@ import it.pagopa.pn.f24.middleware.dao.f24file.dynamo.mapper.F24FileCacheMapper;
 import it.pagopa.pn.f24.middleware.dao.f24file.dynamo.mapper.F24FileRequestMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import software.amazon.awssdk.enhanced.dynamodb.*;
 import software.amazon.awssdk.enhanced.dynamodb.model.*;
@@ -20,9 +21,8 @@ import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.dynamodb.model.ConditionalCheckFailedException;
 import software.amazon.awssdk.services.dynamodb.model.TransactionCanceledException;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.function.BiFunction;
 
 import static it.pagopa.pn.f24.middleware.dao.f24file.dynamo.entity.BaseEntity.COL_UPDATED;
 import static it.pagopa.pn.f24.middleware.dao.f24file.dynamo.entity.F24FileRequestEntity.COL_RECORD_VERSION;
@@ -31,6 +31,7 @@ import static it.pagopa.pn.f24.middleware.dao.f24file.dynamo.entity.F24FileReque
 @Component
 @Slf4j
 public class F24FileRequestRepositoryImpl implements F24FileRequestDao {
+    private static final int MAX_TRANSACTION_ITEMS = 100;
     private final DynamoDbAsyncTable<F24FileRequestEntity> f24FileRequestTable;
     private final DynamoDbAsyncTable<F24FileCacheEntity> f24FileCacheTable;
     private final DynamoDbEnhancedAsyncClient dynamoDbEnhancedAsyncClient;
@@ -127,10 +128,12 @@ public class F24FileRequestRepositoryImpl implements F24FileRequestDao {
                 .map(this::buildFileCacheUpdateItemRequest)
                 .toList();
 
-        TransactWriteItemsEnhancedRequest transaction = createTransactWriteItems(fileCachePutItemRequests, requestUpdate, fileCacheUpdateItemRequests);
+        List<TransactWriteItemsEnhancedRequest> transactions = createTransactWriteItems(fileCachePutItemRequests, requestUpdate, fileCacheUpdateItemRequests);
 
-        return Mono.fromFuture(dynamoDbEnhancedAsyncClient.transactWriteItems(transaction))
-                .onErrorMap(TransactionCanceledException.class, t -> new PnDbConflictException(t.getMessage()))
+        return Flux.fromIterable(transactions)
+                .flatMap(transaction -> Mono.fromFuture(dynamoDbEnhancedAsyncClient.transactWriteItems(transaction))
+                            .onErrorMap(TransactionCanceledException.class, t -> new PnDbConflictException(t.getMessage()))
+                )
                 .then();
     }
 
@@ -177,18 +180,110 @@ public class F24FileRequestRepositoryImpl implements F24FileRequestDao {
                 .build();
     }
 
-    private TransactWriteItemsEnhancedRequest createTransactWriteItems(List<TransactPutItemEnhancedRequest<F24FileCacheEntity>> fileCachePutItemRequests,
+    private List<TransactWriteItemsEnhancedRequest> createTransactWriteItems(List<TransactPutItemEnhancedRequest<F24FileCacheEntity>> fileCachePutItemRequests,
                                                                        TransactUpdateItemEnhancedRequest<F24FileRequestEntity> fileRequestUpdate,
                                                                        List<TransactUpdateItemEnhancedRequest<F24FileCacheEntity>> fileCacheUpdateItemRequests) {
-        TransactWriteItemsEnhancedRequest.Builder requestBuilder = TransactWriteItemsEnhancedRequest.builder();
+        List<TransactWriteItemsEnhancedRequest.Builder> builders = new ArrayList<>();
+        int transactionItemCounter = 1;
+        transactionItemCounter = handleMultiTransactionWriteRequests(builders, transactionItemCounter, List.of(fileRequestUpdate), (requestBuilder, request) -> requestBuilder.addUpdateItem(f24FileRequestTable, fileRequestUpdate));
+        transactionItemCounter = handleMultiTransactionWriteRequests(builders, transactionItemCounter, fileCachePutItemRequests, (requestBuilder, file) -> requestBuilder.addPutItem(f24FileCacheTable, file));
+        transactionItemCounter = handleMultiTransactionWriteRequests(builders, transactionItemCounter, fileCacheUpdateItemRequests, (requestBuilder, file) -> requestBuilder.addUpdateItem(f24FileCacheTable, file));
 
-        fileCachePutItemRequests.forEach(putItemRequest -> requestBuilder.addPutItem(f24FileCacheTable, putItemRequest));
+        log.debug("Processed {} transactionItems and obtained {} TransactWriteItemsEnhancedRequest", transactionItemCounter - 1, builders.size());
+        return builders.stream()
+                .map(TransactWriteItemsEnhancedRequest.Builder::build)
+                .toList();
+    }
 
-        requestBuilder.addUpdateItem(f24FileRequestTable, fileRequestUpdate);
 
-        fileCacheUpdateItemRequests.forEach(fileUpdateRequest -> requestBuilder.addUpdateItem(f24FileCacheTable, fileUpdateRequest));
+    /**
+     * The handleMultiTransactions function is a helper function that takes in a list of builders,
+     * the current transaction item counter, an iterable list to handle (such as a List&lt;T&gt;), and
+     * finally a BiFunction that will be used to apply each element of the iterable list. The purpose
+     * of this function is to allow for multiple items from an Iterable object (such as List&lt;T&gt;) to be added into one
+     * or more TransactWriteItemsEnhancedRequest.Builder objects.
+     * This allows us to add multiple items into one request builder if we are under 25MB, but also allows us to split up
+     * our requests across multiple
+     *
+     * @param builders Store the requests
+     * @param transactionItemCounter Keep track of the number of items in a transaction
+     * @param listToHandle Iterate over the list of items to be handled
+     * @param transactionItemSupplier Add items to the transaction
+     *
+     * @return The transactionitemcounter value
+     *
+     */
+    private <T> int handleMultiTransactionWriteRequests(List<TransactWriteItemsEnhancedRequest.Builder> builders,
+                                                        int transactionItemCounter,
+                                                        Iterable<T> listToHandle,
+                                                        BiFunction<TransactWriteItemsEnhancedRequest.Builder, T, TransactWriteItemsEnhancedRequest.Builder> transactionItemSupplier) {
+        for (T item : listToHandle) {
+            TransactWriteItemsEnhancedRequest.Builder requestBuilder = getTransactionRequestBuilder(builders, transactionItemCounter);
+            transactionItemSupplier.apply(requestBuilder, item);
+            transactionItemCounter++;
+        }
+        return transactionItemCounter;
+    }
 
-        return requestBuilder.build();
+    /**
+     * The getTransactionRequestBuilder function is used to get the correct TransactWriteItemsEnhancedRequest.Builder object
+     * from a list of builders, based on the transactionItemCounter parameter. The function will return null if there are no
+     * more builders available in the list and it will fill up any missing builder objects in between with new ones.
+
+     *
+     * @param builders Store the builders
+     * @param transactionItemCounter Determine which builder to use
+     *
+     * @return A builder from a list of builders
+     *
+     */
+    private TransactWriteItemsEnhancedRequest.Builder getTransactionRequestBuilder(List<TransactWriteItemsEnhancedRequest.Builder> builders, int transactionItemCounter) {
+        int supposedBuilderIndex = getSupposedBuilderIndex(transactionItemCounter);
+        int sizeToReach = supposedBuilderIndex + 1;
+        if(builders.size() < sizeToReach) {
+            padToListIndex(builders, supposedBuilderIndex);
+        }
+
+        return builders.get(supposedBuilderIndex);
+    }
+
+    /**
+     * The padToListIndex function is used to ensure that the builders list has enough elements in it
+     * so that we can add a new item to the builder at index supposedBuilderIndex.
+     * If there are not enough elements, then this function will add more empty builders until there are.
+     *
+     * @param builders Store the builders that are used to create a transactwriteitemsenhancedrequest
+     * @param supposedBuilderIndex Determine the index of the builder in which to add a new item
+     *
+     */
+    private void padToListIndex(List<TransactWriteItemsEnhancedRequest.Builder> builders, int supposedBuilderIndex) {
+        log.debug("Padding builders list to reach index: {}", supposedBuilderIndex);
+        int actualLastIndex = builders.size() - 1;
+        for(int i = actualLastIndex; i < supposedBuilderIndex; i++) {
+            builders.add(TransactWriteItemsEnhancedRequest.builder());
+        }
+    }
+
+    /**
+     * The getSupposedIndexBuilder function is used to determine the index of the TransactionBuilder that
+     * a given transaction item should be added to. The function takes in an integer representing how many
+     * transaction items have been added so far, and returns an integer representing which TransactionBuilder
+     * it should be added to. This is done by dividing the number of transaction items by MAX_TRANSACTION_ITEMS,
+     * and then adding 1 if there was a remainder (i.e., if there are more than MAX_TRANSACTION_ITEMS).
+     * Then we subtract 1 from this value because arrays start at 0 instead of 1.
+     *
+     * @param transactionItemCounter Determine the index of the builder to be used
+     *
+     * @return The index of the builder in the array
+     *
+     */
+    private int getSupposedBuilderIndex(int transactionItemCounter) {
+        if(transactionItemCounter == 0) {
+            return 0;
+        }
+
+        int remainder = transactionItemCounter % MAX_TRANSACTION_ITEMS;
+        return (transactionItemCounter / MAX_TRANSACTION_ITEMS) + (remainder > 0 ? 1 : 0) - 1;
     }
 
     @Override
