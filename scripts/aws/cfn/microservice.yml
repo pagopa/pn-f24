@@ -222,6 +222,34 @@ Parameters:
     Type: String
     Description: TTL for metadata set records until validation request occurs
 
+
+   # Logging parameters
+  WireTapLogActivation:
+    Type: String
+    Default: false
+    Description: Activation of wire logs
+    AllowedValues:
+      - true
+      - false
+
+  PnCronAnalyzer:
+    Type: String
+    Default: '-'
+    Description: Cron for which you send the metric to CloudWatch
+
+  # EFS parameters
+  FargateEFSFileSystemID:
+    Type: String
+    Description: "EFS Filesystem"
+
+  MountEfs:
+    Type: String
+    Default: false
+    AllowedValues:
+      - "true"
+      - "false"
+
+
 Resources:
 
   # PN-F24 microservice
@@ -243,6 +271,9 @@ Resources:
         AutoscalingCheckPeriod: !Ref AutoscalingCheckPeriod
         MinTasksNumber: !Ref MinTasksNumber
         MaxTasksNumber: !Ref MaxTasksNumber
+        EfsFilesystem: !Ref FargateEFSFileSystemID
+        MountEfs: !Ref MountEfs
+        WireTapLogActivation: !Ref WireTapLogActivation
         AutoscalingDataPointN: !Ref AutoscalingDataPointN
         AutoscalingDataPointM: !Ref AutoscalingDataPointM
         AlarmSNSTopicArn: !Ref AlarmSNSTopicArn
@@ -266,6 +297,8 @@ Resources:
         ContainerEnvEntry17: !Sub 'PN_F24_RETENTIONFORF24FILESINDAYS=${RetentionForF24FilesInDays}'
         ContainerEnvEntry18: !Sub 'PN_F24_METADATASETTTLINDAYSUNTILVALIDATION=${MetadataSetTtlInDaysUntilValidation}'
         ContainerEnvEntry19: !Sub 'SPRING_CLOUD_FUNCTIONROUTER_QUEUES_LIST=${PnF24InternalQueueName},${SafeStorageToF24QueueName}'
+        ContainerEnvEntry20: !Sub 'PN_CRON_ANALYZER=${PnCronAnalyzer}'
+        ContainerEnvEntry21: !Sub 'WIRE_TAP_LOG=${WireTapLogActivation}'
         MicroServiceSecretPrefix: pn-f24-Secrets
         JavaToolOptions: '-Dreactor.netty.ioWorkerCount=120 -XX:MaxMetaspaceSize=512M'
         MappedPaths: '/f24-private/*'
