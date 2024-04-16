@@ -8,7 +8,7 @@
     "RetentionForF24FilesInDays": "120",
     "MetadataSetTtlInDaysUntilValidation": "3",
     "PnCronAnalyzer": "* */1 * * * *",
-    "WireTapLogActivation": "true",
-    "MountEfs": "true"
+    "WireTapLogActivation": "false",
+    "MountEfs": "false"
   }
 }
