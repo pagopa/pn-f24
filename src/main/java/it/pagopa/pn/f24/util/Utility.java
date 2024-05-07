@@ -32,7 +32,7 @@ public class Utility {
     }
 
     public static String convertPathTokensList(List<String> pathTokens) {
-        return String.join("_", pathTokens);
+        return pathTokens==null?"":String.join("_", pathTokens);
     }
 
     public static <T> List<List<T>> splitListInBatches(List<T> list, final int batchSize) {

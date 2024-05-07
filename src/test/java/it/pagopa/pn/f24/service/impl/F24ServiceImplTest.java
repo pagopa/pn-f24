@@ -662,6 +662,38 @@ class F24ServiceImplTest {
                 .verify();
     }
 
+
+    @Test
+    void preparePdfFailsWhenMetadataHasNotApplyCostButCost0IsGivenInRequestBody() {
+        PrepareF24Request prepareF24Request = new PrepareF24Request();
+        prepareF24Request.setRequestId("requestId");
+        prepareF24Request.setId("setId");
+        prepareF24Request.setNotificationCost(0);
+        prepareF24Request.setPathTokens(null);
+
+        F24MetadataSet f24MetadataSet = new F24MetadataSet();
+        f24MetadataSet.setSetId("setId");
+        F24MetadataRef f24MetadataRef = new F24MetadataRef();
+        f24MetadataRef.setSha256("sha256");
+        f24MetadataRef.setApplyCost(false);
+        f24MetadataSet.setFileKeys(Map.of("0_0", f24MetadataRef));
+        f24MetadataSet.setStatus(F24MetadataStatus.VALIDATION_ENDED);
+
+        F24Request f24 = new F24Request();
+        f24.setSetId("setId");
+        f24.setPathTokens("0_0");
+
+        when(f24MetadataSetDao.getItem(any()))
+                .thenReturn(Mono.just(f24MetadataSet));
+        when(f24FileRequestDao.getItem(any())).thenReturn(Mono.empty());
+        when(f24FileRequestDao.putItemIfAbsent(any())).thenReturn(Mono.empty());
+
+        StepVerifier.create(f24ServiceImpl.preparePDF("cxId", "requestId", Mono.just(prepareF24Request)))
+                .expectNextMatches(f24Response -> f24Response.getDescription().compareTo("Ok") == 0)
+                .expectComplete()
+                .verify();
+    }
+
     @Test
     void preparePdfFailsWhenRequestExistsAndHasDifferentRequestBody() {
         PrepareF24Request prepareF24Request = new PrepareF24Request();
