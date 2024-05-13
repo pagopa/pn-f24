@@ -135,7 +135,7 @@ public class F24ServiceImpl implements F24Service {
     }
 
     private boolean checkPathTokensAllowedDimension(List<String> pathTokens) {
-        return pathTokens.size() < MAX_PATH_TOKENS_DIMENSION;
+        return pathTokens==null || pathTokens.size() < MAX_PATH_TOKENS_DIMENSION;
     }
 
     private boolean checkPathTokensHaveSameDimension(List<SaveF24Item> f24Items) {
@@ -485,7 +485,7 @@ public class F24ServiceImpl implements F24Service {
                     boolean metadataRequiresCost = checkIfFileKeysRequireApplyCosts(fileKeysByPathTokens);
                     if(metadataRequiresCost && prepareF24Request.getNotificationCost() == null) {
                         throw new PnBadRequestException("Invalid request payload", "Requested metadata require notificationCost", PnF24ExceptionCodes.ERROR_CODE_F24_PREPARE_PDF_VALIDATION_ERROR);
-                    } else if (!metadataRequiresCost && prepareF24Request.getNotificationCost() != null) {
+                    } else if (!metadataRequiresCost && prepareF24Request.getNotificationCost() != null && prepareF24Request.getNotificationCost() > 0 ) {
                         throw new PnBadRequestException("Invalid request payload", "Requested metadata don't require notificationCost", PnF24ExceptionCodes.ERROR_CODE_F24_PREPARE_PDF_VALIDATION_ERROR);
                     }
                 })
