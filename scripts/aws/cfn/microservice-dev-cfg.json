@@ -6,6 +6,9 @@
     "PollingTimeoutInSec": "5",
     "RetentionForF24RequestsInDays": "120",
     "RetentionForF24FilesInDays": "120",
-    "MetadataSetTtlInDaysUntilValidation": "3"
+    "MetadataSetTtlInDaysUntilValidation": "3",
+    "PnCronAnalyzer": "* */1 * * * *",
+    "WireTapLogActivation": "false",
+    "MountEfs": "false"
   }
 }
