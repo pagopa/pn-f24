@@ -4,6 +4,7 @@ import it.pagopa.pn.api.dto.events.*;
 import it.pagopa.pn.f24.dto.F24MetadataValidationIssue;
 import it.pagopa.pn.f24.dto.F24Request;
 import it.pagopa.pn.f24.middleware.dao.f24file.dynamo.entity.F24FileCacheEntity;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
 
@@ -85,7 +86,7 @@ public class PnF24AsyncEventBuilderHelper {
     private static String getFormattedPathToken(String key){
         String pathToken = extractPathTokensFromFilePk(key);
         if(pathToken.contains("_"))
-            return String.format("%04d", Integer.parseInt(pathToken.split("_")[1]));
+            return StringUtils.leftPad(pathToken.split("_")[1], 4, "0");
         else
             return pathToken;
     }
