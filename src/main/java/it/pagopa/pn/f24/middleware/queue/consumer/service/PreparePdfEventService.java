@@ -20,6 +20,7 @@ import lombok.CustomLog;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.util.function.Tuple2;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -68,23 +69,23 @@ public class PreparePdfEventService {
     private Mono<F24Request> getF24Request(String requestId) {
         return f24FileRequestDao.getItem(requestId)
                 .switchIfEmpty(
-                    Mono.defer(
-                        () -> {
-                            log.warn("F24Request with requestId {} not found on dynamo", requestId);
-                            return Mono.error(
-                                    new PnNotFoundException(
-                                            "F24Request not found",
-                                            String.format(PnF24ExceptionCodes.ERROR_MESSAGE_F24_REQUEST_NOT_FOUND, requestId),
-                                            PnF24ExceptionCodes.ERROR_CODE_F24_METADATA_NOT_FOUND
-                                    )
-                            );
-                        }
-                    )
+                        Mono.defer(
+                                () -> {
+                                    log.warn("F24Request with requestId {} not found on dynamo", requestId);
+                                    return Mono.error(
+                                            new PnNotFoundException(
+                                                    "F24Request not found",
+                                                    String.format(PnF24ExceptionCodes.ERROR_MESSAGE_F24_REQUEST_NOT_FOUND, requestId),
+                                                    PnF24ExceptionCodes.ERROR_CODE_F24_METADATA_NOT_FOUND
+                                            )
+                                    );
+                                }
+                        )
                 );
     }
 
     private Mono<Void> handlePreparePdf(F24Request f24Request) {
-        if(f24Request.getStatus() == F24RequestStatus.DONE) {
+        if (f24Request.getStatus() == F24RequestStatus.DONE) {
             log.debug("F24 Request with requestId {} already in status DONE", f24Request.getRequestId());
             return Mono.empty();
         }
@@ -98,7 +99,7 @@ public class PreparePdfEventService {
         return getMetadataSet(f24Request.getSetId())
                 .map(f24MetadataSet -> {
                     Map<String, F24MetadataRef> fileKeys = filterFileKeysByPathTokens(f24MetadataSet.getFileKeys(), f24Request.getPathTokens());
-                    if(fileKeys.isEmpty()) {
+                    if (fileKeys.isEmpty()) {
                         throw new PnNotFoundException(
                                 "Metadata not found",
                                 String.format(PnF24ExceptionCodes.ERROR_MESSAGE_F24_METADATA_NOT_FOUND, f24Request.getPathTokens(), f24MetadataSet.getSetId()),
@@ -113,7 +114,7 @@ public class PreparePdfEventService {
 
     private Mono<F24MetadataSet> getMetadataSet(String setId) {
         return f24MetadataSetDao.getItem(setId)
-                .doOnError(t -> log.info("Error",t))
+                .doOnError(t -> log.info("Error", t))
                 .switchIfEmpty(Mono.error(
                         new PnNotFoundException(
                                 "MetadataSet not found",
@@ -141,21 +142,28 @@ public class PreparePdfEventService {
                     return f24FileCacheDao.getItem(f24Request.getSetId(), cost, pathTokensInString)
                             .map(f24File -> handleFileAlreadyInCache(f24File, f24Request))
                             .switchIfEmpty(Mono.just(createNewF24FileForRequestId(f24Request, cost, pathTokensInString)))
-                            .flatMap(f24File -> {
-                                switch (f24File.getStatus()) {
-                                    case DONE -> preparePdfLists.getFilesReady().add(f24File);
-                                    case TO_PROCESS -> {
-                                        PreparePdfLists.F24FileToCreate f24FileToCreate = new PreparePdfLists.F24FileToCreate(f24File, f24MetadataRef.getFileKey());
-                                        preparePdfLists.getFilesToCreate().add(f24FileToCreate);
-                                    }
-                                    default -> preparePdfLists.getFilesNotReady().add(f24File);
-                                }
-                                return Mono.empty();
-                            });
+                            .zipWith(Mono.just(f24MetadataRef));
                 })
-                .then()
-                .thenReturn(preparePdfLists);
+                .collectList()
+                .map(tuples -> categoriseFileByStatus(tuples, preparePdfLists));
     }
+
+    private PreparePdfLists categoriseFileByStatus(List<Tuple2<F24File, F24MetadataRef>> tuples, PreparePdfLists preparePdfLists) {
+        tuples.forEach(tupla -> {
+            F24File f24File = tupla.getT1();
+            F24MetadataRef f24MetadataRef = tupla.getT2();
+            switch (f24File.getStatus()) {
+                case DONE -> preparePdfLists.getFilesReady().add(f24File);
+                case TO_PROCESS -> {
+                    PreparePdfLists.F24FileToCreate f24FileToCreate = new PreparePdfLists.F24FileToCreate(f24File, f24MetadataRef.getFileKey());
+                    preparePdfLists.getFilesToCreate().add(f24FileToCreate);
+                }
+                default -> preparePdfLists.getFilesNotReady().add(f24File);
+            }
+        });
+        return preparePdfLists;
+    }
+
 
     private F24File handleFileAlreadyInCache(F24File f24File, F24Request f24Request) {
         if (f24File.getStatus() == F24FileStatus.DONE) {
@@ -173,11 +181,11 @@ public class PreparePdfEventService {
 
     private void addRequestIdToFile(F24File f24File, String requestId) {
         List<String> actualRequestIds = f24File.getRequestIds();
-        if(actualRequestIds == null) {
+        if (actualRequestIds == null) {
             f24File.setRequestIds(Stream.of(requestId).collect(Collectors.toList()));
         } else {
             // Se il requestId non è già associato al file, viene aggiunto.
-            if(isRequestIdNotAssociatedToFile(requestId, f24File.getRequestIds())) {
+            if (isRequestIdNotAssociatedToFile(requestId, f24File.getRequestIds())) {
                 f24File.getRequestIds().add(requestId);
             }
         }
@@ -202,7 +210,7 @@ public class PreparePdfEventService {
         f24File.setCost(cost);
         f24File.setPathTokens(pathTokensInString);
         f24File.setRequestIds(Stream.of(f24Request.getRequestId()).collect(Collectors.toList()));
-        if(f24Config.getRetentionForF24FilesInDays() != null && f24Config.getRetentionForF24FilesInDays() > 0) {
+        if (f24Config.getRetentionForF24FilesInDays() != null && f24Config.getRetentionForF24FilesInDays() > 0) {
             f24File.setTtl(Instant.now().plus(Duration.ofDays(f24Config.getRetentionForF24FilesInDays())).getEpochSecond());
         }
         f24File.setStatus(F24FileStatus.TO_PROCESS);
@@ -216,8 +224,9 @@ public class PreparePdfEventService {
         List<F24File> f24FilesReady = preparePdfLists.getFilesReady();
         F24Request f24Request = preparePdfLists.getF24Request();
 
-        if(!f24FilesProcessing.isEmpty() || !f24FilesToCreate.isEmpty()) {
+        if (!f24FilesProcessing.isEmpty() || !f24FilesToCreate.isEmpty()) {
             log.debug("There are {} files to process and {} files to create, sending GeneratePdf event", f24FilesProcessing.size(), f24FilesToCreate.size());
+
 
             return Mono.fromRunnable(() -> sendGeneratePdfEvents(f24FilesToCreate))
                 .doOnError(throwable -> log.warn("Error sending preparePdf event", throwable))
@@ -234,7 +243,7 @@ public class PreparePdfEventService {
     }
 
     private void sendGeneratePdfEvents(List<PreparePdfLists.F24FileToCreate> files) {
-        if(files.isEmpty()) {
+        if (files.isEmpty()) {
             log.debug("There aren't files to generate, won't send any generate pdf event");
         } else {
             List<GeneratePdfEvent> generatePdfEvents = files.stream()
