@@ -4,10 +4,9 @@ import it.pagopa.pn.api.dto.events.*;
 import it.pagopa.pn.f24.dto.F24MetadataValidationIssue;
 import it.pagopa.pn.f24.dto.F24Request;
 import it.pagopa.pn.f24.middleware.dao.f24file.dynamo.entity.F24FileCacheEntity;
+import org.apache.commons.lang3.StringUtils;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class PnF24AsyncEventBuilderHelper {
     private PnF24AsyncEventBuilderHelper() { }
@@ -71,12 +70,25 @@ public class PnF24AsyncEventBuilderHelper {
 
     private static List<PnF24PdfSetReadyEventItem> buildGeneratedPdfsUrls(Map<String, F24Request.FileRef> f24Files) {
         return f24Files.entrySet().stream()
+                .sorted(Map.Entry.comparingByKey(PnF24AsyncEventBuilderHelper::comparePathToken))
                 .map(entry ->
                     PnF24PdfSetReadyEventItem.builder()
                             .pathTokens(extractPathTokensFromFilePk(entry.getKey()))
                             .uri(entry.getValue().getFileKey())
                             .build()
                 ).toList();
+    }
+
+    private static int comparePathToken(String key1, String key2) {
+        return getFormattedPathToken(key1).compareTo(getFormattedPathToken(key2));
+    }
+
+    private static String getFormattedPathToken(String key){
+        String pathToken = extractPathTokensFromFilePk(key);
+        if(pathToken.contains("_"))
+            return StringUtils.leftPad(pathToken.split("_")[1], 4, "0");
+        else
+            return pathToken;
     }
 
     private static String extractPathTokensFromFilePk(String pk) {
