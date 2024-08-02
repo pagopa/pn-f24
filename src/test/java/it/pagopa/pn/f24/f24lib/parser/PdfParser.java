@@ -1,27 +1,32 @@
 package it.pagopa.pn.f24.f24lib.parser;
 
-import it.pagopa.pn.f24.f24lib.exception.LibTestException;
+
 import lombok.extern.slf4j.Slf4j;
+/* FIXME : Uncomment this code reimplementig the PdfParser class with the new OpenPDF library
+import it.pagopa.pn.f24.f24lib.exception.LibTestException;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
 import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.apache.pdfbox.pdmodel.interactive.form.PDField;
 import org.apache.pdfbox.pdmodel.interactive.form.PDTextField;
-
 import java.io.IOException;
+ */
+
 
 @Slf4j
 public class PdfParser {
+    /*
     private final PDDocument doc;
-
+    */
     public PdfParser(byte[] pdf) {
+        /*
         try {
             this.doc = PDDocument.load(pdf);
         } catch (IOException e) {
             throw new LibTestException("Couldn't parse generated pdf");
-        }
+        } */
     }
-
+/*
     private PDAcroForm getForm() {
         PDDocumentCatalog documentCatalog = this.doc.getDocumentCatalog();
         PDAcroForm form = documentCatalog.getAcroForm();
@@ -29,12 +34,13 @@ public class PdfParser {
             throw new LibTestException("Form not found on PDF");
         return form;
     }
-
+*/
     public int numberOfPages() {
-        return doc.getNumberOfPages();
+        return 0; //
     }
 
     public String getFieldValue(String fieldName)  {
+        /*
         PDAcroForm acroForm = getForm();
         PDField field = acroForm.getField(fieldName);
         if (field instanceof PDTextField pdfTextField) {
@@ -46,9 +52,14 @@ public class PdfParser {
         }
 
         return field.getValueAsString();
+
+         */
+
+        return "test";
     }
 
     public double getTotalAmountPdf() {
+        /*
         double debit = 0;
         PDAcroForm acroForm = getForm();
         for (PDField field : acroForm.getFields()) {
@@ -63,18 +74,23 @@ public class PdfParser {
         }
 
         return debit / 100;
+        */
+        return 0;
     }
-
+    /*
     private static boolean isFieldNotEmpty(PDField campo) {
         return campo != null && !campo.getValueAsString().isEmpty();
     }
+    */
 
     public void closeDocument() {
+        /*
         try {
             doc.close();
         } catch (IOException e) {
             throw new LibTestException("Couldn't close PDF doc.");
         }
+        */
 
     }
 }
