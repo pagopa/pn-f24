@@ -6,7 +6,6 @@ import it.pagopa.pn.f24.f24lib.util.F24LibTestBuilder;
 import it.pagopa.pn.f24.service.impl.F24GeneratorImpl;
 import it.pagopa.pn.f24.service.impl.JsonServiceImpl;
 import it.pagopa.pn.f24.service.impl.MetadataValidatorImpl;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -53,7 +52,6 @@ public class F24LibIT {
             "SimplifiedWithApplyCost.json,true",
             "SimplifiedPNFWithApplyCost.json,true"
     })
-    @Disabled(value = "Change implementation of PDFParser to work with new OpenPDF library")
     public void libTestWithPdfParsing(String jsonFilePath, boolean shouldHaveApplyCost) {
         f24LibTestBuilder.execTest(jsonFilePath, shouldHaveApplyCost, true);
     }
