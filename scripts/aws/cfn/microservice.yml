@@ -300,7 +300,7 @@ Resources:
         ContainerEnvEntry20: !Sub 'PN_CRON_ANALYZER=${PnCronAnalyzer}'
         ContainerEnvEntry21: !Sub 'WIRE_TAP_LOG=${WireTapLogActivation}'
         MicroServiceSecretPrefix: pn-f24-Secrets
-        JavaToolOptions: '-Dreactor.netty.ioWorkerCount=120'
+        JavaToolOptions: '-Dreactor.netty.ioWorkerCount=120 -XX:MaxMetaspaceSize=512M -XX:MaxDirectMemorySize=0'
         MappedPaths: '/f24-private/*'
         ECSClusterName: !Ref ECSClusterName
         Subnets: !Ref VpcEgressSubnetsIds
