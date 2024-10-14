@@ -9,6 +9,11 @@
     "MetadataSetTtlInDaysUntilValidation": "3",
     "PnCronAnalyzer": "* */1 * * * *",
     "WireTapLogActivation": "false",
-    "MountEfs": "false"
+    "MountEfs": "false",
+    "CpuValue": "2048",
+    "MemoryAmount": "4GB",
+    "MinTasksNumber": "2",
+    "MaxTasksNumber": "10",
+    "AutoscalingThreshold": "800"
   }
 }
