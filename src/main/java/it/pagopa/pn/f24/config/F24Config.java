@@ -23,6 +23,7 @@ public class F24Config {
     private String metadataSetTableName;
     private String fileTableName;
     private String internalQueueName;
+    private String internalPdfGeneratorQueueName;
     private String safeStorageQueueName;
     private EventBus eventBus;
     private Integer retentionForF24RequestsInDays;
