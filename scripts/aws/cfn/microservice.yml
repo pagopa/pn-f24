@@ -172,6 +172,14 @@ Parameters:
     Type: String
     Description: 'Internal Queue ARN'
 
+  PnF24InternalPdfGeneratorQueueName:
+    Type: String
+    Description: 'Internal Queue Pdf Generator name'
+
+  PnF24InternalPdfGeneratorQueueARN:
+    Type: String
+    Description: 'Internal Queue Pdf Generator ARN'
+
   SafeStorageToF24QueueName:
     Type: String
     Description: 'SafeStorage-to-f24 queue Name'
@@ -192,6 +200,12 @@ Parameters:
     Type: String
 
   F24InternalAgeAlarmARN:
+    Type: String
+
+  PnF24InternalPdfGeneratorDLQAlarmARN:
+    Type: String
+
+  F24InternalPdfGeneratorAgeAlarmARN:
     Type: String
 
   PollingIntervalInSec:
@@ -289,16 +303,19 @@ Resources:
         ContainerEnvEntry9: !Sub 'PN_F24_METADATASETTABLENAME=${F24MetadataSetTableName}'
         ContainerEnvEntry10: !Sub 'PN_F24_FILETABLENAME=${F24FileTableName}'
         ContainerEnvEntry11: !Sub 'PN_F24_INTERNALQUEUENAME=${PnF24InternalQueueName}'
-        ContainerEnvEntry12: !Sub 'PN_F24_SAFESTORAGEQUEUENAME=${SafeStorageToF24QueueName}'
-        ContainerEnvEntry13: !Sub 'PN_F24_EVENTBUS_NAME=arn:aws:events:${AWS::Region}:${AWS::AccountId}:event-bus/${ProjectName}-CoreEventBus'
-        ContainerEnvEntry14: 'PN_F24_EVENTBUS_SOURCE=f24'
-        ContainerEnvEntry15: 'PN_F24_EVENTBUS_OUTCOMEEVENTDETAILTYPE=F24OutcomeEvent'
-        ContainerEnvEntry16: !Sub 'PN_F24_RETENTIONFORF24REQUESTSINDAYS=${RetentionForF24RequestsInDays}'
-        ContainerEnvEntry17: !Sub 'PN_F24_RETENTIONFORF24FILESINDAYS=${RetentionForF24FilesInDays}'
-        ContainerEnvEntry18: !Sub 'PN_F24_METADATASETTTLINDAYSUNTILVALIDATION=${MetadataSetTtlInDaysUntilValidation}'
-        ContainerEnvEntry19: !Sub 'SPRING_CLOUD_FUNCTIONROUTER_QUEUES_LIST=${PnF24InternalQueueName},${SafeStorageToF24QueueName}'
-        ContainerEnvEntry20: !Sub 'PN_CRON_ANALYZER=${PnCronAnalyzer}'
-        ContainerEnvEntry21: !Sub 'WIRE_TAP_LOG=${WireTapLogActivation}'
+        ContainerEnvEntry12: !Sub 'PN_F24_INTERNALPDFGENERATORQUEUENAME=${PnF24InternalPdfGeneratorQueueName}'
+        ContainerEnvEntry13: !Sub 'PN_F24_SAFESTORAGEQUEUENAME=${SafeStorageToF24QueueName}'
+        ContainerEnvEntry14: !Sub 'PN_F24_EVENTBUS_NAME=arn:aws:events:${AWS::Region}:${AWS::AccountId}:event-bus/${ProjectName}-CoreEventBus'
+        ContainerEnvEntry15: 'PN_F24_EVENTBUS_SOURCE=f24'
+        ContainerEnvEntry16: 'PN_F24_EVENTBUS_OUTCOMEEVENTDETAILTYPE=F24OutcomeEvent'
+        ContainerEnvEntry17: !Sub 'PN_F24_RETENTIONFORF24REQUESTSINDAYS=${RetentionForF24RequestsInDays}'
+        ContainerEnvEntry18: !Sub 'PN_F24_RETENTIONFORF24FILESINDAYS=${RetentionForF24FilesInDays}'
+        ContainerEnvEntry19: !Sub 'PN_F24_METADATASETTTLINDAYSUNTILVALIDATION=${MetadataSetTtlInDaysUntilValidation}'
+        ContainerEnvEntry20: !Sub 'SPRING_CLOUD_FUNCTIONROUTER_QUEUES_LIST=${PnF24InternalQueueName},${SafeStorageToF24QueueName}'
+        ContainerEnvEntry21: !Sub 'PN_CRON_ANALYZER=${PnCronAnalyzer}'
+        ContainerEnvEntry22: !Sub 'WIRE_TAP_LOG=${WireTapLogActivation}'
+        ContainerEnvEntry23: !Sub 'PDF_GENERATOR_QUEUE_CONCURRENCY=${PdfGeneratorQueueConcurrency}'
+        ContainerEnvEntry24: !Sub 'PDF_GENERATOR_QUEUE_MAX_NUMBER_OF_MESSAGES=${PdfGeneratorQueueMaxNumberOfMessages}'
         MicroServiceSecretPrefix: pn-f24-Secrets
         JavaToolOptions: '-Dreactor.netty.ioWorkerCount=120 -XX:MaxMetaspaceSize=512M -XX:MaxDirectMemorySize=1G'
         MappedPaths: '/f24-private/*'
@@ -333,6 +350,7 @@ Resources:
               - sqs:SendMessageBatch
             Resource:
               - !Ref PnF24InternalQueueARN
+              - !Ref PnF24InternalPdfGeneratorQueueARN
               - !Ref SafeStorageToF24QueueARN
           - Effect: Allow
             Action:
@@ -370,9 +388,12 @@ Resources:
             - !Ref SafeStorageToF24QueueAlarmARN
             - !Ref PnF24InternalDLQAlarmARN
             - !Ref F24InternalAgeAlarmARN
+            - !Ref PnF24InternalPdfGeneratorDLQAlarmARN
+            - !Ref F24InternalPdfGeneratorAgeAlarmARN
         QueueArns: !Join
           - ','
           - - !Ref PnF24InternalQueueARN
+            - !Ref PnF24InternalPdfGeneratorQueueARN
             - !Ref SafeStorageToF24QueueARN
         LogGroupsNames: !Join
           - ','

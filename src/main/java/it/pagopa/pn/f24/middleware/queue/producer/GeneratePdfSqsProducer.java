@@ -16,7 +16,7 @@ public class GeneratePdfSqsProducer extends AbstractSqsMomProducer<GeneratePdfEv
     private static final int MAX_SIZE_EVENTS_BATCH = 10;
 
     protected GeneratePdfSqsProducer(SqsClient sqsClient, F24Config f24Config, ObjectMapper objectMapper) {
-        super(sqsClient, f24Config.getInternalQueueName(), objectMapper, GeneratePdfEvent.class);
+        super(sqsClient, f24Config.getInternalPdfGeneratorQueueName(), objectMapper, GeneratePdfEvent.class);
     }
 
     @Override
