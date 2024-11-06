@@ -236,6 +236,14 @@ Parameters:
     Type: String
     Description: TTL for metadata set records until validation request occurs
 
+  PdfGeneratorQueueMaxNumberOfMessages:
+    Type: String
+    Description: Max number of messages to be processed by the pdf generator queue
+
+  PdfGeneratorQueueConcurrency:
+    Type: String
+    Description: Number of concurrent threads of the pdf generator queue
+
 
    # Logging parameters
   WireTapLogActivation:
