@@ -238,10 +238,12 @@ Parameters:
 
   PdfGeneratorQueueMaxNumberOfMessages:
     Type: String
+    Default: 5
     Description: Max number of messages to be processed by the pdf generator queue
 
   PdfGeneratorQueueConcurrency:
     Type: String
+    Default: 1
     Description: Number of concurrent threads of the pdf generator queue
 
 
