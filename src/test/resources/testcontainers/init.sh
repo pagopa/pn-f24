@@ -36,7 +36,7 @@ aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
         ]"
 
 echo "### CREATE QUEUES FOR F24 ###"
-queues="pn-f24_internal pn-safestore_to_f24 pn-f24_to_deliverypush pn-f24_to_paperchannel"
+queues="pn-f24_internal pn-f24_internal_pdf_generator pn-safestore_to_f24 pn-f24_to_deliverypush pn-f24_to_paperchannel"
 for qn in $(echo $queues | tr " " "\n"); do
   echo creating queue $qn ...
   aws --profile default --region us-east-1 --endpoint-url http://localstack:4566 \

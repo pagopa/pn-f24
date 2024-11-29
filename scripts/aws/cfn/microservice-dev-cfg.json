@@ -14,6 +14,8 @@
     "MemoryAmount": "4GB",
     "MinTasksNumber": "2",
     "MaxTasksNumber": "10",
-    "AutoscalingThreshold": "800"
+    "AutoscalingThreshold": "800",
+    "PdfGeneratorQueueMaxNumberOfMessages": "5",
+    "PdfGeneratorQueueConcurrency": "1"
   }
 }

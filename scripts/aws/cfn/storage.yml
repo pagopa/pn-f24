@@ -96,6 +96,20 @@ Resources:
         MaxReceiveCount: 10
         DelaySeconds: 1
 
+  PnF24InternalPdfGeneratorQueue:
+    Type: AWS::CloudFormation::Stack
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/sqs-queue.yaml"
+      Parameters:
+        QueueName: !Sub '${ProjectName}-f24_internal_pdf_generator'
+        HasDLQ: "true"
+        AlarmSNSTopicName: !Ref AlarmSNSTopicName
+        VisibilityTimeout: 60
+        MaxReceiveCount: 10
+        DelaySeconds: 1
+
   PnF24LogGroup:
     Type: AWS::CloudFormation::Stack
     UpdateReplacePolicy: Retain
@@ -146,6 +160,27 @@ Outputs:
   F24InternalAgeAlarmARN:
     Value: !GetAtt PnF24InternalQueue.Outputs.SqsAgeAlarmArn
     Description: internal-DLQ age alarm ARN
+  PnF24InternalPdfGeneratorQueueName:
+    Value: !GetAtt PnF24InternalPdfGeneratorQueue.Outputs.QueueName
+    Description: internal pdf generator queue name
+  PnF24InternalPdfGeneratorQueueARN:
+    Value: !GetAtt PnF24InternalPdfGeneratorQueue.Outputs.QueueARN
+    Description: internal pdf generator queue arn
+  PnF24InternalPdfGeneratorDLQName:
+    Value: !GetAtt PnF24InternalPdfGeneratorQueue.Outputs.DeadLetterQueueName
+    Description: internal pdf generator DLQ queue name
+  PnF24InternalPdfGeneratorDLQURL:
+    Value: !GetAtt PnF24InternalPdfGeneratorQueue.Outputs.DeadLetterQueueURL
+    Description: internal pdf generator DLQ queue url
+  PnF24InternalPdfGeneratorDLQARN:
+    Value: !GetAtt PnF24InternalPdfGeneratorQueue.Outputs.DeadLetterQueueARN
+    Description: internal pdf generator DLQ queue ARN
+  PnF24InternalPdfGeneratorDLQAlarmARN:
+    Value: !GetAtt PnF24InternalPdfGeneratorQueue.Outputs.SqsDLQAlarmArn
+    Description: internal pdf generator DLQ alarm ARN
+  F24InternalPdfGeneratorAgeAlarmARN:
+    Value: !GetAtt PnF24InternalPdfGeneratorQueue.Outputs.SqsAgeAlarmArn
+    Description: internal pdf generator DLQ age alarm ARN
 
   # Log group exports
   EcsLogGroup:
