@@ -5,6 +5,7 @@ import it.pagopa.pn.f24.business.F24Converter;
 import it.pagopa.pn.f24.business.F24ConverterFactory;
 import it.pagopa.pn.f24.business.MetadataInspector;
 import it.pagopa.pn.f24.business.MetadataInspectorFactory;
+import it.pagopa.pn.f24.config.F24Config;
 import it.pagopa.pn.f24.dto.ApplyCostValidation;
 import it.pagopa.pn.f24.dto.F24MetadataRef;
 import it.pagopa.pn.f24.dto.F24MetadataValidationIssue;
@@ -34,9 +35,11 @@ import static it.pagopa.pn.f24.util.Utility.getF24TypeFromMetadata;
 public class MetadataValidatorImpl implements MetadataValidator {
 
     private final JsonService jsonService;
+    private final F24Config f24Config;
 
-    public MetadataValidatorImpl(JsonService jsonService) {
+    public MetadataValidatorImpl(JsonService jsonService, F24Config f24Config) {
         this.jsonService = jsonService;
+        this.f24Config = f24Config;
     }
 
     public List<F24MetadataValidationIssue> validateMetadata(MetadataToValidate metadataToValidate) {
@@ -60,7 +63,7 @@ public class MetadataValidatorImpl implements MetadataValidator {
         checkSha256(metadataToValidate, f24MetadataValidationIssues);
         checkMetadataType(metadataToValidate, f24MetadataValidationIssues);
         checkApplyCost(metadataToValidate, f24MetadataValidationIssues);
-        checkMetadata(metadataToValidate, f24MetadataValidationIssues);
+        checkMetadata(metadataToValidate, f24Config, f24MetadataValidationIssues);
         return f24MetadataValidationIssues;
     }
 
@@ -160,13 +163,16 @@ public class MetadataValidatorImpl implements MetadataValidator {
         log.info("End checkApplyCost");
     }
 
-    private void checkMetadata(MetadataToValidate metadataToValidate, List<F24MetadataValidationIssue> metadataValidationIssues) {
+    private void checkMetadata(MetadataToValidate metadataToValidate,F24Config f24Config, List<F24MetadataValidationIssue> metadataValidationIssues) {
         log.info("Start checkMetadata");
         F24Converter f24Converter = F24ConverterFactory.getConverter(getF24TypeFromMetadata(metadataToValidate.getF24Metadata()));
         F24Form f24Form = f24Converter.convert(metadataToValidate.getF24Metadata());
         try {
             Validator validator = ValidatorFactory.createValidator(f24Form);
-            validator.validate();
+            if (f24Config.getIsEnabledTaxCodeValidation()) {
+                validator.validate();
+            }
+            validator.validateWithoutTaxCode();
         } catch (ResourceException | ProcessingException | IOException | IllegalArgumentException e) {
             metadataValidationIssues.add(createIssue(metadataToValidate, e.getMessage(), PnF24ExceptionCodes.ERROR_CODE_F24_METADATA_VALIDATION_ERROR));
         }

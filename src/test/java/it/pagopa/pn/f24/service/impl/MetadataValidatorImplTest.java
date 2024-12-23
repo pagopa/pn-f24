@@ -2,6 +2,7 @@ package it.pagopa.pn.f24.service.impl;
 
 import static org.mockito.Mockito.when;
 
+import it.pagopa.pn.f24.config.F24Config;
 import it.pagopa.pn.f24.dto.F24MetadataRef;
 import it.pagopa.pn.f24.dto.F24MetadataValidationIssue;
 import it.pagopa.pn.f24.dto.MetadataToValidate;
@@ -13,6 +14,7 @@ import java.util.List;
 
 import it.pagopa.pn.f24.util.Sha256Handler;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.mockito.Mockito;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,8 +31,16 @@ class MetadataValidatorImplTest {
     @MockBean
     private JsonService jsonService;
 
+    @MockBean
+    private F24Config f24Config;
+
     @Autowired
     private MetadataValidatorImpl metadataValidatorImpl;
+
+    @BeforeEach
+    void setupConfig() {
+        Mockito.when( f24Config.getIsEnabledTaxCodeValidation() ).thenReturn (true);
+    }
 
     @Test
     void testValidateMetadata() {

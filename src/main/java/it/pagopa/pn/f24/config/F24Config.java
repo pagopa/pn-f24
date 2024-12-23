@@ -29,6 +29,7 @@ public class F24Config {
     private Integer retentionForF24RequestsInDays;
     private Integer retentionForF24FilesInDays;
     private Integer metadataSetTtlInDaysUntilValidation;
+    private Boolean isEnabledTaxCodeValidation;
     @Data
     public static class EventBus {
         private String name;
