@@ -236,6 +236,12 @@ Parameters:
     Type: String
     Description: TTL for metadata set records until validation request occurs
 
+  PnF24isEnabledTaxCodeValidation:
+    Type: String
+    Description: "Flag to enable tax code validation"
+    AllowedValues: [ true, false ]
+    Default: true
+
   PdfGeneratorQueueMaxNumberOfMessages:
     Type: String
     Default: 5
@@ -326,6 +332,7 @@ Resources:
         ContainerEnvEntry22: !Sub 'WIRE_TAP_LOG=${WireTapLogActivation}'
         ContainerEnvEntry23: !Sub 'PDF_GENERATOR_QUEUE_CONCURRENCY=${PdfGeneratorQueueConcurrency}'
         ContainerEnvEntry24: !Sub 'PDF_GENERATOR_QUEUE_MAX_NUMBER_OF_MESSAGES=${PdfGeneratorQueueMaxNumberOfMessages}'
+        ContainerEnvEntry25: !Sub 'PN_F24_ISENABLEDTAXCODEVALIDATION=${PnF24isEnabledTaxCodeValidation}'
         MicroServiceSecretPrefix: pn-f24-Secrets
         JavaToolOptions: '-Dreactor.netty.ioWorkerCount=120 -XX:MaxMetaspaceSize=512M -XX:MaxDirectMemorySize=1G'
         MappedPaths: '/f24-private/*'

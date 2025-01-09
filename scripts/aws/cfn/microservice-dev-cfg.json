@@ -16,6 +16,7 @@
     "MaxTasksNumber": "10",
     "AutoscalingThreshold": "800",
     "PdfGeneratorQueueMaxNumberOfMessages": "5",
-    "PdfGeneratorQueueConcurrency": "1"
+    "PdfGeneratorQueueConcurrency": "1",
+    "PnF24isEnabledTaxCodeValidation": "false"
   }
 }
