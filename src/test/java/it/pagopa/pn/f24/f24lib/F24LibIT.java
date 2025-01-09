@@ -7,9 +7,11 @@ import it.pagopa.pn.f24.f24lib.util.F24LibTestBuilder;
 import it.pagopa.pn.f24.service.impl.F24GeneratorImpl;
 import it.pagopa.pn.f24.service.impl.JsonServiceImpl;
 import it.pagopa.pn.f24.service.impl.MetadataValidatorImpl;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
@@ -32,6 +34,11 @@ public class F24LibIT {
 
     @Autowired
     F24LibTestBuilder f24LibTestBuilder;
+
+    @BeforeEach
+    void setupConfig() {
+        Mockito.when( f24Config.getIsEnabledTaxCodeValidation() ).thenReturn (true);
+    }
 
     @ParameterizedTest
     @CsvSource({
