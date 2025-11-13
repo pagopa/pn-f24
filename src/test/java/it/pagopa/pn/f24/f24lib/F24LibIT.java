@@ -66,6 +66,7 @@ public class F24LibIT {
             "SimplifiedPNFWithApplyCost.json,true"
     })
     public void libTestWithPdfParsing(String jsonFilePath, boolean shouldHaveApplyCost) {
-        f24LibTestBuilder.execTest(jsonFilePath, shouldHaveApplyCost, true);
+        // disabilitato il parsing del PDF a causa dell'introduzione del flattening dei campi introdotto nella feature PN-17215
+        f24LibTestBuilder.execTest(jsonFilePath, shouldHaveApplyCost, false);
     }
 }
