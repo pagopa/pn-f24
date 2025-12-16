@@ -7,7 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.test.context.ContextConfiguration;
@@ -25,9 +25,9 @@ import static org.mockito.Mockito.when;
 @ExtendWith(SpringExtension.class)
 class SafeStorageEventHandlerTest {
     private static final String F24_FILE_DOC_TYPE = "PN_F24";
-    @MockBean
+    @MockitoBean
     private F24Config f24Config;
-    @MockBean
+    @MockitoBean
     private SafeStorageEventService safeStorageEventService;
     @Autowired
     private SafeStorageEventHandler safeStorageEventHandler;

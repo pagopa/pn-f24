@@ -13,7 +13,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
@@ -29,7 +29,7 @@ import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
         MetadataInspectorFactory.class
 })
 public class F24LibIT {
-    @MockBean
+    @MockitoBean
     F24Config f24Config;
 
     @Autowired

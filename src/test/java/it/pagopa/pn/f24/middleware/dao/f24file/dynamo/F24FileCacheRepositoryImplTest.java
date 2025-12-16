@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import reactor.test.StepVerifier;
@@ -31,13 +31,13 @@ import static org.mockito.Mockito.when;
 @TestPropertySource("classpath:/application-test.properties")
 @EnableConfigurationProperties(value = F24Config.class)
 class F24FileCacheRepositoryImplTest {
-    @MockBean
+    @MockitoBean
     private DynamoDbEnhancedAsyncClient dynamoDbEnhancedAsyncClient;
 
-    @MockBean
+    @MockitoBean
     private DynamoDbAsyncTable<Object> dynamoDbAsyncTable;
 
-    @MockBean
+    @MockitoBean
     private F24Config f24Config;
 
     @Test

@@ -24,7 +24,7 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
@@ -77,13 +77,13 @@ public class SaveMetadataTestIT {
     F24MetadataSetDaoMock f24MetadataSetDaoMock;
     @Autowired
     F24FileCacheDaoMock f24FileCacheDaoMock;
-    @SpyBean
+    @MockitoSpyBean
     ValidateMetadataSetSqsProducerMock validateMetadataSetSqsProducerMock;
-    @SpyBean
+    @MockitoSpyBean
     PnF24MetadataValidationEndedEventBridgeProducerImpl validationEndedEventBridgeProducer;
-    @SpyBean
+    @MockitoSpyBean
     ValidateMetadataEventService validateMetadataEventService;
-    @SpyBean
+    @MockitoSpyBean
     EventBridgeAsyncClientMock eventBridgeAsyncClientMock;
 
     @BeforeEach

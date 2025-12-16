@@ -20,7 +20,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -39,15 +39,15 @@ import java.util.Map;
 class SafeStorageEventServiceTest {
     @Autowired
     private F24Config f24Config;
-    @MockBean
+    @MockitoBean
     private F24MetadataSetDao f24MetadataSetDao;
-    @MockBean
+    @MockitoBean
     private EventBridgeProducer<PnF24PdfSetReadyEvent> pdfSetReadyEventProducer;
     @Autowired
     private SafeStorageEventService safeStorageEventService;
-    @MockBean
+    @MockitoBean
     private F24FileCacheDao f24FileCacheDao;
-    @MockBean
+    @MockitoBean
     private F24FileRequestDao f24FileRequestDao;
 
     @Test

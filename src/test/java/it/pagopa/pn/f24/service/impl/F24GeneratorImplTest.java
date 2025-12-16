@@ -10,7 +10,7 @@ import org.f24.service.pdf.PDFCreator;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
@@ -19,9 +19,9 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 class F24GeneratorImplTest {
     @Autowired
     private F24GeneratorImpl f24GeneratorImpl;
-    @MockBean
+    @MockitoBean
     F24Converter f24Converter;
-    @MockBean
+    @MockitoBean
     PDFCreator pdfCreator;
 
     @Test

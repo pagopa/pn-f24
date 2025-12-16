@@ -15,7 +15,7 @@ import it.pagopa.pn.f24.service.F24Service;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.codec.support.DefaultServerCodecConfigurer;
 import org.springframework.http.server.reactive.ServerHttpRequestDecorator;
@@ -35,13 +35,13 @@ import java.util.List;
 @ContextConfiguration(classes = {F24Controller.class})
 @ExtendWith(SpringExtension.class)
 class F24ControllerTest {
-    @MockBean
+    @MockitoBean
     private F24Service f24Service;
-    @MockBean
+    @MockitoBean
     private F24ParserService f24ParserService;
     @Autowired
     private F24Controller f24Controller;
-    @MockBean
+    @MockitoBean
     private Scheduler scheduler;
 
     /**

@@ -10,7 +10,7 @@ import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.test.context.ContextConfiguration;
@@ -31,13 +31,13 @@ class InternalEventHandlerTest {
     @Autowired
     private InternalEventHandler internalEventHandler;
 
-    @MockBean
+    @MockitoBean
     ValidateMetadataEventService validateMetadataEventService;
 
-    @MockBean
+    @MockitoBean
     PreparePdfEventService preparePdfEventService;
 
-    @MockBean
+    @MockitoBean
     GeneratePdfEventService generatePdfEventService;
 
     @Test
