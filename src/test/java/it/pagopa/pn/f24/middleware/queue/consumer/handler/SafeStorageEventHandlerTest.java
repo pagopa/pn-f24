@@ -15,7 +15,6 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import reactor.core.publisher.Mono;
 
 import java.util.HashMap;
-import java.util.function.Consumer;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
@@ -32,16 +31,13 @@ class SafeStorageEventHandlerTest {
     @Autowired
     private SafeStorageEventHandler safeStorageEventHandler;
 
-
     @Test
-    void testPnSafeStorageEventInboundConsumer() {
+    void testPnSafeStorageEventListener() {
         when(f24Config.getSafeStorageF24DocType()).thenReturn(F24_FILE_DOC_TYPE);
         Message<FileDownloadResponse> message = getFileDownloadResponseMessage();
 
         when(safeStorageEventService.handleSafeStorageResponse(any())).thenReturn(Mono.empty());
-        Consumer<Message<FileDownloadResponse>> consumer = safeStorageEventHandler.pnSafeStorageEventInboundConsumer();
-        consumer.accept(message);
-
+        safeStorageEventHandler.pnSafeStorageEventListener(message);
 
         verify(safeStorageEventService).handleSafeStorageResponse(any());
     }

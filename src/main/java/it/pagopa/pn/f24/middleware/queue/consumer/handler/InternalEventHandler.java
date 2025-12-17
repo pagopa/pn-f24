@@ -1,6 +1,9 @@
 package it.pagopa.pn.f24.middleware.queue.consumer.handler;
 
+import io.awspring.cloud.sqs.annotation.SqsListener;
 import it.pagopa.pn.commons.utils.MDCUtils;
+import it.pagopa.pn.f24.dto.F24InternalEventType;
+import it.pagopa.pn.f24.middleware.queue.consumer.AbstractConsumerMessage;
 import it.pagopa.pn.f24.middleware.queue.consumer.handler.utils.HandleEventUtils;
 import it.pagopa.pn.f24.middleware.queue.consumer.service.GeneratePdfEventService;
 import it.pagopa.pn.f24.middleware.queue.consumer.service.PreparePdfEventService;
@@ -8,27 +11,55 @@ import it.pagopa.pn.f24.middleware.queue.consumer.service.ValidateMetadataEventS
 import it.pagopa.pn.f24.middleware.queue.producer.events.GeneratePdfEvent;
 import it.pagopa.pn.f24.middleware.queue.producer.events.PreparePdfEvent;
 import it.pagopa.pn.f24.middleware.queue.producer.events.ValidateMetadataSetEvent;
+import it.pagopa.pn.f24.service.JsonService;
 import lombok.AllArgsConstructor;
 import lombok.CustomLog;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.Message;
+import org.springframework.messaging.MessageHeaders;
+import org.springframework.messaging.handler.annotation.Headers;
+import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.messaging.support.MessageBuilder;
+import org.springframework.stereotype.Component;
 
 import java.util.function.Consumer;
 
-@Configuration
+import static io.awspring.cloud.sqs.annotation.SqsListenerAcknowledgementMode.ALWAYS;
+
+@Component
 @AllArgsConstructor
 @CustomLog
-public class InternalEventHandler {
+public class InternalEventHandler extends AbstractConsumerMessage {
     private final ValidateMetadataEventService validateMetadataEventService;
 
     private final PreparePdfEventService preparePdfEventService;
 
     private final GeneratePdfEventService generatePdfEventService;
 
+    private final JsonService jsonService;
 
-    @Bean
-    public Consumer<Message<ValidateMetadataSetEvent.Payload>> pnF24ValidateMetadataEventInboundConsumer() {
+    @SqsListener(value = "${pn.f24.internal-queue-name}", acknowledgementMode = ALWAYS)
+    void pnF24InternalEventRouter(@Payload String payload, @Headers MessageHeaders headers) {
+        String eventType = (String) headers.get("eventType");
+        switch (F24InternalEventType.valueOf(eventType)) {
+            case VALIDATE_METADATA -> {
+                ValidateMetadataSetEvent.Payload validatePayload = jsonService.parse(payload, ValidateMetadataSetEvent.Payload.class);
+                pnF24ValidateMetadataEventInboundConsumer().accept(MessageBuilder.withPayload(validatePayload).copyHeaders(headers).build());
+            }
+            case PREPARE_PDF -> {
+                PreparePdfEvent.Payload preparePdfPayload = jsonService.parse(payload, PreparePdfEvent.Payload.class);
+                pnF24PreparePdfEventInboundConsumer().accept(MessageBuilder.withPayload(preparePdfPayload).copyHeaders(headers).build());
+            }
+            default -> log.warn("Received message with unknown eventType: {}", eventType);
+        }
+    }
+
+    @SqsListener(value = "${pn.f24.internal-pdf-generator-queue-name}", acknowledgementMode = ALWAYS)
+    void pnF24GeneratePdfEventListener(Message<GeneratePdfEvent.Payload> message) {
+        initTraceId(message.getHeaders());
+        pnF24GeneratePdfEventInboundConsumer().accept(message);
+    }
+
+    protected Consumer<Message<ValidateMetadataSetEvent.Payload>> pnF24ValidateMetadataEventInboundConsumer() {
         return message -> {
             log.debug("Handle validate metadata message with content {}", message);
             try {
@@ -44,8 +75,7 @@ public class InternalEventHandler {
         };
     }
 
-    @Bean
-    public Consumer<Message<PreparePdfEvent.Payload>> pnF24PreparePdfEventInboundConsumer() {
+    protected Consumer<Message<PreparePdfEvent.Payload>> pnF24PreparePdfEventInboundConsumer() {
         return message -> {
             log.debug("Prepare pdf for message with content {}", message);
             try {
@@ -61,8 +91,7 @@ public class InternalEventHandler {
         };
     }
 
-    @Bean
-    public Consumer<Message<GeneratePdfEvent.Payload>> pnF24GeneratePdfEventInboundConsumer() {
+    protected Consumer<Message<GeneratePdfEvent.Payload>> pnF24GeneratePdfEventInboundConsumer() {
         return message -> {
             log.debug("Generate pdf for message with content {}", message);
             try {

@@ -12,4 +12,6 @@ public interface JsonService {
 
     <T> Set<ConstraintViolation<T>> validate(T object);
 
+    <T> T parse(String str, Class<T> clazz);
+
 }

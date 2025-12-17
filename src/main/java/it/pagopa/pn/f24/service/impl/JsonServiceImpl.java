@@ -50,4 +50,12 @@ public class JsonServiceImpl implements JsonService {
         return validator.validate(object);
     }
 
+    public <T> T parse(String str, Class<T> clazz) {
+        try {
+            return objectMapper.readValue(str, clazz);
+        } catch (JsonProcessingException e) {
+            throw new PnInternalException("Couldn't parse JSON string to the desired class", "JSON_PARSE");
+        }
+    }
+
 }
