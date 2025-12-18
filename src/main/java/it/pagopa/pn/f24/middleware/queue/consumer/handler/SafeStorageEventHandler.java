@@ -1,22 +1,25 @@
 package it.pagopa.pn.f24.middleware.queue.consumer.handler;
 
+import io.awspring.cloud.sqs.annotation.SqsListener;
 import it.pagopa.pn.commons.utils.MDCUtils;
 import it.pagopa.pn.f24.config.F24Config;
 import it.pagopa.pn.f24.generated.openapi.msclient.safestorage.model.FileDownloadResponse;
 import it.pagopa.pn.f24.middleware.msclient.safestorage.PnSafeStorageClient;
+import it.pagopa.pn.f24.middleware.queue.consumer.AbstractConsumerMessage;
 import it.pagopa.pn.f24.middleware.queue.consumer.handler.utils.HandleEventUtils;
 import it.pagopa.pn.f24.middleware.queue.consumer.service.SafeStorageEventService;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.Message;
+import org.springframework.stereotype.Component;
 
 import java.util.function.Consumer;
 
-@Configuration
+import static io.awspring.cloud.sqs.annotation.SqsListenerAcknowledgementMode.ALWAYS;
+
+@Component
 @Slf4j
-public class SafeStorageEventHandler {
+public class SafeStorageEventHandler extends AbstractConsumerMessage {
 
     private final F24Config f24Config;
 
@@ -27,9 +30,14 @@ public class SafeStorageEventHandler {
         this.safeStorageEventService = safeStorageEventService;
     }
 
+    @SqsListener(value = "${pn.f24.safe-storage-queue-name}", acknowledgementMode = ALWAYS)
+    void pnSafeStorageEventListener(Message<FileDownloadResponse> message) {
+        initTraceId(message.getHeaders());
+        pnSafeStorageEventInboundConsumer().accept(message);
+    }
 
-    @Bean
-    public Consumer<Message<FileDownloadResponse>> pnSafeStorageEventInboundConsumer() {
+
+    protected Consumer<Message<FileDownloadResponse>> pnSafeStorageEventInboundConsumer() {
         return message -> {
             try {
                 log.debug("Handle message from {} with content {}", PnSafeStorageClient.CLIENT_NAME, message);

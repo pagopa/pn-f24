@@ -28,7 +28,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -49,34 +49,34 @@ import java.time.Duration;
 @EnableConfigurationProperties(value = F24Config.class)
 class F24ServiceImplTest {
     private static final String DEFAULT_SUCCESS_STATUS = "Success!";
-    @MockBean
+    @MockitoBean
     private EventBridgeProducer<PnF24MetadataValidationEndEvent> metadataValidationEndedEventProducer;
 
-    @MockBean
+    @MockitoBean
     private F24Generator f24Generator;
-    @MockBean
+    @MockitoBean
     private F24MetadataSetDao f24MetadataSetDao;
 
     @Autowired
     private F24ServiceImpl f24ServiceImpl;
 
-    @MockBean
+    @MockitoBean
     private PnSafeStorageClientImpl pnSafeStorageClientImpl;
-    @MockBean
+    @MockitoBean
     private F24FileCacheDao f24FileCacheDao;
-    @MockBean
+    @MockitoBean
     private SafeStorageService safeStorageService;
-    @MockBean
+    @MockitoBean
     private MomProducer<ValidateMetadataSetEvent> validateMetadataSetEventProducer;
-    @MockBean
+    @MockitoBean
     private MomProducer<PreparePdfEvent> preparePdfEventProducer;
-    @MockBean
+    @MockitoBean
     private JsonService jsonService;
-    @MockBean
+    @MockitoBean
     private MetadataDownloader metadataDownloader;
-    @MockBean
+    @MockitoBean
     private F24FileRequestDao f24FileRequestDao;
-    @MockBean
+    @MockitoBean
     private AuditLogService auditLogService;
 
     @Test

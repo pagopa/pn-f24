@@ -7,7 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.test.context.ContextConfiguration;
@@ -15,7 +15,6 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import reactor.core.publisher.Mono;
 
 import java.util.HashMap;
-import java.util.function.Consumer;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
@@ -25,23 +24,20 @@ import static org.mockito.Mockito.when;
 @ExtendWith(SpringExtension.class)
 class SafeStorageEventHandlerTest {
     private static final String F24_FILE_DOC_TYPE = "PN_F24";
-    @MockBean
+    @MockitoBean
     private F24Config f24Config;
-    @MockBean
+    @MockitoBean
     private SafeStorageEventService safeStorageEventService;
     @Autowired
     private SafeStorageEventHandler safeStorageEventHandler;
 
-
     @Test
-    void testPnSafeStorageEventInboundConsumer() {
+    void testPnSafeStorageEventListener() {
         when(f24Config.getSafeStorageF24DocType()).thenReturn(F24_FILE_DOC_TYPE);
         Message<FileDownloadResponse> message = getFileDownloadResponseMessage();
 
         when(safeStorageEventService.handleSafeStorageResponse(any())).thenReturn(Mono.empty());
-        Consumer<Message<FileDownloadResponse>> consumer = safeStorageEventHandler.pnSafeStorageEventInboundConsumer();
-        consumer.accept(message);
-
+        safeStorageEventHandler.pnSafeStorageEventListener(message);
 
         verify(safeStorageEventService).handleSafeStorageResponse(any());
     }

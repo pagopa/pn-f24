@@ -13,7 +13,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -31,11 +31,11 @@ import static org.mockito.Mockito.*;
 @EnableConfigurationProperties(value = F24Config.class)
 class MetadataDownloaderImplTest {
 
-    @MockBean
+    @MockitoBean
     private SafeStorageService safeStorageService;
     @Autowired
     private MetadataDownloaderImpl metadataDownloader;
-    @MockBean
+    @MockitoBean
     private JsonService jsonService;
 
 

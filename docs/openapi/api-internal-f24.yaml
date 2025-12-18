@@ -594,7 +594,7 @@ components:
         clientId:
           type: string
           minLength: 1
-          pattern: /[A-Za-z0-9]+/
+          pattern: "[A-Za-z0-9-]+"
         pdfSetReady:
           $ref: '#/components/schemas/PDFSetReadyEvent'
         metadataValidationEnd:
@@ -615,7 +615,7 @@ components:
       required: true
       schema:
         type: string
-        pattern: /[A-Za-z0-9]+/
+        pattern: "[A-Za-z0-9-]+"
 
 
     ############################################################################################

@@ -2,7 +2,7 @@ package it.pagopa.pn.f24.service;
 
 import it.pagopa.pn.f24.generated.openapi.server.v1.dto.F24Metadata;
 
-import javax.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolation;
 import java.util.Set;
 
 public interface JsonService {
@@ -11,5 +11,7 @@ public interface JsonService {
     <T> String stringifyObject(T object);
 
     <T> Set<ConstraintViolation<T>> validate(T object);
+
+    <T> T parse(String str, Class<T> clazz);
 
 }

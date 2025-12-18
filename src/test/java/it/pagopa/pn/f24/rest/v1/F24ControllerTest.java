@@ -15,7 +15,7 @@ import it.pagopa.pn.f24.service.F24Service;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.codec.support.DefaultServerCodecConfigurer;
 import org.springframework.http.server.reactive.ServerHttpRequestDecorator;
@@ -35,13 +35,13 @@ import java.util.List;
 @ContextConfiguration(classes = {F24Controller.class})
 @ExtendWith(SpringExtension.class)
 class F24ControllerTest {
-    @MockBean
+    @MockitoBean
     private F24Service f24Service;
-    @MockBean
+    @MockitoBean
     private F24ParserService f24ParserService;
     @Autowired
     private F24Controller f24Controller;
-    @MockBean
+    @MockitoBean
     private Scheduler scheduler;
 
     /**
@@ -50,7 +50,7 @@ class F24ControllerTest {
     @Test
     void testSaveMetadata() {
         when(f24Service.saveMetadata(any(), any(), any()))
-                .thenReturn((Mono<RequestAccepted>) mock(Mono.class));
+                .thenReturn(Mono.just(new RequestAccepted()));
         ServerHttpRequestDecorator serverHttpRequestDecorator = mock(ServerHttpRequestDecorator.class);
         when(serverHttpRequestDecorator.getHeaders()).thenReturn(new HttpHeaders());
         when(serverHttpRequestDecorator.getId()).thenReturn("https://example.org/example");
@@ -71,7 +71,7 @@ class F24ControllerTest {
      */
     @Test
     void testValidateMetadata() {
-        when(f24Service.validate(any(), any())).thenReturn((Mono<RequestAccepted>) mock(Mono.class));
+        when(f24Service.validate(any(), any())).thenReturn(Mono.just(new RequestAccepted()));
         ServerHttpRequestDecorator serverHttpRequestDecorator = mock(ServerHttpRequestDecorator.class);
         when(serverHttpRequestDecorator.getHeaders()).thenReturn(new HttpHeaders());
         when(serverHttpRequestDecorator.getId()).thenReturn("https://example.org/example");
@@ -93,7 +93,7 @@ class F24ControllerTest {
     @Test
     void testGeneratePDF() {
         when(f24Service.generatePDF(any(), any(), any(), any()))
-                .thenReturn((Mono<F24Response>) mock(Mono.class));
+                .thenReturn(Mono.just(new F24Response()));
         ServerHttpRequestDecorator serverHttpRequestDecorator = mock(ServerHttpRequestDecorator.class);
         when(serverHttpRequestDecorator.getHeaders()).thenReturn(new HttpHeaders());
         when(serverHttpRequestDecorator.getId()).thenReturn("https://example.org/example");
@@ -116,7 +116,7 @@ class F24ControllerTest {
     @Test
     void testPreparePDF() {
         when(f24Service.preparePDF(any(), any(), any()))
-                .thenReturn((Mono<RequestAccepted>) mock(Mono.class));
+                .thenReturn(Mono.just(new RequestAccepted()));
         ServerHttpRequestDecorator serverHttpRequestDecorator = mock(ServerHttpRequestDecorator.class);
         when(serverHttpRequestDecorator.getHeaders()).thenReturn(new HttpHeaders());
         when(serverHttpRequestDecorator.getId()).thenReturn("https://example.org/example");
@@ -138,7 +138,7 @@ class F24ControllerTest {
      */
     @Test
     void testGetTotalNumberOfPages() {
-        when(f24ParserService.getTotalPagesFromMetadataSet(any(), any())).thenReturn((Mono<NumberOfPagesResponse>) mock(Mono.class));
+        when(f24ParserService.getTotalPagesFromMetadataSet(any(), any())).thenReturn(Mono.just(new NumberOfPagesResponse()));
         ServerHttpRequestDecorator serverHttpRequestDecorator = mock(ServerHttpRequestDecorator.class);
         when(serverHttpRequestDecorator.getHeaders()).thenReturn(new HttpHeaders());
         when(serverHttpRequestDecorator.getId()).thenReturn("https://example.org/example");

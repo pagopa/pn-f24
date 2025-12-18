@@ -14,15 +14,17 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.Set;
-import javax.validation.ConstraintViolation;
-import javax.validation.Validator;
+
+import it.pagopa.pn.f24.middleware.queue.producer.events.ValidateMetadataSetEvent;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validator;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
@@ -32,10 +34,10 @@ class JsonServiceImplTest {
     @Autowired
     private JsonServiceImpl jsonServiceImpl;
 
-    @MockBean
+    @MockitoBean
     private ObjectMapper objectMapper;
 
-    @MockBean
+    @MockitoBean
     private Validator validator;
 
 
@@ -91,11 +93,20 @@ class JsonServiceImplTest {
     @Test
     void testValidate() {
         HashSet<ConstraintViolation<String>> constraintViolationSet = new HashSet<>();
-        when(validator.validate(Mockito.<String>any(), any())).thenReturn(constraintViolationSet);
+        when(validator.validate(Mockito.<String>any())).thenReturn(constraintViolationSet);
         Set<ConstraintViolation<Object>> actualValidateResult = jsonServiceImpl.validate("Object");
         Assertions.assertSame(constraintViolationSet, actualValidateResult);
         Assertions.assertTrue(actualValidateResult.isEmpty());
-        verify(validator).validate(Mockito.<String>any(), any());
+        verify(validator).validate(Mockito.<String>any());
+    }
+
+    @Test
+    void testParse() throws IOException {
+        ValidateMetadataSetEvent.Payload eventPayload = new ValidateMetadataSetEvent.Payload("testSetId");
+        String strPayload = "{\"setId\":\"testSetId\"}";
+        when(objectMapper.readValue(Mockito.<String>any(), Mockito.<Class<ValidateMetadataSetEvent.Payload>>any())).thenReturn(eventPayload);
+        Assertions.assertSame(eventPayload, jsonServiceImpl.parse(strPayload, F24Metadata.class));
+        verify(objectMapper).readValue(Mockito.<String>any(), Mockito.<Class<F24Metadata>>any());
     }
 
 }

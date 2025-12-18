@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -30,20 +30,20 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
-@ContextConfiguration(classes = {PreparePdfEventService.class, F24Config.class})
+@ContextConfiguration(classes = {PreparePdfEventService.class})
 @ExtendWith(SpringExtension.class)
 @TestPropertySource("classpath:/application-test.properties")
 @EnableConfigurationProperties(value = F24Config.class)
 class PreparePdfEventServiceTest {
-    @MockBean
+    @MockitoBean
     private F24FileCacheDao f24FileCacheDao;
-    @MockBean
+    @MockitoBean
     private F24MetadataSetDao f24MetadataSetDao;
-    @MockBean
+    @MockitoBean
     private F24FileRequestDao f24FileRequestDao;
-    @MockBean
+    @MockitoBean
     private MomProducer<GeneratePdfEvent> generatePdfEventProducer;
-    @MockBean
+    @MockitoBean
     private EventBridgeProducer<PnF24PdfSetReadyEvent> pdfSetReadyEventProducer;
     @Autowired
     PreparePdfEventService preparePdfEventService;

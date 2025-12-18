@@ -22,7 +22,7 @@ import org.f24.service.validator.Validator;
 import org.f24.service.validator.ValidatorFactory;
 import org.springframework.stereotype.Service;
 
-import javax.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolation;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;

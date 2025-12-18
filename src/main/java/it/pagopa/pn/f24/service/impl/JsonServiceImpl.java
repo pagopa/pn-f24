@@ -12,8 +12,8 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import javax.validation.ConstraintViolation;
-import javax.validation.Validator;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validator;
 import java.io.IOException;
 import java.util.Set;
 
@@ -48,6 +48,14 @@ public class JsonServiceImpl implements JsonService {
 
     public <T> Set<ConstraintViolation<T>> validate(T object) {
         return validator.validate(object);
+    }
+
+    public <T> T parse(String str, Class<T> clazz) {
+        try {
+            return objectMapper.readValue(str, clazz);
+        } catch (JsonProcessingException e) {
+            throw new PnInternalException("Couldn't parse JSON string to the desired class", "JSON_PARSE");
+        }
     }
 
 }

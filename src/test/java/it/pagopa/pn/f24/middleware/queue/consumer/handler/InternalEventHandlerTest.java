@@ -6,11 +6,12 @@ import it.pagopa.pn.f24.middleware.queue.consumer.service.ValidateMetadataEventS
 import it.pagopa.pn.f24.middleware.queue.producer.events.GeneratePdfEvent;
 import it.pagopa.pn.f24.middleware.queue.producer.events.PreparePdfEvent;
 import it.pagopa.pn.f24.middleware.queue.producer.events.ValidateMetadataSetEvent;
+import it.pagopa.pn.f24.service.JsonService;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.test.context.ContextConfiguration;
@@ -31,14 +32,17 @@ class InternalEventHandlerTest {
     @Autowired
     private InternalEventHandler internalEventHandler;
 
-    @MockBean
+    @MockitoBean
     ValidateMetadataEventService validateMetadataEventService;
 
-    @MockBean
+    @MockitoBean
     PreparePdfEventService preparePdfEventService;
 
-    @MockBean
+    @MockitoBean
     GeneratePdfEventService generatePdfEventService;
+
+    @MockitoBean
+    JsonService jsonService;
 
     @Test
     void testPnF24ValidateMetadataEventInboundConsumer() {
@@ -159,5 +163,45 @@ class InternalEventHandlerTest {
                 return new MessageHeaders(new HashMap<>());
             }
         };
+    }
+
+    @Test
+    void testPnF24InternalEventRouter_ValidateMetadata() {
+        String payload = "{\"setId\":\"testSetId\"}";
+        HashMap<String, Object> headersMap = new HashMap<>();
+        headersMap.put("eventType", "VALIDATE_METADATA");
+        MessageHeaders headers = new MessageHeaders(headersMap);
+
+        when(jsonService.parse(payload, ValidateMetadataSetEvent.Payload.class))
+                .thenReturn(ValidateMetadataSetEvent.Payload.builder().setId("testSetId").build());
+        when(validateMetadataEventService.handleMetadataValidation(any())).thenReturn(Mono.empty());
+
+        internalEventHandler.pnF24InternalEventRouter(payload, headers);
+        verify(validateMetadataEventService).handleMetadataValidation(any());
+    }
+
+    @Test
+    void testPnF24InternalEventRouter_PreparePdf() {
+        String payload = "{\"requestId\":\"testRequestId\"}";
+        HashMap<String, Object> headersMap = new HashMap<>();
+        headersMap.put("eventType", "PREPARE_PDF");
+        MessageHeaders headers = new MessageHeaders(headersMap);
+
+        when(jsonService.parse(payload, PreparePdfEvent.Payload.class))
+                .thenReturn(PreparePdfEvent.Payload.builder().requestId("testRequestId").build());
+        when(preparePdfEventService.preparePdf(any())).thenReturn(Mono.empty());
+
+        internalEventHandler.pnF24InternalEventRouter(payload, headers);
+        verify(preparePdfEventService).preparePdf(any());
+    }
+
+    @Test
+    void testPnF24PdfGeneratePdfEventListener() {
+        Message<GeneratePdfEvent.Payload> message = getGeneratePdfMessage();
+
+        when(generatePdfEventService.generatePdf(any())).thenReturn(Mono.empty());
+        internalEventHandler.pnF24GeneratePdfEventListener(message);
+
+        verify(generatePdfEventService).generatePdf(any());
     }
 }

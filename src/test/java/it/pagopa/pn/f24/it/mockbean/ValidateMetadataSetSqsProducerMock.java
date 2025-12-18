@@ -53,6 +53,21 @@ public class ValidateMetadataSetSqsProducerMock implements MomProducer<ValidateM
 
     }
 
+    @Override
+    public void push(List<ValidateMetadataSetEvent> list, Integer integer) {
+        this.push(list);
+    }
+
+    @Override
+    public void push(ValidateMetadataSetEvent validateMetadataSetEvent) {
+        this.push(List.of(validateMetadataSetEvent));
+    }
+
+    @Override
+    public void push(ValidateMetadataSetEvent validateMetadataSetEvent, Integer integer) {
+        this.push(List.of(validateMetadataSetEvent));
+    }
+
     public void setWaitValidationApiCall(boolean waitValidationApiCall) {
         this.waitValidationApiCall = waitValidationApiCall;
     }
