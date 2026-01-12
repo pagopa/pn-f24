@@ -1,6 +1,7 @@
 package it.pagopa.pn.f24.middleware.queue.consumer.handler;
 
 import io.awspring.cloud.sqs.annotation.SqsListener;
+import it.pagopa.pn.commons.exceptions.PnInternalException;
 import it.pagopa.pn.commons.utils.MDCUtils;
 import it.pagopa.pn.f24.dto.F24InternalEventType;
 import it.pagopa.pn.f24.middleware.queue.consumer.AbstractConsumerMessage;
@@ -29,6 +30,8 @@ import static io.awspring.cloud.sqs.annotation.SqsListenerAcknowledgementMode.AL
 @AllArgsConstructor
 @CustomLog
 public class InternalEventHandler extends AbstractConsumerMessage {
+    public  static final String INVALID_EVENT_TYPE = "INVALID_EVENT_TYPE";
+
     private final ValidateMetadataEventService validateMetadataEventService;
 
     private final PreparePdfEventService preparePdfEventService;
@@ -39,8 +42,9 @@ public class InternalEventHandler extends AbstractConsumerMessage {
 
     @SqsListener(value = "${pn.f24.internal-queue-name}", acknowledgementMode = ALWAYS)
     void pnF24InternalEventRouter(@Payload String payload, @Headers MessageHeaders headers) {
-        String eventType = (String) headers.get("eventType");
-        switch (F24InternalEventType.valueOf(eventType)) {
+        initTraceId(headers);
+        F24InternalEventType eventTypeEnum = getEventTypeFromHeaders(headers);
+        switch (eventTypeEnum) {
             case VALIDATE_METADATA -> {
                 ValidateMetadataSetEvent.Payload validatePayload = jsonService.parse(payload, ValidateMetadataSetEvent.Payload.class);
                 pnF24ValidateMetadataEventInboundConsumer().accept(MessageBuilder.withPayload(validatePayload).copyHeaders(headers).build());
@@ -49,7 +53,17 @@ public class InternalEventHandler extends AbstractConsumerMessage {
                 PreparePdfEvent.Payload preparePdfPayload = jsonService.parse(payload, PreparePdfEvent.Payload.class);
                 pnF24PreparePdfEventInboundConsumer().accept(MessageBuilder.withPayload(preparePdfPayload).copyHeaders(headers).build());
             }
-            default -> log.warn("Received message with unknown eventType: {}", eventType);
+            default -> log.warn("The eventType '{}' is not handled by this router.", eventTypeEnum.getValue());
+        }
+    }
+
+    private F24InternalEventType getEventTypeFromHeaders(MessageHeaders headers) {
+        String eventType = (String) headers.get("eventType");
+        try {
+            return F24InternalEventType.valueOf(eventType);
+        } catch (IllegalArgumentException | NullPointerException ex) {
+            log.warn("Received message with invalid or missing eventType header: {}", eventType, ex);
+            throw new PnInternalException(ex.getMessage(), INVALID_EVENT_TYPE);
         }
     }
 

@@ -1,5 +1,6 @@
 package it.pagopa.pn.f24.middleware.queue.consumer.handler;
 
+import it.pagopa.pn.commons.exceptions.PnInternalException;
 import it.pagopa.pn.f24.middleware.queue.consumer.service.GeneratePdfEventService;
 import it.pagopa.pn.f24.middleware.queue.consumer.service.PreparePdfEventService;
 import it.pagopa.pn.f24.middleware.queue.consumer.service.ValidateMetadataEventService;
@@ -8,8 +9,11 @@ import it.pagopa.pn.f24.middleware.queue.producer.events.PreparePdfEvent;
 import it.pagopa.pn.f24.middleware.queue.producer.events.ValidateMetadataSetEvent;
 import it.pagopa.pn.f24.service.JsonService;
 import org.jetbrains.annotations.NotNull;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.messaging.Message;
@@ -203,5 +207,16 @@ class InternalEventHandlerTest {
         internalEventHandler.pnF24GeneratePdfEventListener(message);
 
         verify(generatePdfEventService).generatePdf(any());
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    void testPnF24InternalEventRouter_InvalidEventType(String eventType) {
+        String payload = "{\"setId\":\"testSetId\"}";
+        HashMap<String, Object> headersMap = new HashMap<>();
+        headersMap.put("eventType", eventType);
+        MessageHeaders headers = new MessageHeaders(headersMap);
+
+        Assertions.assertThrows(PnInternalException.class, () -> internalEventHandler.pnF24InternalEventRouter(payload, headers));
     }
 }
