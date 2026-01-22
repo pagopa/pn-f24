@@ -311,7 +311,7 @@ public class F24ServiceImpl implements F24Service {
 
         return retrieveF24File(setId, fcost, pathTokensInString)
                 .switchIfEmpty(Mono.defer(() -> generateFromMetadata(setId, pathTokensInString, fcost)))
-                .onErrorResume(ConditionalCheckFailedException.class, e -> handleCacheConflict(setId, pathTokensInString, fcost));
+                .onErrorResume(PnDbConflictException.class, e -> handleCacheConflict(setId, pathTokensInString, fcost));
     }
 
     private Mono<F24Response> handleCacheConflict(String setId, String pathTokensInString, Integer cost) {

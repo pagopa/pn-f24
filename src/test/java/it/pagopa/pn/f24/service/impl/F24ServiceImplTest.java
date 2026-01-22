@@ -10,10 +10,7 @@ import it.pagopa.pn.f24.dto.*;
 import it.pagopa.pn.f24.dto.safestorage.FileCreationResponseInt;
 import it.pagopa.pn.f24.dto.safestorage.FileDownloadInfoInt;
 import it.pagopa.pn.f24.dto.safestorage.FileDownloadResponseInt;
-import it.pagopa.pn.f24.exception.PnBadRequestException;
-import it.pagopa.pn.f24.exception.PnConflictException;
-import it.pagopa.pn.f24.exception.PnF24RuntimeException;
-import it.pagopa.pn.f24.exception.PnNotFoundException;
+import it.pagopa.pn.f24.exception.*;
 import it.pagopa.pn.f24.generated.openapi.server.v1.dto.*;
 import it.pagopa.pn.f24.middleware.dao.f24file.F24FileCacheDao;
 import it.pagopa.pn.f24.middleware.dao.f24file.F24FileRequestDao;
@@ -34,7 +31,6 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
-import software.amazon.awssdk.services.dynamodb.model.ConditionalCheckFailedException;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -612,7 +608,7 @@ class F24ServiceImplTest {
         when(safeStorageService.createAndUploadContent(any()))
                 .thenReturn(Mono.just(fileCreationResponseInt));
         when(f24FileCacheDao.putItemIfAbsent(any()))
-                .thenReturn(Mono.error(ConditionalCheckFailedException.builder().build()));
+                .thenReturn(Mono.error(new PnDbConflictException("The conditional request failed")));
         doNothing().when(auditLogService).buildGeneratePdfAuditLogEvent(any(), any(), any(), any(), any());
         when(safeStorageService.getFile(any(), any()))
                 .thenReturn(Mono.just(fileDownloadResponseInt));
