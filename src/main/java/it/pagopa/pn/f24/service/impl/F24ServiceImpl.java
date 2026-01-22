@@ -315,7 +315,7 @@ public class F24ServiceImpl implements F24Service {
     }
 
     private Mono<F24Response> handleCacheConflict(String setId, String pathTokensInString, Integer cost) {
-        log.info("F24 cache record already exists, retrying retrieval for setId: {}, pathTokens: {}", setId, pathTokensInString);
+        log.info("F24 cache record already exists, retrying retrieval for setId: {}", setId);
         return retrieveF24File(setId, cost, pathTokensInString);
     }
 

@@ -175,7 +175,7 @@ public class F24FileCacheRepositoryImpl implements F24FileCacheDao {
                         return null;
                     }
 
-                    return items.getFirst();
+                    return items.get(0);
                 });
     }
 
