@@ -164,19 +164,12 @@ public class F24FileCacheRepositoryImpl implements F24FileCacheDao {
                 .build();
 
         return Mono.from(table.index(GSI_FILE_KEY).query(queryEnhancedRequest))
-                .mapNotNull(f24FileEntityPage -> {
-                    var items = f24FileEntityPage.items()
-                            .stream()
-                            .map(F24FileCacheMapper::entityToDto)
-                            .toList();
-
-                    if (items.isEmpty()) {
-                        log.warn("No F24File found for fileKey: {}", fileKey);
-                        return null;
-                    }
-
-                    return items.get(0);
-                });
+                .map(f24FileEntityPage -> f24FileEntityPage.items()
+                        .stream()
+                        .map(F24FileCacheMapper::entityToDto)
+                        .toList()
+                        .get(0)
+                );
     }
 
 }

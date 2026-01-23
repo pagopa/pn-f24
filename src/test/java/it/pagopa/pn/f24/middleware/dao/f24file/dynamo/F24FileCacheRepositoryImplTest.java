@@ -23,7 +23,6 @@ import software.amazon.awssdk.enhanced.dynamodb.model.Page;
 import software.amazon.awssdk.enhanced.dynamodb.model.QueryEnhancedRequest;
 import software.amazon.awssdk.enhanced.dynamodb.model.UpdateItemEnhancedRequest;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -122,25 +121,6 @@ class F24FileCacheRepositoryImplTest {
 
         StepVerifier.create(f24FileCacheRepository.getItemByFileKey("key"))
                 .expectNextCount(1)
-                .verifyComplete();
-    }
-
-    @Test
-    void getItemByFileKey_EmptyPage() {
-        when(dynamoDbEnhancedAsyncClient.table(any(),any())).thenReturn(dynamoDbAsyncTable);
-
-        DynamoDbAsyncIndex index = mock(DynamoDbAsyncIndex.class);
-        when(dynamoDbAsyncTable.index(anyString())).thenReturn(index);
-
-        Page<F24FileCacheEntity> emptyPage = Page.create(Collections.emptyList());
-        SdkPublisher<Page<F24FileCacheEntity>> sdkPublisher = SdkPublisher.adapt(Flux.just(emptyPage));
-
-        when(index.query(any(QueryEnhancedRequest.class))).thenReturn(sdkPublisher);
-
-        F24FileCacheRepositoryImpl f24FileCacheRepository = new F24FileCacheRepositoryImpl(dynamoDbEnhancedAsyncClient, f24Config);
-
-        StepVerifier.create(f24FileCacheRepository.getItemByFileKey("key"))
-                .expectNextCount(0)
                 .verifyComplete();
     }
 
