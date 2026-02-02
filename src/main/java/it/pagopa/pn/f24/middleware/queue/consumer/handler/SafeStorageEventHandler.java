@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.function.Consumer;
 
-import static io.awspring.cloud.sqs.annotation.SqsListenerAcknowledgementMode.ALWAYS;
+import static io.awspring.cloud.sqs.annotation.SqsListenerAcknowledgementMode.ON_SUCCESS;
 
 @Component
 @Slf4j
@@ -30,7 +30,7 @@ public class SafeStorageEventHandler extends AbstractConsumerMessage {
         this.safeStorageEventService = safeStorageEventService;
     }
 
-    @SqsListener(value = "${pn.f24.safe-storage-queue-name}", acknowledgementMode = ALWAYS)
+    @SqsListener(value = "${pn.f24.safe-storage-queue-name}", acknowledgementMode = ON_SUCCESS)
     void pnSafeStorageEventListener(Message<FileDownloadResponse> message) {
         initTraceId(message.getHeaders());
         pnSafeStorageEventInboundConsumer().accept(message);

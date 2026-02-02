@@ -24,7 +24,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.function.Consumer;
 
-import static io.awspring.cloud.sqs.annotation.SqsListenerAcknowledgementMode.ALWAYS;
+import static io.awspring.cloud.sqs.annotation.SqsListenerAcknowledgementMode.ON_SUCCESS;
 
 @Component
 @AllArgsConstructor
@@ -40,7 +40,7 @@ public class InternalEventHandler extends AbstractConsumerMessage {
 
     private final JsonService jsonService;
 
-    @SqsListener(value = "${pn.f24.internal-queue-name}", acknowledgementMode = ALWAYS)
+    @SqsListener(value = "${pn.f24.internal-queue-name}", acknowledgementMode = ON_SUCCESS)
     void pnF24InternalEventRouter(@Payload String payload, @Headers MessageHeaders headers) {
         initTraceId(headers);
         F24InternalEventType eventTypeEnum = getEventTypeFromHeaders(headers);
@@ -67,7 +67,7 @@ public class InternalEventHandler extends AbstractConsumerMessage {
         }
     }
 
-    @SqsListener(value = "${pn.f24.internal-pdf-generator-queue-name}", acknowledgementMode = ALWAYS)
+    @SqsListener(value = "${pn.f24.internal-pdf-generator-queue-name}", acknowledgementMode = ON_SUCCESS)
     void pnF24GeneratePdfEventListener(Message<GeneratePdfEvent.Payload> message) {
         initTraceId(message.getHeaders());
         pnF24GeneratePdfEventInboundConsumer().accept(message);
