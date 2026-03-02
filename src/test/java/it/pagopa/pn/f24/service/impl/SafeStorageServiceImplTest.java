@@ -26,6 +26,11 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -33,12 +38,14 @@ import static org.mockito.Mockito.when;
 class SafeStorageServiceImplTest {
     @Mock
     private PnSafeStorageClient safeStorageClient;
+    @Mock
+    private F24Config f24Config;
 
     private SafeStorageServiceImpl safeStorageService;
 
     @BeforeEach
     public void init() {
-        safeStorageService = new SafeStorageServiceImpl(safeStorageClient);
+        safeStorageService = new SafeStorageServiceImpl(safeStorageClient, f24Config);
     }
 
     @Test
@@ -167,7 +174,13 @@ class SafeStorageServiceImplTest {
         fileDownloadInfo.setUrl("http://download.test.it");
         fileDownloadResponse.setDownload(fileDownloadInfo);
 
-        when(fileDownloadApi.getFile(any(), any(), any()))
+        Map<String, List<String>> tags = new HashMap<>();
+        List<String> numOfPages=new ArrayList<>();
+        numOfPages.add("2");
+        tags.put("document_number_of_pages",numOfPages);
+        fileDownloadResponse.setTags(tags);
+
+        when(fileDownloadApi.getFile(any(), any(), any(), any()))
                 .thenReturn(Mono.error(new WebClientResponseException(HttpStatus.NOT_FOUND.value(), "Not found", null, null, null)));
 
         // Create the instance of the class under test

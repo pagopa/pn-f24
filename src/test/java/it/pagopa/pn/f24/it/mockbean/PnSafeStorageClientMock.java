@@ -14,6 +14,10 @@ import org.junit.jupiter.api.Assertions;
 import reactor.core.publisher.Mono;
 
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static org.awaitility.Awaitility.await;
 
@@ -37,6 +41,13 @@ public class PnSafeStorageClientMock implements PnSafeStorageClient {
         fileDownloadResponse.setContentLength(null);
         fileDownloadResponse.setContentType("contentType");
         fileDownloadResponse.setDocumentType("documentType");
+
+        Map<String, List<String>> tags = new HashMap<>();
+        List<String> numOfPages=new ArrayList<>();
+        numOfPages.add("2");
+        tags.put("document_number_of_pages",numOfPages);
+        fileDownloadResponse.setTags(tags);
+
 
         FileDownloadInfo fileDownloadInfo = new FileDownloadInfo();
         fileDownloadInfo.setUrl(fileKey);

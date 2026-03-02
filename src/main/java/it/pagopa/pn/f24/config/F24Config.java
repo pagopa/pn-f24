@@ -30,6 +30,8 @@ public class F24Config {
     private Integer retentionForF24FilesInDays;
     private Integer metadataSetTtlInDaysUntilValidation;
     private Boolean isEnabledTaxCodeValidation;
+    private String documentNumberOfPagesTagKey;
+
     @Data
     public static class EventBus {
         private String name;
