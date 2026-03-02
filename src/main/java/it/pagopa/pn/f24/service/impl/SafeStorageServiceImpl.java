@@ -37,10 +37,10 @@ public class SafeStorageServiceImpl implements SafeStorageService {
     }
 
     @Override
-    public Mono<FileDownloadResponseInt> getFile(String fileKey, Boolean metadataOnly) {
+    public Mono<FileDownloadResponseInt> getFile(String fileKey, Boolean metadataOnly, Boolean tags) {
         MDC.put(MDCUtils.MDC_PN_CTX_SAFESTORAGE_FILEKEY, fileKey);
 
-        return safeStorageClient.getFile(fileKey, metadataOnly)
+        return safeStorageClient.getFile(fileKey, metadataOnly, tags)
                 .doOnSuccess(fileDownloadResponse -> {
                     log.debug("Response getFile from SafeStorage: {}", fileDownloadResponse);
                     MDC.remove(MDCUtils.MDC_PN_CTX_SAFESTORAGE_FILEKEY);

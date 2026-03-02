@@ -323,7 +323,7 @@ public class F24ServiceImpl implements F24Service {
         return f24FileCacheDao.getItem(setId, fcost, pathTokensInString)
                 .flatMap(f24File -> {
                     if (f24File.getStatus().equals(F24FileStatus.DONE)) {
-                        return safeStorageService.getFile(f24File.getFileKey(), false)
+                        return safeStorageService.getFile(f24File.getFileKey(), false, true)
                                 .map(fileDownloadResponseInt -> {
                                     log.info("pdf found for setId: {} pathTokens: {}", setId, pathTokensInString);
                                     return F24ResponseConverter.fileDownloadInfoToF24Response(fileDownloadResponseInt);
@@ -357,7 +357,7 @@ public class F24ServiceImpl implements F24Service {
                     .flatMap(fileCreationRequest -> uploadF24FileAndPut(fileCreationRequest, cost, pathTokensInString, setId))
                     .doOnNext(f24FileUploaded -> generateAuditLog(setId, pathTokensInString, cost, f24FileUploaded.getFileKey(), metadataFileKey))
                     .flatMap(f24FileUploaded -> pollingF24FileUntilStatusIsDone(f24FileUploaded.getPk()))
-                    .flatMap(f24FileReady -> safeStorageService.getFile(f24FileReady.getFileKey(), false))
+                    .flatMap(f24FileReady -> safeStorageService.getFile(f24FileReady.getFileKey(), false, true))
                     .onErrorResume(PollingTimeOutException.class, e -> {
                         log.debug("Polling timeout occurred, replying with retryAfter");
                         return Mono.just(buildRetryAfterResponse());

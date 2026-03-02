@@ -55,7 +55,7 @@ class MetadataDownloaderImplTest {
         fileDownloadInfoInt.setUrl("url");
         fileDownloadInfoInt.setRetryAfter(BigDecimal.valueOf(200));
 
-        Mockito.when(safeStorageService.getFile(anyString(), eq(false)))
+        Mockito.when(safeStorageService.getFile(anyString(), eq(false), anyBoolean()))
                 .thenReturn(Mono.just(fileDownloadResponseInt));
         when(safeStorageService.downloadPieceOfContent(any(), any(), anyLong()))
                 .thenReturn(Mono.just(fileContent));
@@ -80,7 +80,7 @@ class MetadataDownloaderImplTest {
 
         fileDownloadInfoInt.setRetryAfter(BigDecimal.valueOf(2000000));
 
-        Mockito.when(safeStorageService.getFile(anyString(), eq(false)))
+        Mockito.when(safeStorageService.getFile(anyString(), eq(false), anyBoolean()))
                 .thenReturn(Mono.just(fileDownloadResponseInt));
 
         StepVerifier.create(metadataDownloader.downloadMetadata(fileKey))
@@ -113,7 +113,7 @@ class MetadataDownloaderImplTest {
 
         when(safeStorageService.downloadPieceOfContent(any(), any(), anyLong()))
                 .thenReturn(Mono.just(fileContent));
-        Mockito.when(safeStorageService.getFile(anyString(), eq(false)))
+        Mockito.when(safeStorageService.getFile(anyString(), eq(false), anyBoolean()))
                 .thenReturn(Mono.just(fileDownloadResponseIntRetryAfter))
                 .thenReturn(Mono.just(fileDownloadResponseIntUrl));
         when(jsonService.parseMetadataFile(any()))
@@ -143,7 +143,7 @@ class MetadataDownloaderImplTest {
 
         when(safeStorageService.downloadPieceOfContent(any(), any(), anyLong()))
                 .thenReturn(Mono.just(fileContent));
-        Mockito.when(safeStorageService.getFile(anyString(), eq(false)))
+        Mockito.when(safeStorageService.getFile(anyString(), eq(false), anyBoolean()))
                 .thenReturn(Mono.just(fileDownloadResponseInt));
         when(jsonService.parseMetadataFile(any()))
                 .thenReturn(f24Metadata);

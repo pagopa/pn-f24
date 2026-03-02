@@ -58,11 +58,11 @@ class SafeStorageEventHandlerTest {
                 fileDownloadResponse.setKey("key");
                 fileDownloadResponse.setDocumentType(F24_FILE_DOC_TYPE);
 
-                Map<String, List<String>> tags = new HashMap<>();
+                Map<String, List<String>> docTags = new HashMap<>();
                 List<String> numOfPages=new ArrayList<>();
                 numOfPages.add("2");
-                tags.put("document_number_of_pages",numOfPages);
-                fileDownloadResponse.setTags(tags);
+                docTags.put("document_number_of_pages",numOfPages);
+                fileDownloadResponse.setTags(docTags);
 
                 return fileDownloadResponse;
             }

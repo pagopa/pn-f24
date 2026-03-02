@@ -1,6 +1,7 @@
 package it.pagopa.pn.f24.middleware.msclient.safestorage;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -77,7 +78,7 @@ class PnSafeStorageClientImplTest {
                 new F24Config(), mock(RestTemplate.class));
 
         FileCreationWithContentRequest fileCreationWithContentRequest = new FileCreationWithContentRequest();
-        StepVerifier.create(pnSafeStorageClientImpl.getFile("fileKeyTest", true))
+        StepVerifier.create(pnSafeStorageClientImpl.getFile("fileKeyTest", true, true))
                 .expectNext(fileDownloadResponse)
                 .verifyComplete();
     }

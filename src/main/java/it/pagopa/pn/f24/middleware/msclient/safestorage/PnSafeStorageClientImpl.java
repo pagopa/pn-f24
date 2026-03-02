@@ -63,9 +63,9 @@ public class PnSafeStorageClientImpl extends CommonBaseClient implements PnSafeS
     }
 
     @Override
-    public Mono<FileDownloadResponse> getFile(String fileKey, boolean metadataOnly) {
+    public Mono<FileDownloadResponse> getFile(String fileKey, boolean metadataOnly, boolean tags) {
         log.logInvokingExternalService(PnLogger.EXTERNAL_SERVICES.PN_SAFE_STORAGE, "getFile");
-        return fileDownloadApi.getFile(fileKey, f24Config.getSafeStorageCxId(), metadataOnly, true)
+        return fileDownloadApi.getFile(fileKey, f24Config.getSafeStorageCxId(), metadataOnly, tags)
                 .onErrorResume(WebClientResponseException.class, error -> {
                     log.warn("Exception in call getFile fileKey={}", fileKey, error);
                     if (error.getStatusCode().equals(HttpStatus.NOT_FOUND)) {

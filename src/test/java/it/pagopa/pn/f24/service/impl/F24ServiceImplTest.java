@@ -95,7 +95,7 @@ class F24ServiceImplTest {
 
         when(f24FileCacheDao.getItem(anyString(), anyInt(), anyString()))
                 .thenReturn(Mono.just(f24File));
-        when(safeStorageService.getFile(anyString(), eq(false)))
+        when(safeStorageService.getFile(anyString(), eq(false), anyBoolean()))
                 .thenReturn(Mono.just(fileDownloadResponseInt));
         //assert
         StepVerifier.create(f24ServiceImpl.generatePDF("xPagopaF24CxId", "setId", new ArrayList<>(), 100))
@@ -124,7 +124,7 @@ class F24ServiceImplTest {
 
         when(f24FileCacheDao.getItem(anyString(), anyInt(), anyString()))
                 .thenReturn(Mono.just(f24File));
-        when(safeStorageService.getFile(anyString(), eq(false)))
+        when(safeStorageService.getFile(anyString(), eq(false), anyBoolean()))
                 .thenReturn(Mono.just(fileDownloadResponseInt));
         //assert
         StepVerifier.create(f24ServiceImpl.generatePDF("xPagopaF24CxId", "setId", new ArrayList<>(), 100))
@@ -374,7 +374,7 @@ class F24ServiceImplTest {
 
         when(f24FileCacheDao.getItem(anyString(), anyInt(), anyString()))
                 .thenReturn(Mono.just(f24File));
-        when(safeStorageService.getFile(anyString(), eq(false)))
+        when(safeStorageService.getFile(anyString(), eq(false), anyBoolean()))
                 .thenReturn(Mono.just(fileDownloadResponseInt));
         //assert
         StepVerifier.create(f24ServiceImpl.generatePDF("xPagopaF24CxId", "setId", new ArrayList<>(), 100))
@@ -437,7 +437,7 @@ class F24ServiceImplTest {
         //Polling
         when(f24FileCacheDao.getItem(anyString()))
                 .thenReturn(Mono.just(f24FilePolling));
-        when(safeStorageService.getFile(any(), any()))
+        when(safeStorageService.getFile(any(), any(), anyBoolean()))
                 .thenReturn(Mono.just(fileDownloadResponseInt));
 
 
@@ -507,7 +507,7 @@ class F24ServiceImplTest {
                 .thenReturn(new byte[0]);
         when(safeStorageService.createAndUploadContent(any()))
                 .thenReturn(Mono.just(fileCreationResponseInt));
-        when(safeStorageService.getFile(anyString(), eq(false)))
+        when(safeStorageService.getFile(anyString(), eq(false), anyBoolean()))
                 .thenReturn(Mono.just(fileDownloadResponseInt));
         // Assert
         StepVerifier.create(f24ServiceImpl.generatePDF("xPagopaF24CxId", "setId", pathTokens, 100))
@@ -545,7 +545,7 @@ class F24ServiceImplTest {
                 .thenReturn(Mono.just(f24Metadata));
         when(f24Generator.generate(any(F24Metadata.class)))
                 .thenReturn(new byte[0]);
-        when(safeStorageService.getFile(anyString(), eq(false)))
+        when(safeStorageService.getFile(anyString(), eq(false), anyBoolean()))
                 .thenReturn(Mono.just(fileDownloadResponseInt));
         // Assert
         StepVerifier.create(f24ServiceImpl.generatePDF("xPagopaF24CxId", "setId", pathTokens, null))
@@ -610,7 +610,7 @@ class F24ServiceImplTest {
         when(f24FileCacheDao.putItemIfAbsent(any()))
                 .thenReturn(Mono.error(new PnDbConflictException("The conditional request failed")));
         doNothing().when(auditLogService).buildGeneratePdfAuditLogEvent(any(), any(), any(), any(), any());
-        when(safeStorageService.getFile(any(), any()))
+        when(safeStorageService.getFile(any(), any(), anyBoolean()))
                 .thenReturn(Mono.just(fileDownloadResponseInt));
 
 

@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -60,11 +61,11 @@ class SafeStorageServiceImplTest {
         fileDownloadResponse.setDocumentType("type");
         fileDownloadResponse.setDownload(new FileDownloadInfo());
 
-        when(safeStorageClient.getFile(Mockito.anyString(), Mockito.anyBoolean()))
+        when(safeStorageClient.getFile(Mockito.anyString(), Mockito.anyBoolean(), Mockito.anyBoolean()))
                 .thenReturn(Mono.just(fileDownloadResponse));
 
         //WHEN
-        Mono<FileDownloadResponseInt> responseMono = safeStorageService.getFile("test", true);
+        Mono<FileDownloadResponseInt> responseMono = safeStorageService.getFile("test", true, true);
 
         //THEN
         Assertions.assertNotNull(responseMono);
@@ -79,10 +80,10 @@ class SafeStorageServiceImplTest {
     @ExtendWith(SpringExtension.class)
     void getFileError() {
         //GIVEN
-        when(safeStorageClient.getFile(Mockito.anyString(), Mockito.anyBoolean()))
+        when(safeStorageClient.getFile(Mockito.anyString(), Mockito.anyBoolean(), Mockito.anyBoolean()))
                 .thenReturn(Mono.error(new PnInternalException("test", "test")));
 
-        Mono<FileDownloadResponseInt> mono = safeStorageService.getFile("test", true);
+        Mono<FileDownloadResponseInt> mono = safeStorageService.getFile("test", true, true);
 
         //WHEN
         Assertions.assertThrows(PnInternalException.class, mono::block);
@@ -174,11 +175,11 @@ class SafeStorageServiceImplTest {
         fileDownloadInfo.setUrl("http://download.test.it");
         fileDownloadResponse.setDownload(fileDownloadInfo);
 
-        Map<String, List<String>> tags = new HashMap<>();
+        Map<String, List<String>> docTags = new HashMap<>();
         List<String> numOfPages=new ArrayList<>();
         numOfPages.add("2");
-        tags.put("document_number_of_pages",numOfPages);
-        fileDownloadResponse.setTags(tags);
+        docTags.put("document_number_of_pages",numOfPages);
+        fileDownloadResponse.setTags(docTags);
 
         when(fileDownloadApi.getFile(any(), any(), any(), any()))
                 .thenReturn(Mono.error(new WebClientResponseException(HttpStatus.NOT_FOUND.value(), "Not found", null, null, null)));
@@ -188,7 +189,7 @@ class SafeStorageServiceImplTest {
                 fileUploadApi, fileDownloadApi, new F24Config(), mock(RestTemplate.class));
 
         // Trigger the method and verify the error
-        StepVerifier.create(pnSafeStorageClientImpl.getFile("fileKeyTest", true))
+        StepVerifier.create(pnSafeStorageClientImpl.getFile("fileKeyTest", true, true))
                 .expectError(PnFileNotFoundException.class)
                 .verify();
     }

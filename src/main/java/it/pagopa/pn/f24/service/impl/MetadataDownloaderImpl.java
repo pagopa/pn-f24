@@ -37,7 +37,7 @@ public class MetadataDownloaderImpl implements MetadataDownloader {
     }
 
     private Mono<byte[]> downloadFileFromSafeStorage(String fileKey) {
-        return safeStorageService.getFile(fileKey, false)
+        return safeStorageService.getFile(fileKey, false, true)
                 .flatMap(fileDownloadResponseInt -> {
 
                     if (fileDownloadResponseInt.getDownload().getUrl() == null && fileDownloadResponseInt.getDownload().getRetryAfter() != null) {
@@ -58,7 +58,7 @@ public class MetadataDownloaderImpl implements MetadataDownloader {
 
     private Mono<byte[]> retryDownload(String fileKey) {
         log.info("Retry download for fileKey {}", fileKey);
-        return safeStorageService.getFile(fileKey, false).flatMap(fileDownloadResponseInt -> {
+        return safeStorageService.getFile(fileKey, false, true).flatMap(fileDownloadResponseInt -> {
             if (fileDownloadResponseInt.getDownload().getUrl() == null && fileDownloadResponseInt.getDownload().getRetryAfter() != null) {
                 log.info("Download of filekey {} still not available", fileKey);
                 throw new PnInternalException(ERROR_CODE_F24_READ_FILE_ERROR, "Error downloading file with fileKey " + fileKey);

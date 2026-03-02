@@ -34,7 +34,7 @@ public class PnSafeStorageClientMock implements PnSafeStorageClient {
     }
 
     @Override
-    public Mono<FileDownloadResponse> getFile(String fileKey, boolean metadataOnly) {
+    public Mono<FileDownloadResponse> getFile(String fileKey, boolean metadataOnly, boolean tags) {
         FileDownloadResponse fileDownloadResponse = new FileDownloadResponse();
         fileDownloadResponse.setKey("key");
         fileDownloadResponse.setChecksum("checksum");
@@ -42,11 +42,11 @@ public class PnSafeStorageClientMock implements PnSafeStorageClient {
         fileDownloadResponse.setContentType("contentType");
         fileDownloadResponse.setDocumentType("documentType");
 
-        Map<String, List<String>> tags = new HashMap<>();
+        Map<String, List<String>> docTags = new HashMap<>();
         List<String> numOfPages=new ArrayList<>();
         numOfPages.add("2");
-        tags.put("document_number_of_pages",numOfPages);
-        fileDownloadResponse.setTags(tags);
+        docTags.put("document_number_of_pages",numOfPages);
+        fileDownloadResponse.setTags(docTags);
 
 
         FileDownloadInfo fileDownloadInfo = new FileDownloadInfo();
