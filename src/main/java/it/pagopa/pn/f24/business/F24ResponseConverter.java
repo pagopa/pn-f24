@@ -13,6 +13,7 @@ public  class F24ResponseConverter {
         f24Response.setContentLength(fileDownloadResponseInt.getContentLength());
         f24Response.setSha256(fileDownloadResponseInt.getChecksum());
         f24Response.setNumberOfPages(fileDownloadResponseInt.getNumberOfPages());
+        f24Response.setFileKey(fileDownloadResponseInt.getFileKey());
         return f24Response;
     }
 

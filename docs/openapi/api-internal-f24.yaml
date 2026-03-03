@@ -458,6 +458,9 @@ components:
         numberOfPages:
           type: integer
           description: numero di pagine del documento. Valorizzato solo se il documento è di tipo PDF
+        fileKey:
+          type: string
+          description: fileKey SafeStorage del documento generato
 
 
 

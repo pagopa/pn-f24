@@ -17,4 +17,5 @@ public class FileDownloadResponseInt {
     private String contentType;
     private FileDownloadInfoInt download;
     private Integer numberOfPages;
+    private String fileKey;
 }
