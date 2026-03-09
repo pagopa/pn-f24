@@ -14,7 +14,10 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import reactor.core.publisher.Mono;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -54,6 +57,13 @@ class SafeStorageEventHandlerTest {
                 FileDownloadResponse fileDownloadResponse = new FileDownloadResponse();
                 fileDownloadResponse.setKey("key");
                 fileDownloadResponse.setDocumentType(F24_FILE_DOC_TYPE);
+
+                Map<String, List<String>> docTags = new HashMap<>();
+                List<String> numOfPages=new ArrayList<>();
+                numOfPages.add("2");
+                docTags.put("document_number_of_pages",numOfPages);
+                fileDownloadResponse.setTags(docTags);
+
                 return fileDownloadResponse;
             }
 

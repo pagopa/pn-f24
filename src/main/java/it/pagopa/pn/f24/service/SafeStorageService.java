@@ -6,7 +6,7 @@ import it.pagopa.pn.f24.dto.safestorage.FileDownloadResponseInt;
 import reactor.core.publisher.Mono;
 
 public interface SafeStorageService {
-    Mono<FileDownloadResponseInt> getFile(String fileKey, Boolean metadataOnly) ;
+    Mono<FileDownloadResponseInt> getFile(String fileKey, Boolean metadataOnly, Boolean tags) ;
     Mono<FileCreationResponseInt> createAndUploadContent(FileCreationWithContentRequest fileCreationRequest);
     Mono<byte[]> downloadPieceOfContent(String fileKey, String url, long maxSize);
 }

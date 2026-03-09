@@ -101,7 +101,7 @@ class ValidateMetadataEventServiceTest {
                 .thenReturn(Mono.just(f24MetadataSet));
         when(f24MetadataSetDao.getItem(any(), anyBoolean()))
                 .thenReturn(Mono.just(f24MetadataSet));
-        when(safeStorageService.getFile(f24MetadataRef.getFileKey(), false))
+        when(safeStorageService.getFile(f24MetadataRef.getFileKey(), false, true))
                 .thenReturn(Mono.just(fileDownloadResponseInt));
         when(safeStorageService.downloadPieceOfContent(f24MetadataRef.getFileKey(), fileDownloadInfoInt.getUrl(), maxSize))
                 .thenReturn(Mono.just("test".getBytes()));
@@ -148,7 +148,7 @@ class ValidateMetadataEventServiceTest {
                 .thenReturn(Mono.just(f24MetadataSet));
         when(f24MetadataSetDao.getItem(any(), anyBoolean()))
                 .thenReturn(Mono.just(f24MetadataSet));
-        when(safeStorageService.getFile(f24MetadataRef.getFileKey(), false))
+        when(safeStorageService.getFile(f24MetadataRef.getFileKey(), false, true))
                 .thenReturn(Mono.just(fileDownloadResponseInt));
         when(safeStorageService.downloadPieceOfContent(f24MetadataRef.getFileKey(), fileDownloadInfoInt.getUrl(), maxSize))
                 .thenReturn(Mono.just("test".getBytes()));
@@ -195,7 +195,7 @@ class ValidateMetadataEventServiceTest {
                 .thenReturn(Mono.just(f24MetadataSet));
         when(f24MetadataSetDao.getItem(any(), anyBoolean()))
                 .thenReturn(Mono.just(f24MetadataSet));
-        when(safeStorageService.getFile(f24MetadataRef.getFileKey(), false))
+        when(safeStorageService.getFile(f24MetadataRef.getFileKey(), false, true))
                 .thenReturn(Mono.just(fileDownloadResponseInt));
         when(safeStorageService.downloadPieceOfContent(f24MetadataRef.getFileKey(), fileDownloadInfoInt.getUrl(), maxSize))
                 .thenReturn(Mono.just("test".getBytes()));
@@ -256,7 +256,7 @@ class ValidateMetadataEventServiceTest {
                 .thenReturn(Mono.just(f24MetadataSet));
         when(f24MetadataSetDao.getItem(any(), anyBoolean()))
                 .thenReturn(Mono.just(f24MetadataSet));
-        when(safeStorageService.getFile(any(), anyBoolean()))
+        when(safeStorageService.getFile(any(), anyBoolean(), anyBoolean()))
                 .thenReturn(Mono.error(new PnFileNotFoundException("", new Exception())));
         when(eventBridgeProducer.sendEvent((PnF24MetadataValidationEndEvent) any())).thenReturn(Mono.empty());
         when(f24MetadataSetDao.setF24MetadataSetStatusValidationEnded(f24MetadataSet))

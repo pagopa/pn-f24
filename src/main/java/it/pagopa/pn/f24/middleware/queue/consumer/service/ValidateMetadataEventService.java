@@ -95,7 +95,7 @@ public class ValidateMetadataEventService {
 
     private Mono<byte[]> downloadFileFromSafeStorage(String fileKey) {
         final int DOWNLOAD_WHOLE_FILE = -1;
-        return safeStorageService.getFile(fileKey, false)
+        return safeStorageService.getFile(fileKey, false, true)
                 .flatMap(fileDownloadResponseInt -> safeStorageService.downloadPieceOfContent(fileKey, fileDownloadResponseInt.getDownload().getUrl(), DOWNLOAD_WHOLE_FILE))
                 .onErrorResume(PnFileNotFoundException.class, exception -> {
                     log.warn("Error downloading file {}, not found on safeStorage", fileKey, exception);
