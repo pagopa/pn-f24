@@ -19,6 +19,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.web.client.RestTemplate;
@@ -26,7 +27,14 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -34,11 +42,14 @@ class SafeStorageServiceImplTest {
     @Mock
     private PnSafeStorageClient safeStorageClient;
 
+    @Mock
+    private F24Config f24Config;
+
     private SafeStorageServiceImpl safeStorageService;
 
     @BeforeEach
     public void init() {
-        safeStorageService = new SafeStorageServiceImpl(safeStorageClient);
+        safeStorageService = new SafeStorageServiceImpl(safeStorageClient, f24Config);
     }
 
     @Test
@@ -53,11 +64,11 @@ class SafeStorageServiceImplTest {
         fileDownloadResponse.setDocumentType("type");
         fileDownloadResponse.setDownload(new FileDownloadInfo());
 
-        when(safeStorageClient.getFile(Mockito.anyString(), Mockito.anyBoolean()))
+        when(safeStorageClient.getFile(Mockito.anyString(), Mockito.anyBoolean(), Mockito.anyBoolean()))
                 .thenReturn(Mono.just(fileDownloadResponse));
 
         //WHEN
-        Mono<FileDownloadResponseInt> responseMono = safeStorageService.getFile("test", true);
+        Mono<FileDownloadResponseInt> responseMono = safeStorageService.getFile("test", true, true);
 
         //THEN
         Assertions.assertNotNull(responseMono);
@@ -72,10 +83,10 @@ class SafeStorageServiceImplTest {
     @ExtendWith(SpringExtension.class)
     void getFileError() {
         //GIVEN
-        when(safeStorageClient.getFile(Mockito.anyString(), Mockito.anyBoolean()))
+        when(safeStorageClient.getFile(Mockito.anyString(), Mockito.anyBoolean(), Mockito.anyBoolean()))
                 .thenReturn(Mono.error(new PnInternalException("test", "test")));
 
-        Mono<FileDownloadResponseInt> mono = safeStorageService.getFile("test", true);
+        Mono<FileDownloadResponseInt> mono = safeStorageService.getFile("test", true, true);
 
         //WHEN
         Assertions.assertThrows(PnInternalException.class, mono::block);
@@ -167,7 +178,13 @@ class SafeStorageServiceImplTest {
         fileDownloadInfo.setUrl("http://download.test.it");
         fileDownloadResponse.setDownload(fileDownloadInfo);
 
-        when(fileDownloadApi.getFile(any(), any(), any()))
+        Map<String, List<String>> docTags = new HashMap<>();
+        List<String> numOfPages=new ArrayList<>();
+        numOfPages.add("2");
+        docTags.put("document_number_of_pages",numOfPages);
+        fileDownloadResponse.setTags(docTags);
+
+        when(fileDownloadApi.getFile(any(), any(), any(), any()))
                 .thenReturn(Mono.error(new WebClientResponseException(HttpStatus.NOT_FOUND.value(), "Not found", null, null, null)));
 
         // Create the instance of the class under test
@@ -175,9 +192,117 @@ class SafeStorageServiceImplTest {
                 fileUploadApi, fileDownloadApi, new F24Config(), mock(RestTemplate.class));
 
         // Trigger the method and verify the error
-        StepVerifier.create(pnSafeStorageClientImpl.getFile("fileKeyTest", true))
+        StepVerifier.create(pnSafeStorageClientImpl.getFile("fileKeyTest", true, true))
                 .expectError(PnFileNotFoundException.class)
                 .verify();
+    }
+
+
+    @Test
+    void getFileWithInvalidNumberOfPagesTag() {
+        PnSafeStorageClient safeStorageClient = Mockito.mock(PnSafeStorageClient.class);
+        F24Config f24Config = Mockito.mock(F24Config.class);
+
+        SafeStorageServiceImpl safeStorageService =
+                new SafeStorageServiceImpl(safeStorageClient, f24Config);
+        String invalidNumberOfPagesValue = "invalidNumber";
+        String tagKey = "document_number_of_pages";
+
+        when(f24Config.getDocumentNumberOfPagesTagKey()).thenReturn(tagKey);
+
+        Map<String, List<String>> documentTags = new HashMap<>();
+        documentTags.put(tagKey, List.of(invalidNumberOfPagesValue));
+
+
+        FileDownloadResponse fileDownloadResponse = new FileDownloadResponse();
+        fileDownloadResponse.setTags(documentTags);
+        fileDownloadResponse.setKey("fileKey");
+
+        when(safeStorageClient.getFile(any(), anyBoolean(), anyBoolean())).thenReturn(Mono.just(fileDownloadResponse));
+
+
+        Mono<FileDownloadResponseInt> responseMono = safeStorageService.getFile("fileKey", true, true);
+
+        FileDownloadResponseInt response = responseMono.block();
+        Assertions.assertNotNull(response);
+        Assertions.assertNull(response.getNumberOfPages());
+
+    }
+
+
+    @Test
+    void getFileWithNoEmptyDocumentTags() {
+        PnSafeStorageClient safeStorageClient = Mockito.mock(PnSafeStorageClient.class);
+        F24Config f24Config = Mockito.mock(F24Config.class);
+
+        SafeStorageServiceImpl safeStorageService =
+                new SafeStorageServiceImpl(safeStorageClient, f24Config);
+        String tagKey = "document_number_of_pages";
+
+        when(f24Config.getDocumentNumberOfPagesTagKey()).thenReturn(tagKey);
+        Map< String, List<String>> documentTags = new HashMap<>();
+        documentTags.put( tagKey, List.of("5"));
+        FileDownloadResponse fileDownloadResponse = new FileDownloadResponse();
+        fileDownloadResponse.setTags(documentTags);
+        fileDownloadResponse.setKey("fileKey");
+
+        when(safeStorageClient.getFile(any(), anyBoolean(), anyBoolean())).thenReturn(Mono.just(fileDownloadResponse));
+
+        FileDownloadResponseInt response = safeStorageService.getFile("fileKey", true, true).block();
+        Assertions.assertNotNull(response);
+        Assertions.assertEquals(5, response.getNumberOfPages());
+
+    }
+
+    @Test
+    void getFileWithMissingTagsValue() {
+        PnSafeStorageClient safeStorageClient = Mockito.mock(PnSafeStorageClient.class);
+        F24Config f24Config = Mockito.mock(F24Config.class);
+
+        SafeStorageServiceImpl safeStorageService =
+                new SafeStorageServiceImpl(safeStorageClient, f24Config);
+
+        when(f24Config.getDocumentNumberOfPagesTagKey()).thenReturn("document_number_of_pages");
+
+        String tagKey = "document_number_of_pages";
+
+        Map< String, List<String>> documentTags = new HashMap<>();
+        documentTags.put( tagKey, null);
+
+        FileDownloadResponse fileDownloadResponse = new FileDownloadResponse();
+        fileDownloadResponse.setTags(documentTags);
+        fileDownloadResponse.setKey("fileKey");
+
+        when(safeStorageClient.getFile(any(), anyBoolean(), anyBoolean())).thenReturn(Mono.just(fileDownloadResponse));
+
+        FileDownloadResponseInt response = safeStorageService.getFile("fileKey", true, true).block();
+
+
+        Assertions.assertNotNull(response);
+        Assertions.assertNull(response.getNumberOfPages());
+    }
+
+    @Test
+    void getDownloadResponseInt_downloadNull(){
+
+        PnSafeStorageClient safeStorageClient = Mockito.mock(PnSafeStorageClient.class);
+        F24Config f24Config = Mockito.mock(F24Config.class);
+
+        SafeStorageServiceImpl safeStorageService =
+                new SafeStorageServiceImpl(safeStorageClient, f24Config);
+
+        FileDownloadResponse fileDownloadResponse = new FileDownloadResponse();
+        fileDownloadResponse.setTags(new HashMap<>());
+        fileDownloadResponse.setKey("fileKey");
+        fileDownloadResponse.setDownload(null);
+
+        when(safeStorageClient.getFile(any(), anyBoolean(), anyBoolean())).thenReturn(Mono.just(fileDownloadResponse));
+
+        FileDownloadResponseInt response = safeStorageService.getFile("fileKey", true, true).block();
+
+        Assertions.assertNotNull(response);
+        Assertions.assertNull(response.getDownload());
+
     }
 
 }

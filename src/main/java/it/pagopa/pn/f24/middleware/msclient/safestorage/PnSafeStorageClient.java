@@ -11,7 +11,7 @@ public interface PnSafeStorageClient {
     String GET_FILE = "GET FILE";
     String CREATE_FILE = "FILE CREATION";
     String UPLOAD_FILE_CONTENT = "UPLOAD FILE CONTENT";
-    Mono<FileDownloadResponse> getFile(String fileKey, boolean metadataOnly);
+    Mono<FileDownloadResponse> getFile(String fileKey, boolean metadataOnly, boolean tags);
 
     Mono<FileCreationResponse> createFile(FileCreationWithContentRequest fileCreationRequest, String sha256);
 

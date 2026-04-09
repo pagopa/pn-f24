@@ -42,6 +42,7 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
+import software.amazon.awssdk.services.dynamodb.model.ConditionalCheckFailedException;
 
 import java.math.BigDecimal;
 import java.time.Duration;
@@ -308,25 +309,35 @@ public class F24ServiceImpl implements F24Service {
 
         final Integer fcost = cost;
 
+        return retrieveF24File(setId, fcost, pathTokensInString)
+                .switchIfEmpty(Mono.defer(() -> generateFromMetadata(setId, pathTokensInString, fcost)))
+                .onErrorResume(PnDbConflictException.class, e -> handleCacheConflict(setId, pathTokensInString, fcost));
+    }
+
+    private Mono<F24Response> handleCacheConflict(String setId, String pathTokensInString, Integer cost) {
+        log.info("F24 cache record already exists, retrying retrieval for setId: {}", setId);
+        return retrieveF24File(setId, cost, pathTokensInString);
+    }
+
+    private Mono<F24Response> retrieveF24File(String setId, Integer fcost, String pathTokensInString) {
         return f24FileCacheDao.getItem(setId, fcost, pathTokensInString)
                 .flatMap(f24File -> {
                     if (f24File.getStatus().equals(F24FileStatus.DONE)) {
-                        return safeStorageService.getFile(f24File.getFileKey(), false)
+                        return safeStorageService.getFile(f24File.getFileKey(), false, true)
                                 .map(fileDownloadResponseInt -> {
                                     log.info("pdf found for setId: {} pathTokens: {}", setId, pathTokensInString);
                                     return F24ResponseConverter.fileDownloadInfoToF24Response(fileDownloadResponseInt);
                                 });
                     }
 
-                    if(fileHasNotBeenUpdatedRecently(f24File)) {
+                    if (fileHasNotBeenUpdatedRecently(f24File)) {
                         throw new PnF24RuntimeException("error retrieving file", "File generation exceeded time expectation", PnF24ExceptionCodes.ERROR_CODE_F24_FILE_GENERATION_IN_PROGRESS);
                     }
 
                     // il file è stato generato poco tempo fa, avviso di attendere
                     return Mono.just(F24ResponseConverter.fileDownloadInfoToF24Response(buildRetryAfterResponse()));
 
-                })
-                .switchIfEmpty(Mono.defer(() -> generateFromMetadata(setId, pathTokensInString, fcost)));
+                });
     }
 
     private boolean fileHasNotBeenUpdatedRecently(F24File f24File) {
@@ -346,7 +357,7 @@ public class F24ServiceImpl implements F24Service {
                     .flatMap(fileCreationRequest -> uploadF24FileAndPut(fileCreationRequest, cost, pathTokensInString, setId))
                     .doOnNext(f24FileUploaded -> generateAuditLog(setId, pathTokensInString, cost, f24FileUploaded.getFileKey(), metadataFileKey))
                     .flatMap(f24FileUploaded -> pollingF24FileUntilStatusIsDone(f24FileUploaded.getPk()))
-                    .flatMap(f24FileReady -> safeStorageService.getFile(f24FileReady.getFileKey(), false))
+                    .flatMap(f24FileReady -> safeStorageService.getFile(f24FileReady.getFileKey(), false, true))
                     .onErrorResume(PollingTimeOutException.class, e -> {
                         log.debug("Polling timeout occurred, replying with retryAfter");
                         return Mono.just(buildRetryAfterResponse());

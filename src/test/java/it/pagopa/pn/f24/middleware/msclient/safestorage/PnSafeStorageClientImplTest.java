@@ -1,6 +1,7 @@
 package it.pagopa.pn.f24.middleware.msclient.safestorage;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -14,6 +15,10 @@ import it.pagopa.pn.f24.generated.openapi.msclient.safestorage.api.FileUploadApi
 import it.pagopa.pn.f24.generated.openapi.msclient.safestorage.model.FileCreationResponse;
 
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import it.pagopa.pn.f24.generated.openapi.msclient.safestorage.model.FileDownloadInfo;
 import it.pagopa.pn.f24.generated.openapi.msclient.safestorage.model.FileDownloadResponse;
@@ -61,13 +66,19 @@ class PnSafeStorageClientImplTest {
         fileDownloadInfo.setUrl("http://download.test.it");
         fileDownloadResponse.setDownload(fileDownloadInfo);
 
-        when(fileDownloadApi.getFile(any(), any(), any()))
+        Map<String,List<String>> tags = new HashMap<>();
+        List<String> numOfPages=new ArrayList<>();
+        numOfPages.add("2");
+        tags.put("document_number_of_pages",numOfPages);
+        fileDownloadResponse.setTags(tags);
+
+        when(fileDownloadApi.getFile(any(), any(), any(), any()))
                 .thenReturn(Mono.just(fileDownloadResponse));
         PnSafeStorageClientImpl pnSafeStorageClientImpl = new PnSafeStorageClientImpl(fileUploadApi, fileDownloadApi,
                 new F24Config(), mock(RestTemplate.class));
 
         FileCreationWithContentRequest fileCreationWithContentRequest = new FileCreationWithContentRequest();
-        StepVerifier.create(pnSafeStorageClientImpl.getFile("fileKeyTest", true))
+        StepVerifier.create(pnSafeStorageClientImpl.getFile("fileKeyTest", true, true))
                 .expectNext(fileDownloadResponse)
                 .verifyComplete();
     }

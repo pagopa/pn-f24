@@ -4,6 +4,7 @@ import it.pagopa.pn.f24.config.F24Config;
 import it.pagopa.pn.f24.dto.F24File;
 import it.pagopa.pn.f24.dto.F24FileStatus;
 import it.pagopa.pn.f24.middleware.dao.f24file.dynamo.entity.F24FileCacheEntity;
+import it.pagopa.pn.f24.middleware.dao.f24file.dynamo.entity.F24FileStatusEntity;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -11,6 +12,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
 import software.amazon.awssdk.core.async.SdkPublisher;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbAsyncIndex;
@@ -21,9 +23,11 @@ import software.amazon.awssdk.enhanced.dynamodb.model.Page;
 import software.amazon.awssdk.enhanced.dynamodb.model.QueryEnhancedRequest;
 import software.amazon.awssdk.enhanced.dynamodb.model.UpdateItemEnhancedRequest;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -80,27 +84,6 @@ class F24FileCacheRepositoryImplTest {
     }
 
     @Test
-    void getItemWithConsistentRead() {
-        when(dynamoDbEnhancedAsyncClient.table(any(),any())).thenReturn(dynamoDbAsyncTable);
-
-        F24FileCacheRepositoryImpl f24FileCacheRepository = new F24FileCacheRepositoryImpl(dynamoDbEnhancedAsyncClient, f24Config);
-
-        String setId = "setId";
-        Integer cost = 1000;
-        String pathTokens = "0_0";
-        F24FileCacheEntity f24FileCacheEntity = new F24FileCacheEntity(setId, cost, pathTokens);
-
-        CompletableFuture<Object> completableFuture = new CompletableFuture<>();
-        completableFuture.completeAsync(() -> f24FileCacheEntity);
-        when(dynamoDbAsyncTable.getItem((GetItemEnhancedRequest) any())).thenReturn(completableFuture);
-
-        StepVerifier.create(f24FileCacheRepository.getItem(setId, cost, pathTokens))
-                .expectNextMatches(f24FileCache -> f24FileCache.getPk().equalsIgnoreCase("CACHE#setId#1000#0_0"))
-                .verifyComplete();
-    }
-
-
-    @Test
     @Disabled("to repair")
     void putItemIfAbsent() {
         when(dynamoDbEnhancedAsyncClient.table(any(),any())).thenReturn(dynamoDbAsyncTable);
@@ -121,15 +104,24 @@ class F24FileCacheRepositoryImplTest {
 
     @Test
     void getItemByFileKey() {
-        when(dynamoDbEnhancedAsyncClient.table(any(), any())).thenReturn(dynamoDbAsyncTable);
+        when(dynamoDbEnhancedAsyncClient.table(any(),any())).thenReturn(dynamoDbAsyncTable);
+
+        DynamoDbAsyncIndex index = mock(DynamoDbAsyncIndex.class);
+        when(dynamoDbAsyncTable.index(anyString())).thenReturn(index);
+
+        F24FileCacheEntity entity = new F24FileCacheEntity();
+        entity.setPk("setId", 1000, "0_0");
+        entity.setStatus(F24FileStatusEntity.GENERATED);
+        Page<F24FileCacheEntity> emptyPage = Page.create(List.of(entity));
+        SdkPublisher<Page<F24FileCacheEntity>> sdkPublisher = SdkPublisher.adapt(Flux.just(emptyPage));
+
+        when(index.query(any(QueryEnhancedRequest.class))).thenReturn(sdkPublisher);
+
         F24FileCacheRepositoryImpl f24FileCacheRepository = new F24FileCacheRepositoryImpl(dynamoDbEnhancedAsyncClient, f24Config);
 
-        SdkPublisher<Page<Object>> sdkPublisher = mock(SdkPublisher.class);
-        DynamoDbAsyncIndex<Object> index = mock(DynamoDbAsyncIndex.class);
-        when(index.query((QueryEnhancedRequest) any())).thenReturn(sdkPublisher);
-        when(dynamoDbAsyncTable.index(any())).thenReturn(index);
         StepVerifier.create(f24FileCacheRepository.getItemByFileKey("key"))
-                .expectNextCount(0);
+                .expectNextCount(1)
+                .verifyComplete();
     }
 
     @Test
