@@ -14,16 +14,21 @@ public class AbstractConsumerMessage {
     public void initTraceId(MessageHeaders messageHeaders) {
         String traceId = null;
         String messageId = null;
+        String iun = null;
 
         if (messageHeaders.containsKey("aws_messageId"))
             messageId = messageHeaders.get("aws_messageId", String.class);
         if (messageHeaders.containsKey("X-Amzn-Trace-Id"))
             traceId = messageHeaders.get("X-Amzn-Trace-Id", String.class);
+        if (messageHeaders.containsKey("iun")) {
+            iun = messageHeaders.get("iun", String.class);
+        }
 
         traceId = Objects.requireNonNullElseGet(traceId, () -> "traceId:" + UUID.randomUUID());
 
         MDCUtils.clearMDCKeys();
         MDC.put(MDCUtils.MDC_TRACE_ID_KEY, traceId);
         MDC.put(MDCUtils.MDC_PN_CTX_MESSAGE_ID, messageId);
+        MDC.put(MDCUtils.MDC_PN_IUN_KEY, iun);
     }
 }
