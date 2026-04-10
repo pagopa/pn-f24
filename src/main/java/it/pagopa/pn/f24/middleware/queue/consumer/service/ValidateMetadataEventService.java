@@ -45,7 +45,7 @@ public class ValidateMetadataEventService {
         return getMetadataSet(setId)
                 .flatMap(this::startMetadataValidation)
                 .doOnNext(unused -> log.logEndingProcess(processName))
-                .doOnError(throwable -> log.logEndingProcess(processName, false, throwable.getMessage()))
+                .doOnError(throwable -> log.logEndingProcess(processName, false, throwable.getMessage(), throwable))
                 .then();
     }
 

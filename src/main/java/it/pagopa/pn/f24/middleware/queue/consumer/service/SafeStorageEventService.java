@@ -46,14 +46,14 @@ public class SafeStorageEventService {
             if (response.getDocumentType().equalsIgnoreCase(f24Config.getSafeStorageF24DocType())) {
                 return handleF24FileKey(response)
                         .doOnNext(unused -> log.logEndingProcess(processName))
-                        .doOnError(throwable -> log.logEndingProcess(processName, false, throwable.getMessage()));
+                        .doOnError(throwable -> log.logEndingProcess(processName, false, throwable.getMessage(), throwable));
             } else {
                 log.warn("Unsupported document type");
-                log.logEndingProcess(processName, false, "Unsupported document type");
+                log.logEndingProcess(processName, false, "Unsupported document type", null);
                 return Mono.empty();
             }
         } catch (Exception ex) {
-            log.logEndingProcess(processName, false, ex.getMessage());
+            log.logEndingProcess(processName, false, ex.getMessage(), ex);
             throw ex;
         }
     }

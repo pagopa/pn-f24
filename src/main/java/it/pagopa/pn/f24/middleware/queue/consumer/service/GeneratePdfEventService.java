@@ -51,7 +51,7 @@ public class GeneratePdfEventService {
                 .flatMap(this::checkF24FileStatus)
                 .flatMap(f24File -> generateF24Pdf(payload.getMetadataFileKey(), f24File))
                 .doOnNext(unused -> log.logEndingProcess(processName))
-                .doOnError(throwable -> log.logEndingProcess(processName, false, throwable.getMessage()));
+                .doOnError(throwable -> log.logEndingProcess(processName, false, throwable.getMessage(), throwable));
     }
 
     private Mono<F24File> getF24File(String filePk) {

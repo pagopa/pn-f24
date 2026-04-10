@@ -67,7 +67,12 @@ public class InternalEventHandler extends AbstractConsumerMessage {
         }
     }
 
-    @SqsListener(value = "${pn.f24.internal-pdf-generator-queue-name}", acknowledgementMode = ON_SUCCESS)
+    @SqsListener(
+            value = "${pn.f24.internal-pdf-generator-queue-name}",
+            acknowledgementMode = ON_SUCCESS,
+            maxConcurrentMessages = "${pdf.generator.queue.concurrency}",
+            maxMessagesPerPoll =  "${pdf.generator.queue.max.number.of.messages}"
+    )
     void pnF24GeneratePdfEventListener(Message<GeneratePdfEvent.Payload> message) {
         initTraceId(message.getHeaders());
         pnF24GeneratePdfEventInboundConsumer().accept(message);

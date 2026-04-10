@@ -63,7 +63,7 @@ public class PreparePdfEventService {
         return getF24Request(requestId)
                 .flatMap(this::handlePreparePdf)
                 .doOnNext(unused -> log.logEndingProcess(processName))
-                .doOnError(throwable -> log.logEndingProcess(processName, false, throwable.getMessage()));
+                .doOnError(throwable -> log.logEndingProcess(processName, false, throwable.getMessage(), throwable));
     }
 
     private Mono<F24Request> getF24Request(String requestId) {
