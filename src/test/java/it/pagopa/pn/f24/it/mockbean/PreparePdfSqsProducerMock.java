@@ -37,4 +37,19 @@ public class PreparePdfSqsProducerMock implements MomProducer<PreparePdfEvent> {
             });
         }));
     }
+
+    @Override
+    public void push(List<PreparePdfEvent> list, Integer integer) {
+        this.push(list);
+    }
+
+    @Override
+    public void push(PreparePdfEvent preparePdfEvent) {
+         this.push(List.of(preparePdfEvent));
+    }
+
+    @Override
+    public void push(PreparePdfEvent preparePdfEvent, Integer integer) {
+        this.push(List.of(preparePdfEvent));
+    }
 }

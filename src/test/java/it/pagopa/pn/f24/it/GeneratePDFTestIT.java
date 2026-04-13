@@ -17,7 +17,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
@@ -68,7 +68,7 @@ public class GeneratePDFTestIT {
     private F24MetadataSetDaoMock f24MetadataSetDaoMock;
     @Autowired
     private F24FileCacheDaoMock f24FileCacheDaoMock;
-    @SpyBean
+    @MockitoSpyBean
     private SafeStorageEventService safeStorageEventService;
 
     @BeforeEach

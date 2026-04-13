@@ -40,4 +40,19 @@ public class GeneratePdfSqsProducerMock implements MomProducer<GeneratePdfEvent>
         }));
 
     }
+
+    @Override
+    public void push(List<GeneratePdfEvent> list, Integer integer) {
+        this.push(list);
+    }
+
+    @Override
+    public void push(GeneratePdfEvent generatePdfEvent) {
+       this.push(List.of(generatePdfEvent));
+    }
+
+    @Override
+    public void push(GeneratePdfEvent generatePdfEvent, Integer integer) {
+        this.push(List.of(generatePdfEvent));
+    }
 }

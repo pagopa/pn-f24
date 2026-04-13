@@ -20,10 +20,10 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.validation.beanvalidation.SpringValidatorAdapter;
 import reactor.core.publisher.Mono;
@@ -79,13 +79,13 @@ public class PreparePDFTestIT {
     private F24FileCacheDaoMock f24FileCacheDaoMock;
     @Autowired
     private F24FileRequestDaoMock f24FileRequestDaoMock;
-    @SpyBean
+    @MockitoSpyBean
     private SafeStorageEventService safeStorageEventService;
-    @SpyBean
+    @MockitoSpyBean
     private PreparePdfEventService preparePdfEventService;
-    @SpyBean
+    @MockitoSpyBean
     private GeneratePdfEventService generatePdfEventService;
-    @SpyBean
+    @MockitoSpyBean
     private EventBridgeAsyncClientMock eventBridgeAsyncClientMock;
 
     @BeforeEach
