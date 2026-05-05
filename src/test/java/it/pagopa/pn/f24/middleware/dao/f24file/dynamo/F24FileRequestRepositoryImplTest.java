@@ -201,7 +201,7 @@ class F24FileRequestRepositoryImplTest {
         f24File.setFileKey("key_0_test");
         f24File.setStatus(F24FileStatus.GENERATED);
 
-        StepVerifier.create(f24FileRequestRepository.updateTransactionalFileAndRequests(List.of(f24Request), f24File))
+        StepVerifier.create(f24FileRequestRepository.updateRequestsAndSetFileDone(List.of(f24Request), f24File))
                 .expectComplete()
                 .verify();
 
@@ -242,7 +242,7 @@ class F24FileRequestRepositoryImplTest {
         f24File.setFileKey("key_0_test");
         f24File.setStatus(F24FileStatus.GENERATED);
 
-        StepVerifier.create(f24FileRequestRepository.updateTransactionalFileAndRequests(List.of(f24Request), f24File))
+        StepVerifier.create(f24FileRequestRepository.updateRequestsAndSetFileDone(List.of(f24Request), f24File))
                 .expectComplete()
                 .verify();
     }

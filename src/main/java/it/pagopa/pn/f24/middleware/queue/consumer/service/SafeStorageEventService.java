@@ -90,7 +90,7 @@ public class SafeStorageEventService {
         return this.buildF24RequestsToUpdate(f24FileToUpdate)
                 .flatMap(f24RequestsToUpdate -> {
                     if (f24FileToUpdate.getStatus() != F24FileStatus.DONE) {
-                        return updateTransactionalFileAndRequests(f24RequestsToUpdate, f24FileToUpdate);
+                        return updateRequestsAndSetFileDone(f24RequestsToUpdate, f24FileToUpdate);
                     }
                     return Mono.just(f24RequestsToUpdate);
                 })
@@ -137,8 +137,8 @@ public class SafeStorageEventService {
         return requestMapFiles;
     }
 
-    private Mono<List<F24Request>> updateTransactionalFileAndRequests(List<F24Request> f24Requests, F24File f24File) {
-        return f24RequestDao.updateTransactionalFileAndRequests(f24Requests, f24File)
+    private Mono<List<F24Request>> updateRequestsAndSetFileDone(List<F24Request> f24Requests, F24File f24File) {
+        return f24RequestDao.updateRequestsAndSetFileDone(f24Requests, f24File)
                 .doOnError(throwable -> log.warn("Error updating F24File and related F24Requests", throwable))
                 .thenReturn(f24Requests);
     }

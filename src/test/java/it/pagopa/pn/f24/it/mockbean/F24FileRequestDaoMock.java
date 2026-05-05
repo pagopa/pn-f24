@@ -76,7 +76,7 @@ public class F24FileRequestDaoMock implements F24FileRequestDao, ClearableMock {
     }
 
     @Override
-    public Mono<Void> updateTransactionalFileAndRequests(List<F24Request> f24Requests, F24File f24File) {
+    public Mono<Void> updateRequestsAndSetFileDone(List<F24Request> f24Requests, F24File f24File) {
         f24Requests.forEach(this::updateItem);
         f24FileCacheDaoMock.updateItem(f24File);
         return Mono.empty();
