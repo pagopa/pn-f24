@@ -300,7 +300,7 @@ public class F24FileRequestRepositoryImpl implements F24FileRequestDao {
     @Override
     public Mono<Void> updateRequestsAndSetFileDone(List<F24Request> f24Requests, F24File f24File) {
         return Flux.fromIterable(f24Requests)
-                .flatMap(req -> setFileKeyOnRequest(req, f24File))
+                .concatMap(req -> setFileKeyOnRequest(req, f24File))
                 .then(Mono.defer(() -> setF24FileStatusDoneOrSwallow(f24File)))
                 .then();
     }
