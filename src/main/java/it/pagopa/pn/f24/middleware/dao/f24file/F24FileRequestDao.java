@@ -20,5 +20,5 @@ public interface F24FileRequestDao {
 
     Mono<Void> updateRequestAndRelatedFiles(PreparePdfLists preparePdfLists);
 
-    Mono<Void> updateTransactionalFileAndRequests(List<F24Request> f24Requests, F24File f24File);
+    Mono<Void> updateRequestsAndSetFileDone(List<F24Request> f24Requests, F24File f24File);
 }

@@ -17,13 +17,18 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import software.amazon.awssdk.enhanced.dynamodb.*;
 import software.amazon.awssdk.enhanced.dynamodb.model.*;
+import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.dynamodb.model.ConditionalCheckFailedException;
 import software.amazon.awssdk.services.dynamodb.model.TransactionCanceledException;
+import software.amazon.awssdk.services.dynamodb.model.UpdateItemRequest;
+import it.pagopa.pn.f24.dto.F24FileStatus;
 
+import java.time.Instant;
 import java.util.*;
 import java.util.function.BiFunction;
 
+import static it.pagopa.pn.f24.middleware.dao.f24file.dynamo.entity.BaseEntity.COL_PK;
 import static it.pagopa.pn.f24.middleware.dao.f24file.dynamo.entity.BaseEntity.COL_UPDATED;
 import static it.pagopa.pn.f24.middleware.dao.f24file.dynamo.entity.F24FileRequestEntity.COL_RECORD_VERSION;
 import static it.pagopa.pn.f24.middleware.dao.f24file.dynamo.entity.F24FileRequestEntity.COL_STATUS;
@@ -35,11 +40,17 @@ public class F24FileRequestRepositoryImpl implements F24FileRequestDao {
     private final DynamoDbAsyncTable<F24FileRequestEntity> f24FileRequestTable;
     private final DynamoDbAsyncTable<F24FileCacheEntity> f24FileCacheTable;
     private final DynamoDbEnhancedAsyncClient dynamoDbEnhancedAsyncClient;
+    private final DynamoDbAsyncClient dynamoDbAsyncClient;
+    private final String fileTableName;
 
-    public F24FileRequestRepositoryImpl(DynamoDbEnhancedAsyncClient dynamoDbEnhancedClient, F24Config f24Config) {
+    public F24FileRequestRepositoryImpl(DynamoDbEnhancedAsyncClient dynamoDbEnhancedClient,
+                                        DynamoDbAsyncClient dynamoDbAsyncClient,
+                                        F24Config f24Config) {
         this.f24FileCacheTable = dynamoDbEnhancedClient.table(f24Config.getFileTableName(), TableSchema.fromBean(F24FileCacheEntity.class));
         this.dynamoDbEnhancedAsyncClient = dynamoDbEnhancedClient;
         this.f24FileRequestTable = dynamoDbEnhancedClient.table(f24Config.getFileTableName(), TableSchema.fromBean(F24FileRequestEntity.class));
+        this.dynamoDbAsyncClient = dynamoDbAsyncClient;
+        this.fileTableName = f24Config.getFileTableName();
     }
 
     @Override
@@ -287,21 +298,60 @@ public class F24FileRequestRepositoryImpl implements F24FileRequestDao {
     }
 
     @Override
-    public Mono<Void> updateTransactionalFileAndRequests(List<F24Request> f24Requests, F24File f24File) {
-        List<TransactUpdateItemEnhancedRequest<F24FileRequestEntity>> requestsUpdate = f24Requests.stream()
-                .map(this::buildFileRequestUpdateItemRequest)
-                .toList();
-
-        TransactUpdateItemEnhancedRequest<F24FileCacheEntity> fileUpdate = buildFileCacheUpdateItemRequest(f24File);
-
-        TransactWriteItemsEnhancedRequest.Builder requestBuilder = TransactWriteItemsEnhancedRequest.builder();
-        requestBuilder.addUpdateItem(f24FileCacheTable, fileUpdate);
-        requestsUpdate.forEach(requestUpdate -> requestBuilder.addUpdateItem(f24FileRequestTable, requestUpdate));
-        TransactWriteItemsEnhancedRequest transactWriteItemsEnhancedRequest = requestBuilder.build();
-
-        return Mono.fromFuture(dynamoDbEnhancedAsyncClient.transactWriteItems(transactWriteItemsEnhancedRequest))
-                .onErrorMap(TransactionCanceledException.class, t -> new PnDbConflictException(t.getMessage()))
+    public Mono<Void> updateRequestsAndSetFileDone(List<F24Request> f24Requests, F24File f24File) {
+        return Flux.fromIterable(f24Requests)
+                .concatMap(req -> setFileKeyOnRequest(req, f24File))
+                .then(Mono.defer(() -> setF24FileStatusDoneOrSwallow(f24File)))
                 .then();
+    }
+
+    private Mono<Void> setFileKeyOnRequest(F24Request f24Request, F24File f24File) {
+        Map<String, AttributeValue> expressionValues = new HashMap<>();
+        expressionValues.put(":ref", AttributeValue.builder()
+                .m(Map.of("fileKey", AttributeValue.builder().s(f24File.getFileKey()).build()))
+                .build());
+        expressionValues.put(":now", AttributeValue.builder().s(Instant.now().toString()).build());
+        expressionValues.put(":pk", AttributeValue.builder().s(f24Request.getPk()).build());
+
+        Map<String, String> expressionNames = new HashMap<>();
+        expressionNames.put("#files", F24FileRequestEntity.COL_FILES);
+        expressionNames.put("#filePk", f24File.getPk());
+        expressionNames.put("#updated", COL_UPDATED);
+        expressionNames.put("#pk", COL_PK);
+
+        UpdateItemRequest updateItemRequest = UpdateItemRequest.builder()
+                .tableName(fileTableName)
+                .key(Map.of(COL_PK, AttributeValue.builder().s(f24Request.getPk()).build()))
+                .updateExpression("SET #files.#filePk = :ref, #updated = :now")
+                .conditionExpression("#pk = :pk")
+                .expressionAttributeNames(expressionNames)
+                .expressionAttributeValues(expressionValues)
+                .build();
+
+        return Mono.fromFuture(dynamoDbAsyncClient.updateItem(updateItemRequest)).then();
+    }
+
+    private Mono<F24File> setF24FileStatusDoneOrSwallow(F24File f24File) {
+        f24File.setStatus(F24FileStatus.DONE);
+
+        Map<String, String> expressionNames = new HashMap<>();
+        expressionNames.put("#status", F24FileCacheEntity.COL_STATUS);
+
+        Map<String, AttributeValue> expressionValues = new HashMap<>();
+        expressionValues.put(":status", AttributeValue.builder().s(f24File.getStatus().prev().getValue()).build());
+
+        UpdateItemEnhancedRequest<F24FileCacheEntity> updateItemEnhancedRequest = UpdateItemEnhancedRequest
+                .builder(F24FileCacheEntity.class)
+                .conditionExpression(expressionBuilder("#status = :status", expressionValues, expressionNames))
+                .item(F24FileCacheMapper.dtoToEntity(f24File))
+                .build();
+
+        return Mono.fromFuture(f24FileCacheTable.updateItem(updateItemEnhancedRequest))
+                .onErrorResume(ConditionalCheckFailedException.class, e -> {
+                    log.debug("F24File with pk {} already in status DONE, skipping setStatusDone", f24File.getPk());
+                    return Mono.just(F24FileCacheMapper.dtoToEntity(f24File));
+                })
+                .map(F24FileCacheMapper::entityToDto);
     }
 
     public static Expression expressionBuilder(String expression, Map<String, AttributeValue> expressionValues, Map<String, String> expressionNames) {

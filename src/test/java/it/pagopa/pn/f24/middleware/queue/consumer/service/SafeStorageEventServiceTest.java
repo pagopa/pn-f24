@@ -98,7 +98,7 @@ class SafeStorageEventServiceTest {
         when(f24FileRequestDao.getItem(any()))
                 .thenReturn(Mono.just(f24Request));
 
-        when(f24FileRequestDao.updateTransactionalFileAndRequests(any(), any()))
+        when(f24FileRequestDao.updateRequestsAndSetFileDone(any(), any()))
                 .thenReturn(Mono.empty());
 
         F24Request updatedF24Request = new F24Request();
@@ -124,7 +124,7 @@ class SafeStorageEventServiceTest {
                 .expectComplete()
                 .verify();
 
-        verify(f24FileRequestDao, times(1)).updateTransactionalFileAndRequests(any(), any());
+        verify(f24FileRequestDao, times(1)).updateRequestsAndSetFileDone(any(), any());
         verify(pdfSetReadyEventProducer, times(1)).sendEvent((PnF24PdfSetReadyEvent) any());
     }
 
@@ -161,7 +161,7 @@ class SafeStorageEventServiceTest {
                 .expectComplete()
                 .verify();
 
-        verify(f24FileRequestDao, times(0)).updateTransactionalFileAndRequests(any(), any());
+        verify(f24FileRequestDao, times(0)).updateRequestsAndSetFileDone(any(), any());
         verify(pdfSetReadyEventProducer, times(0)).sendEvent((PnF24PdfSetReadyEvent) any());
     }
 
@@ -183,7 +183,7 @@ class SafeStorageEventServiceTest {
                 .verify();
 
         verify(f24FileCacheDao, times(0)).setStatusDone(any());
-        verify(f24FileRequestDao, times(0)).updateTransactionalFileAndRequests(any(), any());
+        verify(f24FileRequestDao, times(0)).updateRequestsAndSetFileDone(any(), any());
     }
 }
 
