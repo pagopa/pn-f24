@@ -7,7 +7,7 @@
     "RetentionForF24RequestsInDays": "120",
     "RetentionForF24FilesInDays": "120",
     "MetadataSetTtlInDaysUntilValidation": "3",
-    "PnCronAnalyzer": "* */1 * * * *",
+    "PnCronAnalyzer": "-",
     "WireTapLogActivation": "false",
     "MountEfs": "false",
     "CpuValue": "2048",
