@@ -274,6 +274,16 @@ Parameters:
       - "true"
       - "false"
 
+  CpuArchitecture:
+    Type: String
+    Default: 'ARM'
+    Description: CPU architecture for the Fargate tasks
+
+  JavaToolOptions:
+    Type: String
+    Default: '-Dreactor.netty.ioWorkerCount=120 -XX:MaxMetaspaceSize=512M -XX:MaxDirectMemorySize=1G'
+    Description: Java tool options for the Fargate tasks
+
 
 Resources:
 
@@ -327,7 +337,7 @@ Resources:
         ContainerEnvEntry22: !Sub 'PDF_GENERATOR_QUEUE_CONCURRENCY=${PdfGeneratorQueueConcurrency}'
         ContainerEnvEntry23: !Sub 'PN_F24_ISENABLEDTAXCODEVALIDATION=${PnF24isEnabledTaxCodeValidation}'
         MicroServiceSecretPrefix: pn-f24-Secrets
-        JavaToolOptions: '-Dreactor.netty.ioWorkerCount=120 -XX:MaxMetaspaceSize=512M -XX:MaxDirectMemorySize=1G'
+        JavaToolOptions: !Ref JavaToolOptions
         MappedPaths: '/f24-private/*'
         ECSClusterName: !Ref ECSClusterName
         Subnets: !Ref VpcEgressSubnetsIds
@@ -339,6 +349,7 @@ Resources:
         AlbSecurityGroup: !Ref AlbSecurityGroup
         EcsLogGroup: !Ref EcsLogGroup
         LogAlarmStrategyV1: !Ref LogAlarmStrategy
+        CpuArchitecture: !Ref CpuArchitecture
 
   # Grant operational rights to PN-F24 microservice
   F24MicroserviceTaskManagedPolicy:
