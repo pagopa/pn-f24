@@ -274,16 +274,18 @@ Parameters:
       - "true"
       - "false"
 
-  CpuArchitecture:
-    Type: String
-    Default: 'ARM'
-    Description: CPU architecture for the Fargate tasks
-
   JavaToolOptions:
     Type: String
     Default: '-Dreactor.netty.ioWorkerCount=120 -XX:MaxMetaspaceSize=512M -XX:MaxDirectMemorySize=1G'
     Description: Java tool options for the Fargate tasks
 
+  CpuArchitecture:
+    Type: String
+    Default: 'ARM'
+    Description: CPU architecture for the Fargate tasks
+    AllowedValues:
+      - 'ARM'
+      - 'AMD'
 
 Resources:
 
@@ -313,6 +315,7 @@ Resources:
         AutoscalingDataPointM: !Ref AutoscalingDataPointM
         AlarmSNSTopicArn: !Ref AlarmSNSTopicArn
         ContainerImageURI: !Sub '${ContainerImageUri}'
+        CpuArchitecture: !Ref CpuArchitecture
         ContainerEnvEntry1: !Sub 'AWS_REGIONCODE=${AWS::Region}'
         ContainerEnvEntry2: !Sub 'PN_F24_SAFESTORAGEBASEURL=${SandboxSafeStorageBaseUrl}'
         ContainerEnvEntry3: !Sub 'PN_F24_POLLINGINTERVALSEC=${PollingIntervalInSec}'
@@ -349,7 +352,6 @@ Resources:
         AlbSecurityGroup: !Ref AlbSecurityGroup
         EcsLogGroup: !Ref EcsLogGroup
         LogAlarmStrategyV1: !Ref LogAlarmStrategy
-        CpuArchitecture: !Ref CpuArchitecture
 
   # Grant operational rights to PN-F24 microservice
   F24MicroserviceTaskManagedPolicy:
